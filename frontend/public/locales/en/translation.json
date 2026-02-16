@@ -1,0 +1,178 @@
+{
+    "nav": {
+        "promo1": "Come and see even if you don't buy",
+        "promo2": "Wholesale & Retail",
+        "promo3": "Unbelievable Prices!",
+        "promo4": "Delivery Everywhere in Tunisia 7/7",
+        "search_placeholder": "Search for products, shops...",
+        "login": "Login",
+        "profile": "Profile",
+        "cart": "Cart",
+        "categories": {
+            "clothes": "Clothes",
+            "electronics": "Electronics",
+            "home": "Home & Decor",
+            "beauty": "Beauty",
+            "jewelry": "Jewelry",
+            "all_shops": "All Shops"
+        },
+        "my_account": "My Account",
+        "welcome": "Welcome!",
+        "logout": "Logout"
+    },
+    "home": {
+        "hero": {
+            "badge": "#1 MARKETPLACE IN TUNISIA 🇹🇳",
+            "title": "Buy Local,\nSell Global.",
+            "subtitle": "TerFer gathers the best shops in Tunisia. Find everything you need, from fashion to technology.",
+            "cta_buy": "Explore Shop",
+            "cta_sell": "Become a Seller",
+            "discount_badge": "50% Discount",
+            "discount_sub": "On Summer Collection"
+        },
+        "brands_title": "HUNDREDS OF BRANDS TRUST US",
+        "categories": {
+            "title": "Popular Categories",
+            "subtitle": "Explore our hand-picked collections"
+        },
+        "new_arrivals": {
+            "title": "New Arrivals",
+            "view_all": "View All"
+        },
+        "benefits": {
+            "delivery_title": "Fast Delivery",
+            "delivery_desc": "Anywhere in Tunisia within 24-48h",
+            "quality_title": "Quality Guarantee",
+            "quality_desc": "Verified sellers and buyer protection",
+            "payment_title": "Secure Payment",
+            "payment_desc": "Online or Cash on Delivery",
+            "service_title": "Customer Service",
+            "service_desc": "Available 24/7 to help you"
+        },
+        "cta_seller": {
+            "title": "Ready to grow your business?",
+            "subtitle": "Join thousands of sellers on TerFer and reach customers across Tunisia today.",
+            "button": "Open My Shop for Free"
+        }
+    },
+    "product": {
+        "add_to_cart": "Add to Cart",
+        "buy_now": "Buy Now",
+        "description": "Description",
+        "reviews": "Customer Reviews",
+        "seller": "Seller",
+        "similar_products": "Similar Products",
+        "select_size": "Select Size",
+        "select_color": "Select Color",
+        "quantity": "Quantity",
+        "delivery_info": "Estimated delivery: 2-3 days",
+        "return_policy": "Free 14-day returns",
+        "stock": "In Stock",
+        "out_of_stock": "Out of Stock"
+    },
+    "cart": {
+        "item_added_success": "Added to cart!",
+        "item_updated_success": "Quantity updated!",
+        "item_removed_success": "Item removed",
+        "title": "My Cart",
+        "empty": "Your cart is empty",
+        "start_shopping": "Start Shopping",
+        "sold_by": "Sold by",
+        "remove": "Remove",
+        "subtotal": "Subtotal",
+        "shipping": "Shipping",
+        "free_shipping": "Free",
+        "total": "Total",
+        "checkout": "Checkout",
+        "continue_shopping": "Continue Shopping",
+        "secure_payment": "100% Secure Payment"
+    },
+    "checkout": {
+        "title": "Checkout",
+        "contact_info": "Contact Information",
+        "shipping_address": "Shipping Address",
+        "payment_method": "Payment Method",
+        "cod": "Cash on Delivery",
+        "card": "Credit Card",
+        "place_order": "Place Order",
+        "order_success": "Order Confirmed! 🎉",
+        "order_success_msg": "Thank you for your purchase. You will receive a confirmation email soon.",
+        "back_home": "Back to Home",
+        "form": {
+            "email": "Email Address",
+            "first_name": "First Name",
+            "last_name": "Last Name",
+            "address": "Address",
+            "city": "City",
+            "phone": "Phone"
+        }
+    },
+    "profile": {
+        "title": "My Account",
+        "orders": "My Orders",
+        "wishlist": "Wishlist",
+        "addresses": "My Addresses",
+        "logout": "Logout",
+        "my_orders": "Order History",
+        "order_id": "Order #",
+        "order_date": "Date",
+        "order_total": "Total",
+        "invoice": "Invoice",
+        "details": "Details",
+        "my_wishlist": "My Favorite Products",
+        "wishlist_empty": "You have no favorites yet.",
+        "view_product": "View Product"
+    },
+    "shop": {
+        "search_results": "Results for",
+        "filters": "Filters",
+        "categories": "Categories",
+        "price": "Price",
+        "rating": "Rating",
+        "sort_newest": "Newest Arrivals",
+        "sort_price_asc": "Price: Low to High",
+        "sort_price_desc": "Price: High to Low",
+        "load_more": "Load More"
+    },
+    "auth": {
+        "login_title": "Welcome Back!",
+        "register_title": "Create Account",
+        "email": "Email Address",
+        "password": "Password",
+        "name": "Full Name",
+        "confirm_password": "Confirm Password",
+        "login_button": "Login",
+        "register_button": "Register",
+        "forgot_password": "Forgot Password?",
+        "no_account": "No account yet?",
+        "have_account": "Already have an account?",
+        "register_link": "Create Account",
+        "login_link": "Login",
+        "seller_check": "I want to sell on TerFer",
+        "login_success": "Login successful! 🎉",
+        "register_success": "Account created successfully! 🚀"
+    },
+    "footer": {
+        "about": "About Us",
+        "about_text": "TERFER is the leading marketplace in Tunisia connecting local sellers to passionate buyers.",
+        "links": "Useful Links",
+        "customer_service": "Customer Service",
+        "contact": "Contact Us",
+        "rights": "All rights reserved.",
+        "newsletter": {
+            "title": "Stay Updated",
+            "text": "Get our latest offers and news.",
+            "placeholder": "Your email"
+        },
+        "quick_links": {
+            "top_sellers": "Top Sellers",
+            "new": "New Arrivals",
+            "promos": "Promotions",
+            "crafts": "Handicrafts",
+            "help": "Help Center",
+            "returns": "Returns & Refunds",
+            "delivery": "Delivery",
+            "contact": "Contact"
+        }
+    }
+}

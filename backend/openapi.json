@@ -1,0 +1,246 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "TerFer API",
+    "version": "1.0.0",
+    "description": "REST API documentation for TerFer (users, products, orders)"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:5000",
+      "description": "Local development server"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "User": {
+        "type": "object",
+        "properties": {
+          "_id": { "type": "string" },
+          "name": { "type": "string" },
+          "email": { "type": "string", "format": "email" },
+          "role": { "type": "string", "enum": ["customer", "seller", "admin"] },
+          "phone": { "type": "string" },
+          "avatar": { "type": "string" },
+          "shopName": { "type": "string" },
+          "shopDescription": { "type": "string" },
+          "token": { "type": "string" }
+        }
+      },
+      "Address": {
+        "type": "object",
+        "properties": {
+          "fullName": { "type": "string" },
+          "phone": { "type": "string" },
+          "address": { "type": "string" },
+          "city": { "type": "string" },
+          "postalCode": { "type": "string" },
+          "country": { "type": "string" },
+          "isDefault": { "type": "boolean" }
+        }
+      },
+      "Product": {
+        "type": "object",
+        "properties": {
+          "_id": { "type": "string" },
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "price": { "type": "number" },
+          "images": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "category": { "type": "string" },
+          "subcategory": { "type": "string" },
+          "brand": { "type": "string" },
+          "stock": { "type": "number" },
+          "seller": { "type": "string" },
+          "shop": { "type": "string" },
+          "rating": { "type": "number" },
+          "numReviews": { "type": "number" }
+        }
+      },
+      "OrderItem": {
+        "type": "object",
+        "properties": {
+          "product": { "type": "string" },
+          "name": { "type": "string" },
+          "quantity": { "type": "integer" },
+          "price": { "type": "number" },
+          "image": { "type": "string" },
+          "seller": { "type": "string" },
+          "shop": { "type": "string" }
+        }
+      },
+      "Order": {
+        "type": "object",
+        "properties": {
+          "_id": { "type": "string" },
+          "orderNumber": { "type": "string" },
+          "user": { "type": "string" },
+          "items": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/OrderItem" }
+          },
+          "shippingAddress": { "$ref": "#/components/schemas/Address" },
+          "paymentMethod": { "type": "string", "enum": ["COD", "Card", "PayPal"] },
+          "paymentStatus": { "type": "string" },
+          "subtotal": { "type": "number" },
+          "shippingCost": { "type": "number" },
+          "total": { "type": "number" },
+          "status": {
+            "type": "string",
+            "enum": ["pending", "confirmed", "processing", "shipped", "delivered", "cancelled"]
+          }
+        }
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "paths": {
+    "/": {
+      "get": {
+        "tags": ["Health"],
+        "summary": "Health check",
+        "responses": {
+          "200": {
+            "description": "API is running"
+          }
+        }
+      }
+    },
+    "/api/users/register": {
+      "post": {
+        "tags": ["Users"],
+        "summary": "Register a new user",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name", "email", "password"],
+                "properties": {
+                  "name": { "type": "string" },
+                  "email": { "type": "string", "format": "email" },
+                  "password": { "type": "string", "minLength": 6 },
+                  "role": { "type": "string", "enum": ["customer", "seller"] },
+                  "shopName": { "type": "string" },
+                  "shopDescription": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User created",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/User" }
+              }
+            }
+          },
+          "400": { "description": "User already exists or invalid data" }
+        }
+      }
+    },
+    "/api/users/login": {
+      "post": {
+        "tags": ["Users"],
+        "summary": "Login user and get JWT token",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "password"],
+                "properties": {
+                  "email": { "type": "string", "format": "email" },
+                  "password": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Authenticated user with token",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/User" }
+              }
+            }
+          },
+          "401": { "description": "Invalid credentials" }
+        }
+      }
+    },
+    "/api/users/profile": {
+      "get": {
+        "tags": ["Users"],
+        "summary": "Get current user profile",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "User profile",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/User" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" }
+        }
+      },
+      "put": {
+        "tags": ["Users"],
+        "summary": "Update current user profile",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "email": { "type": "string", "format": "email" },
+                  "phone": { "type": "string" },
+                  "avatar": { "type": "string" },
+                  "password": { "type": "string" },
+                  "shopName": { "type": "string" },
+                  "shopDescription": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated user",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/User" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" }
+        }
+      }
+    }
+  }
+}
+

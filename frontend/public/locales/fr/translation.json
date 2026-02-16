@@ -1,0 +1,181 @@
+{
+    "nav": {
+        "promo1": "Venez voir et n'achetez pas",
+        "promo2": "Vente en gros et en détail",
+        "promo3": "Prix Incroyables",
+        "promo4": "Livraison Partout en Tunisie 7/7",
+        "search_placeholder": "Rechercher des produits, des boutiques...",
+        "login": "Connexion",
+        "profile": "Profil",
+        "cart": "Panier",
+        "categories": {
+            "clothes": "Vêtements",
+            "electronics": "Électronique",
+            "home": "Maison & Déco",
+            "beauty": "Beauté",
+            "jewelry": "Bijoux",
+            "all_shops": "Toutes les boutiques"
+        },
+        "my_account": "Mon Compte",
+        "welcome": "Bienvenue !",
+        "logout": "Déconnexion"
+    },
+    "home": {
+        "hero": {
+            "badge": "MARCHÉ #1 EN TUNISIE 🇹🇳",
+            "title": "Achetez local,\nvendez global.",
+            "subtitle": "TerFer rassemble les meilleures boutiques de Tunisie. Trouvez tout ce dont vous avez besoin, de la mode à la technologie.",
+            "cta_buy": "Explorer la boutique",
+            "cta_sell": "Devenir Vendeur",
+            "discount_badge": "50% de réduction",
+            "discount_sub": "Sur la collection été"
+        },
+        "brands_title": "DES CENTAINES DE MARQUES NOUS FONT CONFIANCE",
+        "categories": {
+            "title": "Catégories Populaires",
+            "subtitle": "Explorez nos collections triées sur le volet"
+        },
+        "new_arrivals": {
+            "title": "Nouveautés",
+            "view_all": "Voir tout"
+        },
+        "benefits": {
+            "delivery_title": "Livraison Rapide",
+            "delivery_desc": "Partout en Tunisie sous 24-48h",
+            "quality_title": "Garantie Qualité",
+            "quality_desc": "Des vendeurs vérifiés et protection acheteur",
+            "payment_title": "Paiement Sécurisé",
+            "payment_desc": "En ligne ou à la livraison (Cash on Delivery)",
+            "service_title": "Service Client",
+            "service_desc": "Disponible 7j/7 pour vous aider"
+        },
+        "cta_seller": {
+            "title": "Prêt à développer votre entreprise ?",
+            "subtitle": "Rejoignez des milliers de vendeurs sur TerFer et touchez des clients dans toute la Tunisie dès aujourd'hui.",
+            "button": "Ouvrir ma boutique gratuitement"
+        }
+    },
+    "product": {
+        "add_to_cart": "Ajouter au panier",
+        "buy_now": "Acheter maintenant",
+        "description": "Description",
+        "reviews": "Avis clients",
+        "seller": "Vendeur",
+        "similar_products": "Produits similaires",
+        "select_size": "Sélectionner la taille",
+        "select_color": "Choix de couleur",
+        "quantity": "Quantité",
+        "delivery_info": "Livraison estimée : 2-3 jours",
+        "return_policy": "Retour gratuit sous 14 jours",
+        "stock": "En stock",
+        "out_of_stock": "Rupture de stock",
+        "likes": "J'aime",
+        "reviews_count": "avis",
+        "wholesale_price": "Prix de gros"
+    },
+    "cart": {
+        "item_added_success": "Ajouté au panier !",
+        "item_updated_success": "Quantité mise à jour !",
+        "item_removed_success": "Article supprimé",
+        "title": "Mon Panier",
+        "empty": "Votre panier est vide",
+        "start_shopping": "Commencer mes achats",
+        "sold_by": "Vendu par",
+        "remove": "Supprimer",
+        "subtotal": "Sous-total",
+        "shipping": "Livraison",
+        "free_shipping": "Gratuite",
+        "total": "Total",
+        "checkout": "Commander",
+        "continue_shopping": "Retourner à la boutique",
+        "secure_payment": "Paiement 100% Sécurisé"
+    },
+    "checkout": {
+        "title": "Finaliser la commande",
+        "contact_info": "Information de contact",
+        "shipping_address": "Adresse de livraison",
+        "payment_method": "Moyen de paiement",
+        "cod": "Paiement à la livraison",
+        "card": "Carte Bancaire",
+        "place_order": "Confirmer la commande",
+        "order_success": "Commande confirmée ! 🎉",
+        "order_success_msg": "Merci pour votre achat. Vous recevrez un email de confirmation bientôt.",
+        "back_home": "Retour à l'accueil",
+        "form": {
+            "email": "Adresse Email",
+            "first_name": "Prénom",
+            "last_name": "Nom",
+            "address": "Adresse",
+            "city": "Ville",
+            "phone": "Téléphone"
+        }
+    },
+    "profile": {
+        "title": "Mon Compte",
+        "orders": "Mes Commandes",
+        "wishlist": "Favoris",
+        "addresses": "Mes Adresses",
+        "logout": "Déconnexion",
+        "my_orders": "Historique des commandes",
+        "order_id": "N° Commande",
+        "order_date": "Date",
+        "order_total": "Total",
+        "invoice": "Facture",
+        "details": "Détails",
+        "my_wishlist": "Mes produits favoris",
+        "wishlist_empty": "Vous n'avez pas encore de favoris.",
+        "view_product": "Voir le produit"
+    },
+    "shop": {
+        "search_results": "Résultats pour",
+        "filters": "Filtres",
+        "categories": "Catégories",
+        "price": "Prix",
+        "rating": "Avis",
+        "sort_newest": "Nouveautés",
+        "sort_price_asc": "Prix croissant",
+        "sort_price_desc": "Prix décroissant",
+        "load_more": "Charger plus"
+    },
+    "auth": {
+        "login_title": "Bon retour !",
+        "register_title": "Créer un compte",
+        "email": "Adresse Email",
+        "password": "Mot de passe",
+        "name": "Nom complet",
+        "confirm_password": "Confirmer le mot de passe",
+        "login_button": "Se connecter",
+        "register_button": "S'inscrire",
+        "forgot_password": "Mot de passe oublié ?",
+        "no_account": "Pas encore de compte ?",
+        "have_account": "Déjà un compte ?",
+        "register_link": "Créer un compte",
+        "login_link": "Se connecter",
+        "seller_check": "Je souhaite vendre sur TerFer",
+        "login_success": "Connexion réussie ! 🎉",
+        "register_success": "Compte créé avec succès ! 🚀"
+    },
+    "footer": {
+        "about": "À propos",
+        "about_text": "TERFER est la première marketplace en Tunisie qui connecte les vendeurs locaux aux acheteurs passionnés.",
+        "links": "Liens Utiles",
+        "customer_service": "Service Client",
+        "contact": "Contactez-nous",
+        "rights": "Tous droits réservés.",
+        "newsletter": {
+            "title": "Restez informé",
+            "text": "Recevez nos dernières offres et nouveautés.",
+            "placeholder": "Votre email"
+        },
+        "quick_links": {
+            "top_sellers": "Top Vendeurs",
+            "new": "Nouveautés",
+            "promos": "Promotions",
+            "crafts": "Artisanat",
+            "help": "Centre d'aide",
+            "returns": "Retours & Remboursements",
+            "delivery": "Livraison",
+            "contact": "Contact"
+        }
+    }
+}
