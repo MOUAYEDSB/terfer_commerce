@@ -54,6 +54,8 @@ const products = [
         name: 'T-shirt Vintage Premium',
         description: 'T-shirt en coton bio, coupe vintage, disponible en plusieurs couleurs. Parfait pour un look décontracté et tendance.',
         price: 45,
+        oldPrice: 60,
+        wholesalePrice: 35,
         images: [
             'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
             'https://images.unsplash.com/photo-1503341504253-dff4815485f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
@@ -75,6 +77,8 @@ const products = [
         name: 'Casque Audio Pro',
         description: 'Casque audio sans fil avec réduction de bruit active, autonomie 30h, son haute fidélité.',
         price: 120,
+        oldPrice: 150,
+        wholesalePrice: 95,
         images: [
             'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
         ],
@@ -88,6 +92,8 @@ const products = [
         name: 'Lampe Bois Artisanale',
         description: 'Lampe de table en bois naturel, design minimaliste, fabriquée à la main par des artisans locaux.',
         price: 85,
+        oldPrice: 110,
+        wholesalePrice: 70,
         images: [
             'https://images.unsplash.com/photo-1513506003013-680c08528edc?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
         ],
@@ -101,6 +107,8 @@ const products = [
         name: 'Montre Classique',
         description: 'Montre élégante avec bracelet en cuir véritable, mouvement quartz, étanche 50m.',
         price: 250,
+        oldPrice: 320,
+        wholesalePrice: 200,
         images: [
             'https://images.unsplash.com/photo-1524592094714-0f0654e20314?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
         ],
@@ -114,6 +122,8 @@ const products = [
         name: 'Baskets Urbaines',
         description: 'Sneakers confortables pour un style urbain, semelle amortissante, design moderne.',
         price: 180,
+        oldPrice: 220,
+        wholesalePrice: 150,
         images: [
             'https://images.unsplash.com/photo-1542291026-7eec264c27ff?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
         ],
@@ -134,6 +144,8 @@ const products = [
         name: 'Plante d\'intérieur',
         description: 'Monstera Deliciosa en pot céramique, plante facile d\'entretien, purifie l\'air.',
         price: 35,
+        oldPrice: 45,
+        wholesalePrice: 28,
         images: [
             'https://images.unsplash.com/photo-1485955900006-10f4d324d411?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
         ],
@@ -147,6 +159,8 @@ const products = [
         name: 'Appareil Photo Retro',
         description: 'Appareil photo vintage remis à neuf, objectif 50mm, parfait pour la photographie argentique.',
         price: 450,
+        oldPrice: 520,
+        wholesalePrice: 380,
         images: [
             'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
         ],
@@ -160,6 +174,8 @@ const products = [
         name: 'Lunettes de Soleil',
         description: 'Lunettes de soleil polarisées, protection UV400, monture légère et résistante.',
         price: 60,
+        oldPrice: 75,
+        wholesalePrice: 48,
         images: [
             'https://images.unsplash.com/photo-1572635196237-14b3f281503f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
         ],

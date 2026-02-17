@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Star, ShoppingCart, Heart, Truck, RotateCcw, Minus, Plus, ChevronRight, Loader2 } from 'lucide-react';
+import { Star, ShoppingCart, Heart, Truck, RotateCcw, Minus, Plus, ChevronRight, Loader2, DollarSign, Tag, Briefcase, ChevronDown } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
-import { getColorHex } from '../constants/productConstants';
+import { getColorHex, getImgUrl } from '../constants/productConstants';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
@@ -24,6 +24,8 @@ const ProductPage = () => {
     const [selectedSize, setSelectedSize] = useState(null);
     const [quantity, setQuantity] = useState(1);
     const [activeTab, setActiveTab] = useState('description');
+    const [showFullDescription, setShowFullDescription] = useState(false);
+    const tabsRef = useRef(null);
 
     useEffect(() => {
         const fetchProduct = async () => {
@@ -108,10 +110,15 @@ const ProductPage = () => {
                     <div className="space-y-4">
                         <div className="aspect-square bg-gray-100 rounded-2xl overflow-hidden relative group">
                             <img
-                                src={product.images?.[selectedImage] || product.images?.[0]}
+                                src={getImgUrl(product.images?.[selectedImage] || product.images?.[0])}
                                 alt={product.name}
                                 className="w-full h-full object-cover transition duration-300"
                             />
+                            {product.oldPrice > 0 && (
+                                <div className="absolute top-4 left-4 bg-red-500 text-white px-3 py-2 rounded-lg font-bold text-sm shadow-lg">
+                                    -{Math.round(((product.oldPrice - product.price) / product.oldPrice) * 100)}%
+                                </div>
+                            )}
                             <button
                                 onClick={() => toggleWishlist({ ...product, id: product._id })}
                                 className={`absolute top-4 right-4 p-2 rounded-full shadow-md transition ${isInWishlist(product._id) ? 'bg-red-50 text-red-500' : 'bg-white text-gray-400 hover:text-red-500'}`}
@@ -127,7 +134,7 @@ const ProductPage = () => {
                                         onClick={() => setSelectedImage(idx)}
                                         className={`aspect-square rounded-xl overflow-hidden cursor-pointer border-2 transition ${selectedImage === idx ? 'border-primary' : 'border-transparent hover:border-gray-200'}`}
                                     >
-                                        <img src={img} alt="" className="w-full h-full object-cover" />
+                                        <img src={getImgUrl(img)} alt="" className="w-full h-full object-cover" />
                                     </div>
                                 ))}
                             </div>
@@ -155,21 +162,72 @@ const ProductPage = () => {
                             </span>
                         </div>
 
-                        {/* Price */}
+                        {/* Price Section */}
                         <div className="mb-8">
-                            <div className="flex items-end gap-3">
-                                <span className="text-4xl font-bold text-primary">{product.price} TND</span>
-                                {product.oldPrice > 0 && (
-                                    <>
-                                        <span className="text-xl text-gray-400 line-through mb-1">{product.oldPrice} TND</span>
-                                        <span className="text-xs bg-red-100 text-red-600 px-2 py-1 rounded font-bold mb-2">
-                                            -{Math.round(((product.oldPrice - product.price) / product.oldPrice) * 100)}%
-                                        </span>
-                                    </>
-                                )}
+                            {/* Main Price Display */}
+                            <div className="bg-gradient-to-br from-primary/15 via-transparent to-primary/5 p-6 rounded-2xl mb-4 border-2 border-primary/30 shadow-md hover:shadow-lg transition">
+                                <div className="flex items-center gap-10 flex-wrap">
+                                    {/* Current Price */}
+                                    <div className="flex flex-col">
+                                        <span className="text-xs tracking-widest text-primary font-bold uppercase mb-2 flex items-center gap-2"><DollarSign size={14} /> Prix actuel</span>
+                                        <div className="flex items-baseline gap-1">
+                                            <span className="text-4xl font-black text-primary">{product.price}</span>
+                                            <span className="text-sm text-gray-600 font-semibold">TND</span>
+                                        </div>
+                                    </div>
+                                    
+                                    {/* Old Price */}
+                                    {product.oldPrice && product.oldPrice > 0 && (
+                                        <div className="border-l-2 border-primary/30 pl-10 flex flex-col">
+                                            <span className="text-xs tracking-widest text-gray-500 font-bold uppercase mb-2 flex items-center gap-2"><Tag size={14} /> Ancien prix</span>
+                                            <p className="text-4xl text-gray-400 font-bold">{product.oldPrice} <span className="text-sm">TND</span></p>
+                                        </div>
+                                    )}
+                                    
+                                    {/* Wholesale Price */}
+                                    {product.wholesalePrice && product.wholesalePrice > 0 && (
+                                        <div className="bg-gradient-to-br from-blue-50 to-blue-100/50 px-5 py-4 rounded-xl border-2 border-blue-300 shadow-sm flex items-center gap-3">
+                                            <div>
+                                                <span className="text-xs tracking-widest text-blue-700 font-bold uppercase block mb-2 flex items-center gap-2"><Briefcase size={14} /> Prix en gros</span>
+                                                <div className="flex items-baseline gap-1">
+                                                    <span className="text-4xl font-black text-blue-600">{product.wholesalePrice}</span>
+                                                    <span className="text-sm text-blue-600 font-semibold">TND</span>
+                                                </div>
+                                            </div>
+                                            <div className="text-xs text-blue-700 font-semibold text-right whitespace-nowrap">
+                                                À partir de<br/>10 pièces
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
-                            <p className="text-green-600 text-sm mt-1 flex items-center gap-1">
-                                <Truck size={14} /> {t('product.delivery_info')}
+                            
+                            {/* Description Preview with Scroll Arrow */}
+                            <div className="mt-4">
+                                <p className="text-gray-600 text-base leading-relaxed inline">
+                                    {product.description || 'Aucune description disponible.'}
+                                    {' '}
+                                    <button
+                                        onClick={() => {
+                                            setActiveTab('description');
+                                            setTimeout(() => {
+                                                const element = tabsRef.current;
+                                                if (element) {
+                                                    const yOffset = -200;
+                                                    const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
+                                                    window.scrollTo({ top: y, behavior: 'smooth' });
+                                                }
+                                            }, 100);
+                                        }}
+                                        className="text-primary hover:text-primary/80 transition inline align-middle"
+                                    >
+                                        <ChevronDown size={20} />
+                                    </button>
+                                </p>
+                            </div>
+                            
+                            <p className="text-green-600 text-sm mt-3 flex items-center gap-1">
+                                <Truck size={14} /> Livraison estimee : 2-3 jours
                             </p>
                         </div>
 
@@ -265,7 +323,7 @@ const ProductPage = () => {
                 </div>
 
                 {/* Tabs Section (Desc, Reviews, etc) */}
-                <div className="mt-12 bg-white rounded-2xl shadow-sm p-6 md:p-10">
+                <div ref={tabsRef} className="mt-12 bg-white rounded-2xl shadow-sm p-6 md:p-10">
                     <div className="flex gap-8 border-b border-gray-200 mb-6 overflow-x-auto">
                         {['description', 'reviews', 'seller'].map((tab) => (
                             <button
@@ -280,15 +338,8 @@ const ProductPage = () => {
 
                     <div className="animate-fade-in">
                         {activeTab === 'description' && (
-                            <div className="prose max-w-none text-gray-600 leading-relaxed">
-                                <p>{product.description}</p>
-                                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
-                                <ul className="list-disc pl-5 mt-4 space-y-2">
-                                    <li>Matière respirante et durable</li>
-                                    <li>Coutures renforcées</li>
-                                    <li>Design unique et intemporel</li>
-                                    <li>Lavable en machine à 30°C</li>
-                                </ul>
+                            <div className="prose max-w-none text-gray-600 leading-relaxed whitespace-pre-line">
+                                {product.description || 'Aucune description disponible.'}
                             </div>
                         )}
                         {activeTab === 'reviews' && (

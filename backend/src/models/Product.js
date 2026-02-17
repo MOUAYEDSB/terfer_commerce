@@ -108,12 +108,11 @@ const productSchema = new mongoose.Schema({
     timestamps: true
 });
 
-// Recalculer stock total à partir des variantes avant sauvegarde
-productSchema.pre('save', function (next) {
+// Recalculer stock total a partir des variantes avant sauvegarde
+productSchema.pre('save', function () {
     if (this.variants && this.variants.length > 0) {
         this.stock = this.variants.reduce((sum, v) => sum + (v.quantity || 0), 0);
     }
-    next();
 });
 
 // Index pour la recherche
