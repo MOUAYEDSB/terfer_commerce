@@ -242,7 +242,7 @@ const HomePage = () => {
                                         </div>
                                         <div className="flex items-center justify-between mt-4">
                                             <div className="flex items-baseline gap-2">
-                                                <p className="text-xl font-bold text-primary">{(product.finalPrice || product.price)?.toFixed(2)} DZD</p>
+                                                <p className="text-xl font-bold text-primary">{(product.finalPrice || product.price)?.toFixed(2)} TND</p>
                                                 {product.oldPrice && product.oldPrice > 0 && (
                                                     <p className="text-xl text-gray-400 font-semibold line-through">{product.oldPrice} TND</p>
                                                 )}

@@ -245,7 +245,7 @@ const ProductPage = () => {
                                         <span className="text-xs tracking-widest text-primary font-bold uppercase mb-2 flex items-center gap-2"><DollarSign size={14} /> Prix actuel</span>
                                         <div className="flex items-baseline gap-1">
                                             <span className="text-3xl font-black text-primary">{(product.finalPrice || product.price)?.toFixed(2)}</span>
-                                            <span className="text-sm text-gray-600 font-semibold">DZD</span>
+                                            <span className="text-sm text-gray-600 font-semibold">TND</span>
                                         </div>
                                     </div>
                                     
@@ -264,7 +264,7 @@ const ProductPage = () => {
                                                 <span className="text-xs tracking-widest text-blue-700 font-bold uppercase block mb-2 flex items-center gap-2"><Briefcase size={14} /> Prix en gros</span>
                                                 <div className="flex items-baseline gap-1">
                                                     <span className="text-3xl font-black text-blue-600">{((product.wholesalePrice * 1.20) || product.wholesalePrice)?.toFixed(2)}</span>
-                                                    <span className="text-sm text-blue-600 font-semibold">DZD</span>
+                                                    <span className="text-sm text-blue-600 font-semibold">TND</span>
                                                 </div>
                                             </div>
                                             <div className="text-xs text-blue-700 font-semibold text-right whitespace-nowrap">
