@@ -244,7 +244,7 @@ const ProductPage = () => {
                                     <div className="flex flex-col">
                                         <span className="text-xs tracking-widest text-primary font-bold uppercase mb-2 flex items-center gap-2"><DollarSign size={14} /> Prix actuel</span>
                                         <div className="flex items-baseline gap-1">
-                                            <span className="text-4xl font-black text-primary">{(product.finalPrice || product.price)?.toFixed(2)}</span>
+                                            <span className="text-3xl font-black text-primary">{(product.finalPrice || product.price)?.toFixed(2)}</span>
                                             <span className="text-sm text-gray-600 font-semibold">DZD</span>
                                         </div>
                                     </div>
@@ -253,7 +253,7 @@ const ProductPage = () => {
                                     {product.oldPrice && product.oldPrice > 0 && (
                                         <div className="border-l-2 border-primary/30 pl-10 flex flex-col">
                                             <span className="text-xs tracking-widest text-gray-500 font-bold uppercase mb-2 flex items-center gap-2"><Tag size={14} /> Ancien prix</span>
-                                            <p className="text-4xl text-gray-400 font-bold line-through">{product.oldPrice} <span className="text-sm">TND</span></p>
+                                            <p className="text-3xl text-gray-400 font-bold line-through">{product.oldPrice} <span className="text-sm">TND</span></p>
                                         </div>
                                     )}
                                     
@@ -263,7 +263,7 @@ const ProductPage = () => {
                                             <div>
                                                 <span className="text-xs tracking-widest text-blue-700 font-bold uppercase block mb-2 flex items-center gap-2"><Briefcase size={14} /> Prix en gros</span>
                                                 <div className="flex items-baseline gap-1">
-                                                    <span className="text-4xl font-black text-blue-600">{((product.wholesalePrice * 1.20) || product.wholesalePrice)?.toFixed(2)}</span>
+                                                    <span className="text-3xl font-black text-blue-600">{((product.wholesalePrice * 1.20) || product.wholesalePrice)?.toFixed(2)}</span>
                                                     <span className="text-sm text-blue-600 font-semibold">DZD</span>
                                                 </div>
                                             </div>
