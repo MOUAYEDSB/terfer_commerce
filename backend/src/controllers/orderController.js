@@ -17,15 +17,51 @@ const createOrder = asyncHandler(async (req, res) => {
         throw new Error('No order items');
     }
 
-    // Calculate totals
-    const subtotal = items.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+    // Calculer les totaux avec commission de plateforme
+    let processedItems = [];
+    let subtotal = 0;
+
+    for (const item of items) {
+        const product = await Product.findById(item.product);
+        if (!product) {
+            res.status(404);
+            throw new Error(`Product ${item.product} not found`);
+        }
+
+        // Prix de base du vendeur
+        const sellerPrice = product.price;
+        
+        // Commission de la plateforme (20% par défaut)
+        const commissionRate = product.platformCommissionRate || 20;
+        const platformCommission = (sellerPrice * commissionRate) / 100;
+        
+        // Prix final pour le client (prix vendeur + commission)
+        const finalPrice = sellerPrice + platformCommission;
+        
+        // Total pour cet item
+        const itemTotal = finalPrice * item.quantity;
+        subtotal += itemTotal;
+
+        processedItems.push({
+            product: item.product,
+            name: product.name,
+            quantity: item.quantity,
+            price: finalPrice, // Prix final avec commission
+            sellerPrice: sellerPrice, // Prix que reçoit le vendeur
+            platformCommission: platformCommission * item.quantity, // Commission totale
+            image: product.images[0] || item.image,
+            seller: product.seller,
+            shop: product.shop
+        });
+    }
+
     const shippingCost = 7; // Fixed shipping cost
     const total = subtotal + shippingCost;
 
     // Create order
     const order = await Order.create({
         user: req.user._id,
-        items,
+        items: processedItems,
         shippingAddress,
         paymentMethod,
         subtotal,
@@ -39,7 +75,7 @@ const createOrder = asyncHandler(async (req, res) => {
     });
 
     // Update product stock
-    for (const item of items) {
+    for (const item of processedItems) {
         const product = await Product.findById(item.product);
         if (product) {
             product.stock -= item.quantity;

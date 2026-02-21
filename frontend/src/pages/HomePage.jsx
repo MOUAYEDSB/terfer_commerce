@@ -4,9 +4,10 @@ import { Link } from 'react-router-dom';
 import axios from 'axios';
 import BrandMarquee from '../components/BrandMarquee';
 import BenefitsSection from '../components/BenefitsSection';
-import { ArrowRight, Star } from 'lucide-react';
+import { ArrowRight, Star, Heart } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { getImgUrl } from '../constants/productConstants';
+import { useWishlist } from '../context/WishlistContext';
 
 const categories = [
     { name: "Mode", image: "https://images.unsplash.com/photo-1483985988355-763728e1935b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", count: "1.2k produits" },
@@ -25,6 +26,7 @@ const HomePage = () => {
     const [currentImageIndex, setCurrentImageIndex] = React.useState(0);
     const [products, setProducts] = React.useState([]);
     const [loading, setLoading] = React.useState(true);
+    const { toggleWishlist, isInWishlist } = useWishlist();
 
     const heroImages = [
         "https://images.unsplash.com/photo-1483985988355-763728e1935b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
@@ -211,6 +213,13 @@ const HomePage = () => {
                                         <Link to={`/product/${product._id}`} className="block h-full w-full">
                                             <img src={getImgUrl(product.images[0])} alt={product.name} className="w-full h-full object-cover group-hover:scale-110 transition duration-500" />
                                         </Link>
+                                        <button
+                                            onClick={() => toggleWishlist({ ...product, id: product._id })}
+                                            className={`absolute top-4 ${isRtl ? 'left-4' : 'right-4'} p-2 rounded-full shadow-md transition ${isInWishlist(product._id) ? 'bg-red-50 text-red-500' : 'bg-white text-gray-400 hover:text-red-500'}`}
+                                            aria-label="Ajouter aux favoris"
+                                        >
+                                            <Heart size={18} fill={isInWishlist(product._id) ? 'currentColor' : 'none'} />
+                                        </button>
                                         <button className={`absolute bottom-4 ${isRtl ? 'left-4' : 'right-4'} bg-white text-gray-900 p-3 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition duration-300 hover:bg-primary hover:text-white`}>
                                             <ArrowRight size={20} className={isRtl ? 'rotate-180' : ''} />
                                         </button>
@@ -232,7 +241,12 @@ const HomePage = () => {
                                             </div>
                                         </div>
                                         <div className="flex items-center justify-between mt-4">
-                                            <p className="text-xl font-bold text-primary">{product.price} TND</p>
+                                            <div className="flex items-baseline gap-2">
+                                                <p className="text-xl font-bold text-primary">{(product.finalPrice || product.price)?.toFixed(2)} DZD</p>
+                                                {product.oldPrice && product.oldPrice > 0 && (
+                                                    <p className="text-xl text-gray-400 font-semibold line-through">{product.oldPrice} TND</p>
+                                                )}
+                                            </div>
                                             <button className="text-sm font-semibold text-gray-900 border-b-2 border-gray-200 hover:border-gray-900 transition">
                                                 Ajouter
                                             </button>
@@ -251,6 +265,71 @@ const HomePage = () => {
 
             {/* Benefits Section */}
             <BenefitsSection />
+
+            {/* Wholesale + Retail Highlight */}
+            <section className="py-16 bg-white">
+                <div className="container mx-auto px-4">
+                    <div className="bg-gradient-to-r from-gray-900 to-gray-800 rounded-3xl p-10 md:p-14 text-white relative overflow-hidden">
+                        <div className="absolute -top-10 -right-10 w-48 h-48 bg-white/10 rounded-full"></div>
+                        <div className="absolute -bottom-12 -left-12 w-56 h-56 bg-white/5 rounded-full"></div>
+                        <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8">
+                            <div className="max-w-2xl">
+                                <p className="text-xs tracking-[0.3em] uppercase text-white/70 font-bold mb-3">Acheter malin</p>
+                                <h3 className="text-3xl md:text-4xl font-black mb-4">
+                                    Achetez en gros ou en detail, selon vos besoins
+                                </h3>
+                                <p className="text-white/80 text-lg leading-relaxed">
+                                    Profitez de prix competitifs pour les achats en gros, ou commandez a l'unite pour vos besoins quotidiens. Tout est reuni dans une seule boutique.
+                                </p>
+                            </div>
+                            <div className="flex gap-4">
+                                <Link to="/shop" className="bg-white text-gray-900 px-8 py-3 rounded-xl font-bold hover:bg-gray-100 transition shadow-lg">
+                                    Acheter en detail
+                                </Link>
+                                <Link to="/shop" className="border border-white/70 text-white px-8 py-3 rounded-xl font-bold hover:bg-white/10 transition">
+                                    Acheter en gros
+                                </Link>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* Site Promo */}
+            <section className="py-16 bg-gray-50">
+                <div className="container mx-auto px-4">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
+                        <div className="relative">
+                            <div className="absolute -top-6 -left-6 w-24 h-24 bg-primary/10 rounded-2xl"></div>
+                            <div className="absolute -bottom-6 -right-6 w-28 h-28 bg-gray-200/60 rounded-3xl"></div>
+                            <div className="relative overflow-hidden rounded-3xl shadow-2xl">
+                                <img
+                                    src="https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
+                                    alt="TerFer marketplace"
+                                    className="w-full h-full object-cover"
+                                />
+                            </div>
+                        </div>
+                        <div>
+                            <p className="text-xs tracking-[0.3em] uppercase text-gray-400 font-bold mb-3">TerFer Marketplace</p>
+                            <h3 className="text-3xl md:text-4xl font-black text-gray-900 mb-4">
+                                Le meilleur du commerce local, en un seul endroit
+                            </h3>
+                            <p className="text-gray-600 text-lg leading-relaxed mb-6">
+                                Decouvrez des vendeurs verifies, des offres exclusives et une experience d'achat rapide. TerFer connecte boutiques locales et clients exigeants.
+                            </p>
+                            <div className="flex flex-wrap gap-4">
+                                <Link to="/shop" className="bg-gray-900 text-white px-8 py-3 rounded-xl font-bold hover:bg-gray-800 transition shadow-lg">
+                                    Voir les offres
+                                </Link>
+                                <Link to="/register-seller" className="border border-gray-300 text-gray-900 px-8 py-3 rounded-xl font-bold hover:border-gray-900 transition">
+                                    Devenir vendeur
+                                </Link>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
             {/* CTA Section */}
             <section className="py-20 bg-primary text-white">

@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Filter, Grid, List as ListIcon, Star, Heart, ArrowRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useWishlist } from '../context/WishlistContext';
 
 import axios from 'axios';
 import { getImgUrl } from '../constants/productConstants';
@@ -18,6 +19,7 @@ const ShopPage = () => {
     const [priceRange, setPriceRange] = useState(1000);
     const [selectedCategories, setSelectedCategories] = useState([]);
     const [totalProducts, setTotalProducts] = useState(0);
+    const { toggleWishlist, isInWishlist } = useWishlist();
 
     // Initialize filters from URL and fetch products
     useEffect(() => {
@@ -188,15 +190,17 @@ const ShopPage = () => {
                                             <Link to={`/product/${product._id}`} className="block h-full w-full">
                                                 <img src={getImgUrl(product.images[0])} alt={product.name} className="w-full h-full object-cover group-hover:scale-110 transition duration-500" />
                                             </Link>
+                                            <button
+                                                onClick={() => toggleWishlist({ ...product, id: product._id })}
+                                                className={`absolute top-3 ${isRtl ? 'left-3' : 'right-3'} p-2 bg-white/90 backdrop-blur rounded-full shadow-md transition ${isInWishlist(product._id) ? 'text-red-500 bg-red-50' : 'text-gray-400 hover:text-red-500 hover:bg-white'}`}
+                                                aria-label="Ajouter aux favoris"
+                                            >
+                                                <Heart size={18} fill={isInWishlist(product._id) ? 'currentColor' : 'none'} />
+                                            </button>
                                             {viewMode === 'grid' && (
-                                                <>
-                                                    <button className={`absolute top-3 ${isRtl ? 'left-3' : 'right-3'} p-2 bg-white/80 backdrop-blur rounded-full text-gray-400 hover:text-red-500 hover:bg-white transition`}>
-                                                        <Heart size={18} />
-                                                    </button>
-                                                    <button className={`absolute bottom-4 ${isRtl ? 'left-4' : 'right-4'} bg-white text-gray-900 p-3 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition duration-300 hover:bg-primary hover:text-white`}>
-                                                        <ArrowRight size={20} className={isRtl ? 'rotate-180' : ''} />
-                                                    </button>
-                                                </>
+                                                <button className={`absolute bottom-4 ${isRtl ? 'left-4' : 'right-4'} bg-white text-gray-900 p-3 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition duration-300 hover:bg-primary hover:text-white`}>
+                                                    <ArrowRight size={20} className={isRtl ? 'rotate-180' : ''} />
+                                                </button>
                                             )}
                                         </div>
 

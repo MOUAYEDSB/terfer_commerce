@@ -2,34 +2,103 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, ArrowRight, CreditCard, Truck, CheckCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { getImgUrl } from '../constants/productConstants';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 const CheckoutPage = () => {
     const { t, i18n } = useTranslation();
     const isRtl = i18n.language === 'ar';
     const { cartItems, cartTotal, clearCart } = useCart();
+    const { user } = useAuth();
     const navigate = useNavigate();
 
     const [loading, setLoading] = useState(false);
     const [step, setStep] = useState('summary'); // summary, success
+    const [orderNumber, setOrderNumber] = useState('');
+
+    // Form state
+    const [formData, setFormData] = useState({
+        email: user?.email || '',
+        firstName: '',
+        lastName: '',
+        phone: user?.phone || '',
+        address: '',
+        city: '',
+        paymentMethod: 'COD'
+    });
 
     const shipping = cartItems.length > 0 ? 7 : 0;
     const total = cartTotal + shipping;
 
-    const handleSubmit = (e) => {
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
+
+        if (!user) {
+            toast.error('Veuillez vous connecter pour passer commande');
+            navigate('/login');
+            return;
+        }
+
         setLoading(true);
 
-        // Simulate API call
-        setTimeout(() => {
-            setLoading(false);
+        try {
+            const token = localStorage.getItem('token');
+            
+            const orderData = {
+                items: cartItems.map(item => ({
+                    product: item._id || item.id,
+                    name: item.name,
+                    quantity: item.quantity,
+                    price: item.price,
+                    image: item.images?.[0] || item.image || '',
+                    seller: item.seller?._id || item.seller,
+                    shop: item.shop || item.seller?.shopName || 'TerFer'
+                })),
+                shippingAddress: {
+                    fullName: `${formData.firstName} ${formData.lastName}`,
+                    phone: formData.phone,
+                    address: formData.address,
+                    city: formData.city
+                },
+                paymentMethod: formData.paymentMethod
+            };
+
+            const response = await fetch(`${API_URL}/api/orders`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(token ? { Authorization: `Bearer ${token}` } : {})
+                },
+                body: JSON.stringify(orderData)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.message || 'Erreur lors de la création de la commande');
+            }
+
+            const order = await response.json();
+            
+            setOrderNumber(order.orderNumber);
             setStep('success');
             clearCart();
-            toast.success(t('checkout.order_success'));
-        }, 2000);
+            toast.success('Commande passée avec succès !');
+        } catch (error) {
+            console.error('Checkout error:', error);
+            toast.error(error.message || 'Une erreur est survenue');
+        } finally {
+            setLoading(false);
+        }
     };
 
     if (cartItems.length === 0 && step !== 'success') {
@@ -49,10 +118,26 @@ const CheckoutPage = () => {
                         <CheckCircle size={40} className="text-green-500" />
                     </div>
                     <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('checkout.order_success')}</h2>
-                    <p className="text-gray-500 mb-8">{t('checkout.order_success_msg')}</p>
-                    <Link to="/" className="block w-full bg-primary text-white py-3 rounded-xl font-bold hover:bg-primary/90 transition">
-                        {t('checkout.back_home')}
-                    </Link>
+                    <p className="text-gray-500 mb-2">{t('checkout.order_success_msg')}</p>
+                    {orderNumber && (
+                        <div className="bg-gray-50 p-4 rounded-lg mb-6">
+                            <p className="text-xs text-gray-500 mb-1">Numéro de commande</p>
+                            <p className="text-lg font-bold text-primary">{orderNumber}</p>
+                        </div>
+                    )}
+                    <div className="flex flex-col gap-3">
+                        {orderNumber && (
+                            <Link 
+                                to={`/order/${orderNumber}`} 
+                                className="block w-full bg-primary text-white py-3 rounded-xl font-bold hover:bg-primary/90 transition"
+                            >
+                                Voir ma commande
+                            </Link>
+                        )}
+                        <Link to="/" className="block w-full border border-gray-300 text-gray-700 py-3 rounded-xl font-bold hover:bg-gray-50 transition">
+                            {t('checkout.back_home')}
+                        </Link>
+                    </div>
                 </div>
             </div>
         );
@@ -79,19 +164,47 @@ const CheckoutPage = () => {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="md:col-span-2">
                                         <label className="block text-sm font-medium text-gray-700 mb-1">{t('checkout.form.email')}</label>
-                                        <input type="email" required className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary" />
+                                        <input 
+                                            type="email" 
+                                            name="email"
+                                            value={formData.email}
+                                            onChange={handleInputChange}
+                                            required 
+                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary" 
+                                        />
                                     </div>
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">{t('checkout.form.first_name')}</label>
-                                        <input type="text" required className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary" />
+                                        <input 
+                                            type="text" 
+                                            name="firstName"
+                                            value={formData.firstName}
+                                            onChange={handleInputChange}
+                                            required 
+                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary" 
+                                        />
                                     </div>
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">{t('checkout.form.last_name')}</label>
-                                        <input type="text" required className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary" />
+                                        <input 
+                                            type="text" 
+                                            name="lastName"
+                                            value={formData.lastName}
+                                            onChange={handleInputChange}
+                                            required 
+                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary" 
+                                        />
                                     </div>
                                     <div className="md:col-span-2">
                                         <label className="block text-sm font-medium text-gray-700 mb-1">{t('checkout.form.phone')}</label>
-                                        <input type="tel" required className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary" />
+                                        <input 
+                                            type="tel" 
+                                            name="phone"
+                                            value={formData.phone}
+                                            onChange={handleInputChange}
+                                            required 
+                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary" 
+                                        />
                                     </div>
                                 </div>
                             </div>
@@ -102,11 +215,25 @@ const CheckoutPage = () => {
                                 <div className="space-y-4">
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">{t('checkout.form.address')}</label>
-                                        <input type="text" required className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary" />
+                                        <input 
+                                            type="text" 
+                                            name="address"
+                                            value={formData.address}
+                                            onChange={handleInputChange}
+                                            required 
+                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary" 
+                                        />
                                     </div>
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">{t('checkout.form.city')}</label>
-                                        <input type="text" required className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary" />
+                                        <input 
+                                            type="text" 
+                                            name="city"
+                                            value={formData.city}
+                                            onChange={handleInputChange}
+                                            required 
+                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary" 
+                                        />
                                     </div>
                                 </div>
                             </div>
@@ -116,14 +243,21 @@ const CheckoutPage = () => {
                                 <h2 className="text-xl font-bold text-gray-900 mb-4">{t('checkout.payment_method')}</h2>
                                 <div className="space-y-3">
                                     <label className="flex items-center p-4 border rounded-xl cursor-pointer hover:bg-gray-50 transition border-primary bg-primary/5">
-                                        <input type="radio" name="payment" defaultChecked className="h-5 w-5 text-primary focus:ring-primary" />
+                                        <input 
+                                            type="radio" 
+                                            name="paymentMethod" 
+                                            value="COD"
+                                            checked={formData.paymentMethod === 'COD'}
+                                            onChange={handleInputChange}
+                                            className="h-5 w-5 text-primary focus:ring-primary" 
+                                        />
                                         <div className="flex items-center gap-3 ml-3 rtl:mr-3 rtl:ml-0">
                                             <Truck className="text-gray-600" />
                                             <span className="font-medium text-gray-900">{t('checkout.cod')}</span>
                                         </div>
                                     </label>
                                     <label className="flex items-center p-4 border rounded-xl cursor-pointer hover:bg-gray-50 transition opacity-60">
-                                        <input type="radio" name="payment" disabled className="h-5 w-5 text-primary focus:ring-primary" />
+                                        <input type="radio" name="paymentMethod" value="Card" disabled className="h-5 w-5 text-primary focus:ring-primary" />
                                         <div className="flex items-center gap-3 ml-3 rtl:mr-3 rtl:ml-0">
                                             <CreditCard className="text-gray-600" />
                                             <span className="font-medium text-gray-900">{t('checkout.card')} (Bientôt)</span>

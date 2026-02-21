@@ -8,7 +8,6 @@ const orderSchema = new mongoose.Schema({
     },
     orderNumber: {
         type: String,
-        required: true,
         unique: true
     },
     items: [{
@@ -29,6 +28,15 @@ const orderSchema = new mongoose.Schema({
         price: {
             type: Number,
             required: true
+        },
+        sellerPrice: {
+            type: Number,
+            required: true,
+            default: function() { return this.price; }
+        },
+        platformCommission: {
+            type: Number,
+            default: 0
         },
         image: {
             type: String,

@@ -27,7 +27,9 @@ const LoginPage = () => {
         if (result.success) {
             toast.success(t('auth.login_success') || 'Connexion réussie !');
             // Redirect based on role
-            if (result.user.role === 'seller' || result.user.role === 'admin') {
+            if (result.user.role === 'admin') {
+                navigate('/admin/dashboard');
+            } else if (result.user.role === 'seller') {
                 navigate('/seller/dashboard');
             } else {
                 navigate('/');

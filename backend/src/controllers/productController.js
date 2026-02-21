@@ -19,7 +19,7 @@ const getProducts = asyncHandler(async (req, res) => {
         query.seller = seller;
     }
 
-    // Filter by price range
+    // Filter by price range - utiliser le prix de base du vendeur pour le filtre
     if (minPrice || maxPrice) {
         query.price = {};
         if (minPrice) query.price.$gte = Number(minPrice);
@@ -46,10 +46,22 @@ const getProducts = asyncHandler(async (req, res) => {
         .limit(Number(limit))
         .skip(skip);
 
+    // Ajouter le prix final (avec commission) pour chaque produit
+    const productsWithFinalPrice = products.map(product => {
+        const productObj = product.toObject();
+        const commissionRate = product.platformCommissionRate || 20;
+        productObj.finalPrice = product.price * (1 + commissionRate / 100);
+        if (product.wholesalePrice) {
+            productObj.finalWholesalePrice = product.wholesalePrice * (1 + commissionRate / 100);
+        }
+        productObj.displayPrice = productObj.finalPrice; // Alias pour faciliter l'affichage
+        return productObj;
+    });
+
     const total = await Product.countDocuments(query);
 
     res.json({
-        products,
+        products: productsWithFinalPrice,
         page: Number(page),
         pages: Math.ceil(total / limit),
         total
@@ -86,6 +98,16 @@ const getProductById = asyncHandler(async (req, res) => {
     }
 
     const productObj = product.toObject();
+    
+    // Ajouter le prix final avec commission
+    const commissionRate = product.platformCommissionRate || 20;
+    productObj.finalPrice = product.price * (1 + commissionRate / 100);
+    productObj.displayPrice = productObj.finalPrice;
+    productObj.platformCommission = product.price * (commissionRate / 100);
+    if (product.wholesalePrice) {
+        productObj.finalWholesalePrice = product.wholesalePrice * (1 + commissionRate / 100);
+    }
+    
     if (product.variants && product.variants.length > 0) {
         const { stockByColor, stockBySize } = computeStockByColorAndSize(product.variants);
         productObj.stockByColor = stockByColor;
@@ -117,7 +139,8 @@ const createProduct = asyncHandler(async (req, res) => {
         shop,
         colors,
         sizes,
-        variants
+        variants,
+        platformCommissionRate
     } = req.body;
 
     let finalStock = Number(stock) || 0;
@@ -141,10 +164,18 @@ const createProduct = asyncHandler(async (req, res) => {
         seller: req.user._id,
         colors: colors || [],
         sizes: sizes || [],
-        variants: finalVariants
+        variants: finalVariants,
+        platformCommissionRate: platformCommissionRate || 20
     });
 
     const productObj = product.toObject();
+    
+    // Ajouter le prix final avec commission
+    const commissionRate = product.platformCommissionRate || 20;
+    productObj.finalPrice = product.price * (1 + commissionRate / 100);
+    productObj.displayPrice = productObj.finalPrice;
+    productObj.platformCommission = product.price * (commissionRate / 100);
+    
     if (product.variants && product.variants.length > 0) {
         const { stockByColor, stockBySize } = computeStockByColorAndSize(product.variants);
         productObj.stockByColor = stockByColor;
@@ -185,6 +216,13 @@ const updateProduct = asyncHandler(async (req, res) => {
     );
 
     const productObj = updatedProduct.toObject();
+    
+    // Ajouter le prix final avec commission
+    const commissionRate = updatedProduct.platformCommissionRate || 20;
+    productObj.finalPrice = updatedProduct.price * (1 + commissionRate / 100);
+    productObj.displayPrice = productObj.finalPrice;
+    productObj.platformCommission = updatedProduct.price * (commissionRate / 100);
+    
     if (updatedProduct.variants && updatedProduct.variants.length > 0) {
         const { stockByColor, stockBySize } = computeStockByColorAndSize(updatedProduct.variants);
         productObj.stockByColor = stockByColor;

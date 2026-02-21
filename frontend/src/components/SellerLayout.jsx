@@ -62,8 +62,8 @@ const SellerLayout = ({ children }) => {
                     {/* User Info */}
                     <div className="mb-6 px-3 py-4 bg-gray-50 rounded-xl">
                         <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
-                                <span className="text-primary font-bold">{user?.name?.charAt(0) || 'S'}</span>
+                            <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
+                                <span className="text-primary font-bold text-lg">{user?.name?.charAt(0) || 'S'}</span>
                             </div>
                             <div className="flex-1 min-w-0">
                                 <p className="text-sm font-semibold text-gray-900 truncate">{user?.name}</p>
@@ -134,8 +134,8 @@ const SellerLayout = ({ children }) => {
                     {/* User Info */}
                     <div className="mb-6 px-3 py-4 bg-gray-50 rounded-xl">
                         <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
-                                <span className="text-primary font-bold">{user?.name?.charAt(0) || 'S'}</span>
+                            <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
+                                <span className="text-primary font-bold text-lg">{user?.name?.charAt(0) || 'S'}</span>
                             </div>
                             <div className="flex-1 min-w-0">
                                 <p className="text-sm font-semibold text-gray-900 truncate">{user?.name}</p>

@@ -23,6 +23,12 @@ const productSchema = new mongoose.Schema({
         type: Number,
         min: 0
     },
+    platformCommissionRate: {
+        type: Number,
+        default: 20, // 20% commission pour l'admin
+        min: 0,
+        max: 100
+    },
     images: [{
         type: String,
         required: true
@@ -108,12 +114,31 @@ const productSchema = new mongoose.Schema({
     timestamps: true
 });
 
+// Virtual pour le prix final avec commission (prix affiché au client)
+productSchema.virtual('finalPrice').get(function() {
+    return this.price * (1 + this.platformCommissionRate / 100);
+});
+
+// Virtual pour la commission de la plateforme
+productSchema.virtual('platformCommission').get(function() {
+    return this.price * (this.platformCommissionRate / 100);
+});
+
+// Virtual pour le prix que reçoit le vendeur
+productSchema.virtual('sellerEarnings').get(function() {
+    return this.price;
+});
+
 // Recalculer stock total a partir des variantes avant sauvegarde
 productSchema.pre('save', function () {
     if (this.variants && this.variants.length > 0) {
         this.stock = this.variants.reduce((sum, v) => sum + (v.quantity || 0), 0);
     }
 });
+
+// Inclure les virtuals dans toJSON et toObject
+productSchema.set('toJSON', { virtuals: true });
+productSchema.set('toObject', { virtuals: true });
 
 // Index pour la recherche
 productSchema.index({ name: 'text', description: 'text' });

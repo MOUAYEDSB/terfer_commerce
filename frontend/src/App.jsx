@@ -21,12 +21,24 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import SellerDashboardPage from './pages/SellerDashboardPage';
 import SellerProductsPage from './pages/SellerProductsPage';
+import SellerOrdersPage from './pages/SellerOrdersPage';
+import SellerAnalyticsPage from './pages/SellerAnalyticsPage';
+import SellerSettingsPage from './pages/SellerSettingsPage';
 import AddProductPage from './pages/AddProductPage';
+import AdminDashboardPage from './pages/AdminDashboardPage';
+import AdminUsersPage from './pages/AdminUsersPage';
+import AdminSellersPage from './pages/AdminSellersPage';
+import AdminProductsPage from './pages/AdminProductsPage';
+import AdminOrdersPage from './pages/AdminOrdersPage';
+import AdminEarningsPage from './pages/AdminEarningsPage';
+import AdminCreateSellerPage from './pages/AdminCreateSellerPage';
+import AdminCreateCustomerPage from './pages/AdminCreateCustomerPage';
 
 import { CartProvider } from './context/CartContext';
 import { WishlistProvider } from './context/WishlistContext';
 import { AuthProvider } from './context/AuthContext';
 import { Toaster } from 'react-hot-toast';
+import ProtectedRoute from './components/ProtectedRoute';
 
 const App = () => {
     return (
@@ -36,16 +48,34 @@ const App = () => {
                     <Router>
                         <Toaster position="top-center" reverseOrder={false} />
                         <Routes>
-                            {/* Seller/Admin Routes - Without Navbar/Footer */}
+                            {/* Admin Routes - Without Navbar/Footer */}
+                            <Route path="/admin/*" element={
+                                <ProtectedRoute allowedRoles={['admin']}>
+                                    <Routes>
+                                        <Route path="dashboard" element={<AdminDashboardPage />} />
+                                        <Route path="users" element={<AdminUsersPage />} />
+                                        <Route path="users/create-customer" element={<AdminCreateCustomerPage />} />
+                                        <Route path="sellers" element={<AdminSellersPage />} />
+                                        <Route path="sellers/create" element={<AdminCreateSellerPage />} />
+                                        <Route path="products" element={<AdminProductsPage />} />
+                                        <Route path="orders" element={<AdminOrdersPage />} />
+                                        <Route path="earnings" element={<AdminEarningsPage />} />
+                                    </Routes>
+                                </ProtectedRoute>
+                            } />
+
+                            {/* Seller Routes - Without Navbar/Footer */}
                             <Route path="/seller/*" element={
-                                <Routes>
-                                    <Route path="dashboard" element={<SellerDashboardPage />} />
-                                    <Route path="products" element={<SellerProductsPage />} />
-                                    <Route path="products/new" element={<AddProductPage />} />
-                                    <Route path="orders" element={<SellerDashboardPage />} />
-                                    <Route path="analytics" element={<SellerDashboardPage />} />
-                                    <Route path="settings" element={<SellerDashboardPage />} />
-                                </Routes>
+                                <ProtectedRoute allowedRoles={['seller']}>
+                                    <Routes>
+                                        <Route path="dashboard" element={<SellerDashboardPage />} />
+                                        <Route path="products" element={<SellerProductsPage />} />
+                                        <Route path="products/new" element={<AddProductPage />} />
+                                        <Route path="orders" element={<SellerOrdersPage />} />
+                                        <Route path="analytics" element={<SellerAnalyticsPage />} />
+                                        <Route path="settings" element={<SellerSettingsPage />} />
+                                    </Routes>
+                                </ProtectedRoute>
                             } />
 
                             {/* Public Routes - With Navbar/Footer */}
