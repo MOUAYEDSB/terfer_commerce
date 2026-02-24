@@ -10,14 +10,14 @@ import { getImgUrl } from '../constants/productConstants';
 import { useWishlist } from '../context/WishlistContext';
 
 const categories = [
-    { name: "Mode", image: "https://images.unsplash.com/photo-1483985988355-763728e1935b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", count: "1.2k produits" },
-    { name: "Maison & Déco", image: "https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", count: "850 produits" },
-    { name: "High-Tech", image: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", count: "500 produits" },
-    { name: "Beauté", image: "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", count: "320 produits" },
-    { name: "Sport", image: "https://images.unsplash.com/photo-1517649763962-0c623066013b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", count: "450 produits" },
-    { name: "Enfants", image: "https://images.unsplash.com/photo-1519689680058-324335c77eba?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", count: "210 produits" },
-    { name: "Auto", image: "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", count: "150 produits" },
-    { name: "Animaux", image: "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", count: "180 produits" }
+    { name: "Mode", image: "https://images.unsplash.com/photo-1483985988355-763728e1935b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", count: "1.2k" },
+    { name: "Maison & Déco", image: "https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", count: "850" },
+    { name: "High-Tech", image: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", count: "500" },
+    { name: "Beauté", image: "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", count: "320" },
+    { name: "Sport", image: "https://images.unsplash.com/photo-1517649763962-0c623066013b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", count: "450" },
+    { name: "Enfants", image: "https://images.unsplash.com/photo-1519689680058-324335c77eba?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", count: "210" },
+    { name: "Auto", image: "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", count: "150" },
+    { name: "Animaux", image: "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", count: "180" }
 ];
 
 const HomePage = () => {
@@ -68,21 +68,20 @@ const HomePage = () => {
                 <div className="container mx-auto px-4 flex flex-col lg:flex-row items-center relative z-10 gap-12">
                     <div className="w-full lg:w-1/2 text-center lg:text-left lg:rtl:text-right lg:-mt-32">
                         <div className="inline-flex items-center gap-2 py-1.5 px-4 rounded-full bg-gray-100 mb-8">
-                            <span className="text-[10px] font-bold text-gray-400 tracking-[0.2em] uppercase">VOTRE CENTRE SHOPPING UNIQUE</span>
+                            <span className="text-[10px] font-bold text-gray-400 tracking-[0.2em] uppercase">{t('home.hero.badge')}</span>
                         </div>
 
                         <h1 className="text-4xl md:text-6xl lg:text-7xl font-black text-gray-900 leading-tight mb-8 tracking-tighter uppercase whitespace-nowrap">
-                            L'Espace <span className="text-blue-600">Ter</span>Fer
+                            {t('home.hero.title')}
                         </h1>
 
                         <p className="text-lg md:text-xl text-gray-500 mb-10 max-w-lg mx-auto lg:mx-0 leading-relaxed font-medium">
-                            Retrouvez toutes vos boutiques préférées réunies en un seul endroit.
-                            Qualité, choix et proximité au cœur de TerFer.
+                            {t('home.hero.subtitle')}
                         </p>
 
                         <div className="flex flex-col sm:flex-row justify-center lg:justify-start gap-4">
                             <Link to="/shop" className="group bg-gray-900 text-white px-10 py-4 rounded-xl font-bold text-sm uppercase tracking-widest hover:bg-blue-600 transition-all flex items-center justify-center gap-3 shadow-lg">
-                                Explorer les boutiques
+                                {t('home.hero.cta_buy')}
                                 <ArrowRight size={18} className={`transition-transform duration-300 group-hover:translate-x-2 ${isRtl ? 'rotate-180' : ''}`} />
                             </Link>
                         </div>
@@ -123,7 +122,7 @@ const HomePage = () => {
                                     </div>
                                     <div>
                                         <p className="font-bold text-gray-900">4.9/5</p>
-                                        <p className="text-xs text-gray-500">Note Clients</p>
+                                        <p className="text-xs text-gray-500">{t('home.hero.rating')}</p>
                                     </div>
                                 </div>
                             </div>
@@ -134,8 +133,8 @@ const HomePage = () => {
                                         <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80" alt="Shoe" className="w-full h-full object-cover" />
                                     </div>
                                     <div>
-                                        <p className="font-bold text-gray-900 text-sm">Nouvelle Collection</p>
-                                        <p className="text-xs text-primary font-bold">Disponible maintenant</p>
+                                        <p className="font-bold text-gray-900 text-sm">{t('home.hero.new_collection')}</p>
+                                        <p className="text-xs text-primary font-bold">{t('home.hero.available_now')}</p>
                                     </div>
                                 </div>
                             </div>
@@ -166,7 +165,7 @@ const HomePage = () => {
                                 <div className="absolute inset-0 bg-gray-200">
                                     <img
                                         src={cat.image}
-                                        alt={cat.name}
+                                        alt={t(`home.categories.${cat.name}`) || cat.name}
                                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                                     />
                                     {/* Gradient Overlay - Always visible but stronger on hover */}
@@ -175,10 +174,10 @@ const HomePage = () => {
 
                                 {/* Content */}
                                 <div className="absolute bottom-0 left-0 w-full p-6 text-white translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
-                                    <h3 className="text-2xl font-bold mb-1 tracking-tight">{cat.name}</h3>
+                                    <h3 className="text-2xl font-bold mb-1 tracking-tight">{t(`home.categories.${cat.name}`) || cat.name}</h3>
                                     <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-100">
                                         <span className="w-8 h-0.5 bg-primary"></span>
-                                        <p className="text-sm font-medium text-gray-200">{cat.count}</p>
+                                        <p className="text-sm font-medium text-gray-200">{cat.count} {t('home.categories.products')}</p>
                                     </div>
                                 </div>
                             </Link>
@@ -248,7 +247,7 @@ const HomePage = () => {
                                                 )}
                                             </div>
                                             <button className="text-sm font-semibold text-gray-900 border-b-2 border-gray-200 hover:border-gray-900 transition">
-                                                Ajouter
+                                                {t('home.new_arrivals.add')}
                                             </button>
                                         </div>
                                     </div>
@@ -256,7 +255,7 @@ const HomePage = () => {
                             ))
                         ) : (
                             <div className="col-span-full text-center py-10">
-                                <p className="text-gray-500">Aucun produit trouvé</p>
+                                <p className="text-gray-500">{t('home.new_arrivals.no_products')}</p>
                             </div>
                         )}
                     </div>
@@ -274,20 +273,20 @@ const HomePage = () => {
                         <div className="absolute -bottom-12 -left-12 w-56 h-56 bg-white/5 rounded-full"></div>
                         <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8">
                             <div className="max-w-2xl">
-                                <p className="text-xs tracking-[0.3em] uppercase text-white/70 font-bold mb-3">Acheter malin</p>
+                                <p className="text-xs tracking-[0.3em] uppercase text-white/70 font-bold mb-3">{t('home.wholesale.badge')}</p>
                                 <h3 className="text-3xl md:text-4xl font-black mb-4">
-                                    Achetez en gros ou en detail, selon vos besoins
+                                    {t('home.wholesale.title')}
                                 </h3>
                                 <p className="text-white/80 text-lg leading-relaxed">
-                                    Profitez de prix competitifs pour les achats en gros, ou commandez a l'unite pour vos besoins quotidiens. Tout est reuni dans une seule boutique.
+                                    {t('home.wholesale.subtitle')}
                                 </p>
                             </div>
                             <div className="flex gap-4">
                                 <Link to="/shop" className="bg-white text-gray-900 px-8 py-3 rounded-xl font-bold hover:bg-gray-100 transition shadow-lg">
-                                    Acheter en detail
+                                    {t('home.wholesale.cta_retail')}
                                 </Link>
                                 <Link to="/shop" className="border border-white/70 text-white px-8 py-3 rounded-xl font-bold hover:bg-white/10 transition">
-                                    Acheter en gros
+                                    {t('home.wholesale.cta_wholesale')}
                                 </Link>
                             </div>
                         </div>
@@ -311,19 +310,19 @@ const HomePage = () => {
                             </div>
                         </div>
                         <div>
-                            <p className="text-xs tracking-[0.3em] uppercase text-gray-400 font-bold mb-3">TerFer Marketplace</p>
+                            <p className="text-xs tracking-[0.3em] uppercase text-gray-400 font-bold mb-3">{t('home.marketplace.badge')}</p>
                             <h3 className="text-3xl md:text-4xl font-black text-gray-900 mb-4">
-                                Le meilleur du commerce local, en un seul endroit
+                                {t('home.marketplace.title')}
                             </h3>
                             <p className="text-gray-600 text-lg leading-relaxed mb-6">
-                                Decouvrez des vendeurs verifies, des offres exclusives et une experience d'achat rapide. TerFer connecte boutiques locales et clients exigeants.
+                                {t('home.marketplace.subtitle')}
                             </p>
                             <div className="flex flex-wrap gap-4">
                                 <Link to="/shop" className="bg-gray-900 text-white px-8 py-3 rounded-xl font-bold hover:bg-gray-800 transition shadow-lg">
-                                    Voir les offres
+                                    {t('home.marketplace.cta_offers')}
                                 </Link>
                                 <Link to="/register-seller" className="border border-gray-300 text-gray-900 px-8 py-3 rounded-xl font-bold hover:border-gray-900 transition">
-                                    Devenir vendeur
+                                    {t('home.marketplace.cta_seller')}
                                 </Link>
                             </div>
                         </div>

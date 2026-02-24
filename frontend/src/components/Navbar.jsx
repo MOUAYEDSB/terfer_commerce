@@ -90,7 +90,7 @@ const Navbar = () => {
                             <div className="absolute right-0 top-full mt-2 w-32 bg-white shadow-xl rounded-xl py-2 hidden group-hover:block border border-gray-100 animate-fade-in z-50">
                                 <button onClick={() => changeLanguage('fr')} className="block w-full text-left px-4 py-2 hover:bg-gray-50 text-sm font-semibold">Français</button>
                                 <button onClick={() => changeLanguage('en')} className="block w-full text-left px-4 py-2 hover:bg-gray-50 text-sm font-semibold">English</button>
-                                <button onClick={() => changeLanguage('ar')} className="block w-full text-left px-4 py-2 hover:bg-gray-50 text-sm font-semibold">Tunisien</button>
+                                <button onClick={() => changeLanguage('ar')} className="block w-full text-left px-4 py-2 hover:bg-gray-50 text-sm font-semibold">العربية</button>
                             </div>
                         </div>
 
@@ -160,7 +160,7 @@ const Navbar = () => {
                 <div className="mt-4 md:hidden relative">
                     <input
                         type="text"
-                        placeholder="Rechercher..."
+                        placeholder={t('nav.search_placeholder')}
                         className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600/20 text-sm font-medium"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
@@ -190,9 +190,9 @@ const Navbar = () => {
                             { name: 'Maison', label: t('nav.categories.home') },
                             { name: 'Beauté', label: t('nav.categories.beauty') },
                             { name: 'Bijoux', label: t('nav.categories.jewelry') },
-                            { name: 'Sport', label: 'Sport' },
-                            { name: 'Auto', label: 'Auto' },
-                            { name: 'Animaux', label: 'Animaux' }
+                            { name: 'Sport', label: t('nav.categories.sport') },
+                            { name: 'Auto', label: t('nav.categories.auto') },
+                            { name: 'Animaux', label: t('nav.categories.pets') }
                         ].map((cat) => (
                             <li key={cat.name}>
                                 <Link to={`/shop?category=${cat.name}`} className={`px-4 py-1.5 rounded-full bg-white border border-gray-200 text-gray-600 text-[11px] font-bold uppercase tracking-tight hover:border-blue-600 transition-all flex items-center gap-1.5 whitespace-nowrap shadow-sm hover:shadow-md`}>

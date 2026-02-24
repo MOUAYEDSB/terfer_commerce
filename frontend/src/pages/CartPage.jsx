@@ -21,9 +21,9 @@ const CartPage = () => {
                 <div className="bg-gray-100 p-6 rounded-full mb-6">
                     <ShoppingBag size={64} className="text-gray-400" />
                 </div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('cart.empty')}</h2>
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('cart.empty')}</ h2>
                 <p className="text-gray-500 mb-8 max-w-md">
-                    Il semble que vous n'ayez encore rien ajouté. Explorez nos catégories pour trouver votre bonheur !
+                    {t('cart.empty_desc')}
                 </p>
                 <Link to="/shop" className="bg-primary text-white px-8 py-3 rounded-full font-bold hover:bg-primary/90 transition shadow-lg hover:shadow-primary/30 flex items-center gap-2">
                     {t('cart.start_shopping')} <ArrowRight size={20} className={isRtl ? 'rotate-180' : ''} />
@@ -54,7 +54,7 @@ const CartPage = () => {
                                             <div>
                                                 <h3 className="text-lg font-bold text-gray-900 line-clamp-1">{item.name}</h3>
                                                 <p className="text-xs text-gray-400 line-clamp-1 mb-1">{item.description}</p>
-                                                <p className="text-sm text-gray-500">{t('cart.sold_by')} <Link to={`/shop/${item.seller?.id || 1}`} className="text-primary hover:underline">{item.seller?.name || item.shop || "Vendeur"}</Link></p>
+                                                <p className="text-sm text-gray-500">{t('cart.sold_by')} <Link to={`/shop/${item.seller?.id || 1}`} className="text-primary hover:underline">{item.seller?.name || item.shop || t('cart.seller_default')}</Link></p>
                                             </div>
                                             <button
                                                 onClick={() => removeFromCart(item.id, { selectedColor: item.selectedColor, selectedSize: item.selectedSize })}
@@ -67,12 +67,12 @@ const CartPage = () => {
                                         <div className="flex flex-wrap gap-2 mb-4">
                                             {item.selectedSize && (
                                                 <span className="text-xs font-semibold bg-gray-100 text-gray-600 px-2 py-1 rounded">
-                                                    Taille: {item.selectedSize}
+                                                    {t('cart.size')}: {item.selectedSize}
                                                 </span>
                                             )}
                                             {item.selectedColor && (
                                                 <span className="text-xs font-semibold bg-gray-100 text-gray-600 px-2 py-1 rounded flex items-center gap-1">
-                                                    Couleur: <div className="w-3 h-3 rounded-full border border-gray-300" style={{ backgroundColor: item.selectedColor }}></div>
+                                                    {t('cart.color')}: <div className="w-3 h-3 rounded-full border border-gray-300" style={{ backgroundColor: item.selectedColor }}></div>
                                                 </span>
                                             )}
                                         </div>

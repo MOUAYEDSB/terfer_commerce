@@ -1,4 +1,4 @@
-update red# TerFer Commerce - Multi-Vendor E-Commerce Platform
+update red+++++++++++++# TerFer Commerce - Multi-Vendor E-Commerce Platform
 
 A modern, full-featured e-commerce platform built with React and Node.js that enables multiple sellers to manage their online stores with complete admin oversight and 20% platform commission system.
 

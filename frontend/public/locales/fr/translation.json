@@ -14,6 +14,9 @@
             "home": "Maison & Déco",
             "beauty": "Beauté",
             "jewelry": "Bijoux",
+            "sport": "Sport",
+            "auto": "Auto",
+            "pets": "Animaux",
             "all_shops": "Toutes les boutiques"
         },
         "my_account": "Mon Compte",
@@ -22,22 +25,33 @@
     },
     "home": {
         "hero": {
-            "badge": "MARCHÉ #1 EN TUNISIE 🇹🇳",
-            "title": "Achetez local,\nvendez global.",
-            "subtitle": "TerFer rassemble les meilleures boutiques de Tunisie. Trouvez tout ce dont vous avez besoin, de la mode à la technologie.",
-            "cta_buy": "Explorer la boutique",
-            "cta_sell": "Devenir Vendeur",
-            "discount_badge": "50% de réduction",
-            "discount_sub": "Sur la collection été"
+            "badge": "VOTRE CENTRE SHOPPING UNIQUE",
+            "title": "L'Espace TerFer",
+            "subtitle": "Retrouvez toutes vos boutiques préférées réunies en un seul endroit. Qualité, choix et proximité au cœur de TerFer.",
+            "cta_buy": "Explorer les boutiques",
+            "rating": "Note Clients",
+            "new_collection": "Nouvelle Collection",
+            "available_now": "Disponible maintenant"
         },
         "brands_title": "DES CENTAINES DE MARQUES NOUS FONT CONFIANCE",
         "categories": {
             "title": "Catégories Populaires",
-            "subtitle": "Explorez nos collections triées sur le volet"
+            "subtitle": "Explorez nos collections triées sur le volet",
+            "Mode": "Mode",
+            "Maison & Déco": "Maison & Déco",
+            "High-Tech": "High-Tech",
+            "Beauté": "Beauté",
+            "Sport": "Sport",
+            "Enfants": "Enfants",
+            "Auto": "Auto",
+            "Animaux": "Animaux",
+            "products": "produits"
         },
         "new_arrivals": {
             "title": "Nouveautés",
-            "view_all": "Voir tout"
+            "view_all": "Voir tout",
+            "add": "Ajouter",
+            "no_products": "Aucun produit trouvé"
         },
         "benefits": {
             "delivery_title": "Livraison Rapide",
@@ -48,6 +62,20 @@
             "payment_desc": "En ligne ou à la livraison (Cash on Delivery)",
             "service_title": "Service Client",
             "service_desc": "Disponible 7j/7 pour vous aider"
+        },
+        "wholesale": {
+            "badge": "Acheter malin",
+            "title": "Achetez en gros ou en détail, selon vos besoins",
+            "subtitle": "Profitez de prix compétitifs pour les achats en gros, ou commandez à l'unité pour vos besoins quotidiens. Tout est réuni dans une seule boutique.",
+            "cta_retail": "Acheter en détail",
+            "cta_wholesale": "Acheter en gros"
+        },
+        "marketplace": {
+            "badge": "TerFer Marketplace",
+            "title": "Le meilleur du commerce local, en un seul endroit",
+            "subtitle": "Découvrez des vendeurs vérifiés, des offres exclusives et une expérience d'achat rapide. TerFer connecte boutiques locales et clients exigeants.",
+            "cta_offers": "Voir les offres",
+            "cta_seller": "Devenir vendeur"
         },
         "cta_seller": {
             "title": "Prêt à développer votre entreprise ?",
@@ -79,9 +107,13 @@
         "item_removed_success": "Article supprimé",
         "title": "Mon Panier",
         "empty": "Votre panier est vide",
+        "empty_desc": "Il semble que vous n'ayez encore rien ajouté. Explorez nos catégories pour trouver votre bonheur !",
         "start_shopping": "Commencer mes achats",
         "sold_by": "Vendu par",
+        "seller_default": "Vendeur",
         "remove": "Supprimer",
+        "size": "Taille",
+        "color": "Couleur",
         "subtotal": "Sous-total",
         "shipping": "Livraison",
         "free_shipping": "Gratuite",
@@ -162,6 +194,9 @@
         "customer_service": "Service Client",
         "contact": "Contactez-nous",
         "rights": "Tous droits réservés.",
+        "privacy": "Confidentialité",
+        "terms": "Conditions",
+        "cookies": "Cookies",
         "newsletter": {
             "title": "Restez informé",
             "text": "Recevez nos dernières offres et nouveautés.",
