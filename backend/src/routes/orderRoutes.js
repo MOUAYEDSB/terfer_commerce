@@ -11,9 +11,10 @@ const {
     getSellerOrders
 } = require('../controllers/orderController');
 const { protect, seller, admin } = require('../middleware/authMiddleware');
+const validateOrderStock = require('../middleware/validateStockMiddleware');
 
 // Protected routes
-router.post('/', protect, createOrder);
+router.post('/', protect, validateOrderStock, createOrder);
 router.get('/myorders', protect, getMyOrders);
 router.get('/seller/myorders', protect, seller, getSellerOrders);
 router.get('/all', protect, admin, getAllOrders);

@@ -1,10 +1,20 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Mail, Lock, User, Eye, EyeOff, ArrowRight, Store } from 'lucide-react';
+import { Mail, Lock, User, Eye, EyeOff, ArrowRight, Store, CheckCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
+
+// Helper component for password requirements
+const PasswordRequirement = ({ met, text }) => (
+    <div className="flex items-center gap-2">
+        <div className={`w-4 h-4 rounded-full flex items-center justify-center ${met ? 'bg-green-500' : 'bg-gray-300'}`}>
+            {met && <CheckCircle size={12} className="text-white" />}
+        </div>
+        <span className={`text-xs ${met ? 'text-green-700' : 'text-gray-600'}`}>{text}</span>
+    </div>
+);
 
 const RegisterPage = () => {
     const { t, i18n } = useTranslation();
@@ -20,8 +30,36 @@ const RegisterPage = () => {
     const [isSeller, setIsSeller] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 
+    // Password strength validation
+    const [passwordStrength, setPasswordStrength] = useState({
+        minLength: false,
+        hasUpperCase: false,
+        hasLowerCase: false,
+        hasNumber: false,
+        hasSpecialChar: false,
+    });
+
+    useEffect(() => {
+        // Update password strength
+        setPasswordStrength({
+            minLength: password.length >= 8,
+            hasUpperCase: /[A-Z]/.test(password),
+            hasLowerCase: /[a-z]/.test(password),
+            hasNumber: /\d/.test(password),
+            hasSpecialChar: /[@$!%*?&]/.test(password),
+        });
+    }, [password]);
+
+    const isPasswordValid = Object.values(passwordStrength).every(Boolean);
+
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        if (!isPasswordValid) {
+            toast.error(t('auth.password_requirements_error') || 'Le mot de passe ne respecte pas les critères requis');
+            return;
+        }
+
         setIsLoading(true);
 
         const userData = {
@@ -113,6 +151,20 @@ const RegisterPage = () => {
                                 </button>
                             </div>
                         </div>
+
+                        {/* Password Strength Indicator */}
+                        {password && (
+                            <div className="bg-gray-50 rounded-lg p-4 space-y-2 animate-slide-down">
+                                <p className="text-xs font-semibold text-gray-700 mb-2">
+                                    {t('auth.password_requirements') || 'Le mot de passe doit contenir :'}
+                                </p>
+                                <PasswordRequirement met={passwordStrength.minLength} text={t('auth.min_8_chars') || 'Au moins 8 caractères'} />
+                                <PasswordRequirement met={passwordStrength.hasUpperCase} text={t('auth.uppercase') || 'Une lettre majuscule'} />
+                                <PasswordRequirement met={passwordStrength.hasLowerCase} text={t('auth.lowercase') || 'Une lettre minuscule'} />
+                                <PasswordRequirement met={passwordStrength.hasNumber} text={t('auth.number') || 'Un chiffre'} />
+                                <PasswordRequirement met={passwordStrength.hasSpecialChar} text={t('auth.special_char') || 'Un caractère spécial (@$!%*?&)'} />
+                            </div>
+                        )}
 
                         {/* Seller Toggle */}
                         <div className={`flex items-center p-4 border rounded-xl cursor-pointer transition ${isSeller ? 'border-primary bg-primary/5' : 'border-gray-200 hover:border-gray-300'}`} onClick={() => setIsSeller(!isSeller)}>

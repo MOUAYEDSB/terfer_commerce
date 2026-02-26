@@ -12,11 +12,18 @@ const {
     getSellerInfo
 } = require('../controllers/userController');
 const { protect } = require('../middleware/authMiddleware');
+const { loginLimiter, registerLimiter, forgotPasswordLimiter } = require('../middleware/rateLimitMiddleware');
+const { forgotPassword, resetPassword, verifyResetToken } = require('../controllers/passwordResetController');
 
 // Public routes
-router.post('/register', registerUser);
-router.post('/login', loginUser);
+router.post('/register', registerLimiter, registerUser);
+router.post('/login', loginLimiter, loginUser);
 router.get('/seller/:id', getSellerInfo);
+
+// Password reset routes
+router.post('/forgot-password', forgotPasswordLimiter, forgotPassword);
+router.post('/reset-password/:resetToken', resetPassword);
+router.get('/reset-password/:resetToken', verifyResetToken);
 
 // Protected routes
 router.route('/profile')

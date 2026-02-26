@@ -18,7 +18,14 @@ const userSchema = new mongoose.Schema({
     password: {
         type: String,
         required: [true, 'Password is required'],
-        minlength: 6,
+        minlength: [8, 'Password must be at least 8 characters'],
+        validate: {
+            validator: function(v) {
+                // Password must contain: uppercase, lowercase, number, special char
+                return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(v);
+            },
+            message: 'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character (@$!%*?&)'
+        },
         select: false
     },
     phone: {
@@ -71,6 +78,24 @@ const userSchema = new mongoose.Schema({
     isActive: {
         type: Boolean,
         default: true
+    },
+    // Password reset fields
+    resetPasswordToken: {
+        type: String,
+        select: false
+    },
+    resetPasswordExpiry: {
+        type: Date,
+        select: false
+    },
+    // Email verification fields
+    emailVerified: {
+        type: Boolean,
+        default: false
+    },
+    emailVerificationToken: {
+        type: String,
+        select: false
     }
 }, {
     timestamps: true
@@ -86,7 +111,7 @@ userSchema.pre('save', async function () {
 });
 
 // Compare password method
-userSchema.methods.comparePassword = async function (candidatePassword) {
+userSchema.methods.matchPassword = async function (candidatePassword) {
     return await bcrypt.compare(candidatePassword, this.password);
 };
 
