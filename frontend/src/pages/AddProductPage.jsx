@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import {
     ArrowLeft, Upload, X, Loader2, Package, DollarSign,
     Tag, Palette, Ruler, Percent, Plus
@@ -11,7 +11,8 @@ import {
     CATEGORIES_WITH_SUBCATEGORIES,
     PREDEFINED_COLORS,
     PREDEFINED_SIZES,
-    getColorHex
+    getColorHex,
+    getImgUrl
 } from '../constants/productConstants';
 
 const API_URL = 'http://localhost:5000';
@@ -37,10 +38,13 @@ const authFetch = async (path, options = {}) => {
 
 const AddProductPage = () => {
     const navigate = useNavigate();
+    const { id: productId } = useParams();
     const { user } = useAuth();
+    const isEditMode = !!productId;
 
     const [loading, setLoading] = useState(false);
     const [uploadingImages, setUploadingImages] = useState(false);
+    const [initialLoading, setInitialLoading] = useState(isEditMode);
 
     const [formData, setFormData] = useState({
         name: '',
@@ -60,8 +64,64 @@ const AddProductPage = () => {
     const [selectedSizes, setSelectedSizes] = useState([]);
     const [customColor, setCustomColor] = useState('');
     const [customSize, setCustomSize] = useState('');
-    // Stock par variante: clé "color|size" => quantity
     const [variantQuantities, setVariantQuantities] = useState({});
+    const [existingImages, setExistingImages] = useState([]);
+
+    // Fetch product data if editing
+    useEffect(() => {
+        if (!isEditMode) {
+            setInitialLoading(false);
+            return;
+        }
+
+        const fetchProduct = async () => {
+            try {
+                const data = await authFetch(`/api/products/${productId}`);
+                const product = data.product || data;
+
+                setFormData({
+                    name: product.name || '',
+                    description: product.description || '',
+                    price: product.price?.toString() || '',
+                    oldPrice: product.oldPrice?.toString() || '',
+                    wholesalePrice: product.wholesalePrice?.toString() || '',
+                    category: product.category || '',
+                    subcategory: product.subcategory || '',
+                    brand: product.brand || '',
+                    stock: product.stock?.toString() || ''
+                });
+
+                if (product.images && product.images.length > 0) {
+                    setExistingImages(product.images);
+                    setImagePreviews(product.images.map(img => getImgUrl(img)));
+                }
+
+                if (product.colors && product.colors.length > 0) {
+                    setSelectedColors(product.colors);
+                }
+                if (product.sizes && product.sizes.length > 0) {
+                    setSelectedSizes(product.sizes);
+                }
+
+                // Restore variant quantities
+                if (product.variants && product.variants.length > 0) {
+                    const variantMap = {};
+                    product.variants.forEach(v => {
+                        variantMap[`${v.color}|${v.size}`] = v.quantity;
+                    });
+                    setVariantQuantities(variantMap);
+                }
+            } catch (error) {
+                console.error('Error fetching product:', error);
+                toast.error('Erreur lors du chargement du produit');
+                navigate('/seller/products');
+            } finally {
+                setInitialLoading(false);
+            }
+        };
+
+        fetchProduct();
+    }, [isEditMode, productId, navigate]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -126,9 +186,16 @@ const AddProductPage = () => {
         }
     };
 
-    const removeImage = (index) => {
-        setImages(prev => prev.filter((_, i) => i !== index));
-        setImagePreviews(prev => prev.filter((_, i) => i !== index));
+    const removeImage = (index, isExisting = false) => {
+        if (isExisting) {
+            setExistingImages(prev => prev.filter((_, i) => i !== index));
+            setImagePreviews(prev => prev.filter((_, i) => i !== index));
+        } else {
+            setImages(prev => prev.filter((_, i) => i !== index));
+            // Also remove from previews if needed (adjust index for existing images)
+            const adjustedIndex = existingImages.length + index;
+            setImagePreviews(prev => prev.filter((_, i) => i !== adjustedIndex));
+        }
     };
 
     // Color management
@@ -193,11 +260,24 @@ const AddProductPage = () => {
         setLoading(true);
 
         try {
-            if (images.length === 0) {
-                toast.error('Veuillez ajouter au moins une image');
+            if (!formData.name || !formData.category || !formData.price) {
+                toast.error('Veuillez remplir les champs obligatoires');
                 setLoading(false);
                 return;
             }
+
+            if (isEditMode && imagePreviews.length === 0) {
+                toast.error('Au moins une image est requise');
+                setLoading(false);
+                return;
+            }
+
+            if (!isEditMode && images.length === 0) {
+                toast.error('Au moins une image est requise');
+                setLoading(false);
+                return;
+            }
+
             const hasVariantsForSubmit = selectedColors.length > 0 && selectedSizes.length > 0;
             if (hasVariantsForSubmit) {
                 const totalVariantStock = selectedColors.reduce((sum, color) =>
@@ -237,25 +317,43 @@ const AddProductPage = () => {
                 colors: selectedColors.length > 0 ? selectedColors : undefined,
                 sizes: selectedSizes.length > 0 ? selectedSizes : undefined,
                 variants: variants.length > 0 ? variants : undefined,
-                images: images,
+                images: isEditMode ? [...existingImages, ...images] : images,
                 seller: user._id,
                 shop: user.shopName || user.name
             };
 
-            await authFetch('/api/products', {
-                method: 'POST',
-                body: JSON.stringify(productData)
-            });
+            if (isEditMode) {
+                await authFetch(`/api/products/${productId}`, {
+                    method: 'PUT',
+                    body: JSON.stringify(productData)
+                });
+                toast.success('Produit mis à jour avec succès !');
+            } else {
+                await authFetch('/api/products', {
+                    method: 'POST',
+                    body: JSON.stringify(productData)
+                });
+                toast.success('Produit ajouté avec succès !');
+            }
 
-            toast.success('Produit ajouté avec succès !');
             navigate('/seller/products');
         } catch (error) {
-            console.error('Error adding product:', error);
+            console.error('Error saving product:', error);
             toast.error(error.message || 'Erreur lors de l\'ajout du produit');
         } finally {
             setLoading(false);
         }
     };
+
+    if (initialLoading) {
+        return (
+            <SellerLayout>
+                <div className="min-h-screen flex items-center justify-center">
+                    <Loader2 className="w-8 h-8 text-primary animate-spin" />
+                </div>
+            </SellerLayout>
+        );
+    }
 
     const availableSubcategories = formData.category
         ? CATEGORIES_WITH_SUBCATEGORIES[formData.category] || []
@@ -274,8 +372,12 @@ const AddProductPage = () => {
                             <ArrowLeft size={24} />
                         </button>
                         <div>
-                            <h1 className="text-3xl font-bold text-gray-900 mb-2">Ajouter un produit</h1>
-                            <p className="text-gray-500">Remplissez les informations du produit</p>
+                            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                                {isEditMode ? 'Modifier le produit' : 'Ajouter un produit'}
+                            </h1>
+                            <p className="text-gray-500">
+                                {isEditMode ? 'Mettez à jour les informations du produit' : 'Remplissez les informations du produit'}
+                            </p>
                         </div>
                     </div>
 
@@ -772,12 +874,12 @@ const AddProductPage = () => {
                                 {loading ? (
                                     <>
                                         <Loader2 size={20} className="animate-spin" />
-                                        Ajout en cours...
+                                        {isEditMode ? 'Mise à jour...' : 'Ajout en cours...'}
                                     </>
                                 ) : (
                                     <>
                                         <Package size={20} />
-                                        Ajouter le produit
+                                        {isEditMode ? 'Mettre à jour le produit' : 'Ajouter le produit'}
                                     </>
                                 )}
                             </button>
