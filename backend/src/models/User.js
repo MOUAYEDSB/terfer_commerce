@@ -71,9 +71,47 @@ const userSchema = new mongoose.Schema({
     shopLogo: {
         type: String
     },
+    shopBanner: {
+        type: String
+    },
     isVerifiedSeller: {
         type: Boolean,
         default: false
+    },
+    // Seller followers
+    followers: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    }],
+    followersCount: {
+        type: Number,
+        default: 0
+    },
+    // Seller statistics
+    totalSales: {
+        type: Number,
+        default: 0
+    },
+    totalRevenue: {
+        type: Number,
+        default: 0
+    },
+    // Seller contact info
+    shopPhone: {
+        type: String
+    },
+    shopEmail: {
+        type: String
+    },
+    shopAddress: {
+        type: String
+    },
+    shopCity: {
+        type: String
+    },
+    location: {
+        type: String,
+        default: 'Tunisia'
     },
     isActive: {
         type: Boolean,

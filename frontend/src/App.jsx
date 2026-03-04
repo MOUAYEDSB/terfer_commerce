@@ -16,6 +16,7 @@ import CheckoutPage from './pages/CheckoutPage';
 import ProfilePage from './pages/ProfilePage';
 import OrderDetailPage from './pages/OrderDetailPage';
 import InvoicePage from './pages/InvoicePage';
+import FlashDealsPage from './pages/FlashDealsPage';
 
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
@@ -96,6 +97,7 @@ const App = () => {
                                             <Route path="/order/:orderId/invoice" element={<InvoicePage />} />
                                             <Route path="/shop/:id" element={<SellerPage />} />
                                             <Route path="/shop" element={<ShopPage />} />
+                                            <Route path="/flash-deals" element={<FlashDealsPage />} />
                                             <Route path="/login" element={<LoginPage />} />
                                             <Route path="/register" element={<RegisterPage />} />
                                             <Route path="/register-seller" element={<RegisterPage />} />

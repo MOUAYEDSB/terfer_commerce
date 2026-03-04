@@ -4,6 +4,8 @@ import { Link } from 'react-router-dom';
 import axios from 'axios';
 import BrandMarquee from '../components/BrandMarquee';
 import BenefitsSection from '../components/BenefitsSection';
+import FlashDealsSection from '../components/FlashDealsSection';
+import FeaturedSellersSection from '../components/FeaturedSellersSection';
 import { ArrowRight, Star, Heart } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { getImgUrl } from '../constants/productConstants';
@@ -265,6 +267,9 @@ const HomePage = () => {
             {/* Benefits Section */}
             <BenefitsSection />
 
+            {/* Flash Deals Section */}
+            <FlashDealsSection />
+
             {/* Wholesale + Retail Highlight */}
             <section className="py-16 bg-white">
                 <div className="container mx-auto px-4">
@@ -329,6 +334,9 @@ const HomePage = () => {
                     </div>
                 </div>
             </section>
+
+            {/* Featured Sellers Section */}
+            <FeaturedSellersSection />
 
             {/* CTA Section */}
             <section className="py-20 bg-primary text-white">

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Settings, Save, Loader2, Eye, EyeOff, Bell, Lock, Shield, CreditCard, MapPin, Store } from 'lucide-react';
+import { Settings, Save, Loader2, Eye, EyeOff, Bell, Lock, Shield, CreditCard, MapPin, Store, Image, Upload, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 import SellerLayout from '../components/SellerLayout';
@@ -60,6 +60,8 @@ const SellerSettingsPage = () => {
 
     const [selectedTab, setSelectedTab] = useState('profile');
     const [hasChanges, setHasChanges] = useState(false);
+    const [bannerImage, setBannerImage] = useState(user?.shopBanner || '');
+    const [uploadingBanner, setUploadingBanner] = useState(false);
 
     useEffect(() => {
         if (!user) return;
@@ -78,6 +80,7 @@ const SellerSettingsPage = () => {
             bankName: user.bankName || '',
             accountHolder: user.accountHolder || '',
         });
+        setBannerImage(user.shopBanner || '');
     }, [user]);
 
     const handleFormChange = (e) => {
@@ -164,6 +167,78 @@ const SellerSettingsPage = () => {
             toast.error('Erreur lors de la mise à jour des préférences');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleBannerUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+            toast.error('Veuillez sélectionner une image valide');
+            return;
+        }
+
+        // Validate file size (max 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            toast.error('L\'image ne doit pas dépasser 5 MB');
+            return;
+        }
+
+        try {
+            setUploadingBanner(true);
+            const formData = new FormData();
+            formData.append('banner', file);
+
+            const token = localStorage.getItem('token');
+            const response = await fetch(`${API_URL}/api/upload/banner`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
+                body: formData
+            });
+
+            if (!response.ok) {
+                throw new Error('Upload failed');
+            }
+
+            const data = await response.json();
+            setBannerImage(data.filePath);
+            
+            // Update user profile with new banner
+            const profileResponse = await authFetch('/api/users/profile', {
+                method: 'PUT',
+                body: JSON.stringify({ shopBanner: data.filePath })
+            });
+            
+            updateUser(profileResponse);
+            toast.success('Photo de couverture mise à jour avec succès');
+        } catch (error) {
+            console.error('Banner upload error:', error);
+            toast.error('Erreur lors de l\'upload de la photo de couverture');
+        } finally {
+            setUploadingBanner(false);
+        }
+    };
+
+    const handleRemoveBanner = async () => {
+        try {
+            setUploadingBanner(true);
+            const response = await authFetch('/api/users/profile', {
+                method: 'PUT',
+                body: JSON.stringify({ shopBanner: '' })
+            });
+            
+            setBannerImage('');
+            updateUser(response);
+            toast.success('Photo de couverture supprimée');
+        } catch (error) {
+            console.error(error);
+            toast.error('Erreur lors de la suppression');
+        } finally {
+            setUploadingBanner(false);
         }
     };
 
@@ -297,6 +372,69 @@ const SellerSettingsPage = () => {
                                             className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                                             placeholder="Décrivez votre boutique..."
                                         />
+                                    </div>
+
+                                    {/* Shop Banner */}
+                                    <div className="pt-6 border-t border-gray-200">
+                                        <h3 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2">
+                                            <Image size={18} className="text-primary" />
+                                            Photo de couverture de la boutique
+                                        </h3>
+                                        
+                                        <div className="space-y-4">
+                                            {/* Banner Preview */}
+                                            <div className="relative w-full h-48 bg-gray-100 rounded-xl overflow-hidden border-2 border-dashed border-gray-300">
+                                                {bannerImage ? (
+                                                    <>
+                                                        <img
+                                                            src={`${API_URL}${bannerImage}`}
+                                                            alt="Shop Banner"
+                                                            className="w-full h-full object-cover"
+                                                        />
+                                                        <button
+                                                            onClick={handleRemoveBanner}
+                                                            disabled={uploadingBanner}
+                                                            className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white p-2 rounded-full shadow-lg transition-all"
+                                                            title="Supprimer la bannière"
+                                                        >
+                                                            <X size={18} />
+                                                        </button>
+                                                    </>
+                                                ) : (
+                                                    <div className="flex flex-col items-center justify-center h-full text-gray-400">
+                                                        <Image size={48} className="mb-2" />
+                                                        <p className="text-sm">Aucune photo de couverture</p>
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            {/* Upload Button */}
+                                            <div>
+                                                <label className="inline-flex items-center gap-2 px-6 py-2.5 bg-primary text-white rounded-lg font-semibold hover:bg-primary/90 transition-all cursor-pointer">
+                                                    {uploadingBanner ? (
+                                                        <>
+                                                            <Loader2 size={18} className="animate-spin" />
+                                                            Upload en cours...
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <Upload size={18} />
+                                                            {bannerImage ? 'Changer la photo' : 'Ajouter une photo'}
+                                                        </>
+                                                    )}
+                                                    <input
+                                                        type="file"
+                                                        accept="image/*"
+                                                        onChange={handleBannerUpload}
+                                                        disabled={uploadingBanner}
+                                                        className="hidden"
+                                                    />
+                                                </label>
+                                                <p className="text-xs text-gray-500 mt-2">
+                                                    Recommandé: 1920x400px, max 5MB (JPG, PNG, WebP)
+                                                </p>
+                                            </div>
+                                        </div>
                                     </div>
 
                                     {/* Address Information */}

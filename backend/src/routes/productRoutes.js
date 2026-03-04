@@ -8,12 +8,16 @@ const {
     deleteProduct,
     createProductReview,
     getProductsByCategory,
-    toggleLikeProduct
+    toggleLikeProduct,
+    getFlashDeals,
+    getTopSellers
 } = require('../controllers/productController');
 const { protect, seller } = require('../middleware/authMiddleware');
 
 // Public routes
 router.get('/', getProducts);
+router.get('/flash-deals', getFlashDeals);
+router.get('/top-sellers', getTopSellers);
 router.get('/category/:category', getProductsByCategory);
 router.get('/:id', getProductById);
 

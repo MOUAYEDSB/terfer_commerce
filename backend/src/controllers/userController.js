@@ -100,6 +100,7 @@ const getUserProfile = asyncHandler(async (req, res) => {
             shopName: user.shopName,
             shopDescription: user.shopDescription,
             shopLogo: user.shopLogo,
+            shopBanner: user.shopBanner,
             isVerifiedSeller: user.isVerifiedSeller
         });
     } else {
@@ -129,6 +130,7 @@ const updateUserProfile = asyncHandler(async (req, res) => {
             user.shopName = req.body.shopName || user.shopName;
             user.shopDescription = req.body.shopDescription || user.shopDescription;
             user.shopLogo = req.body.shopLogo || user.shopLogo;
+            user.shopBanner = req.body.shopBanner || user.shopBanner;
         }
 
         const updatedUser = await user.save();
@@ -141,6 +143,9 @@ const updateUserProfile = asyncHandler(async (req, res) => {
             role: updatedUser.role,
             avatar: updatedUser.avatar,
             shopName: updatedUser.shopName,
+            shopDescription: updatedUser.shopDescription,
+            shopLogo: updatedUser.shopLogo,
+            shopBanner: updatedUser.shopBanner,
             token: generateToken(updatedUser._id)
         });
     } else {
@@ -263,23 +268,199 @@ const toggleWishlist = asyncHandler(async (req, res) => {
 // @route   GET /api/users/seller/:id
 // @access  Public
 const getSellerInfo = asyncHandler(async (req, res) => {
-    const seller = await User.findById(req.params.id).select('-password');
+    const seller = await User.findById(req.params.id)
+        .select('-password -resetPasswordToken -resetPasswordExpiry -emailVerificationToken')
+        .populate('followers', 'name avatar');
 
     if (seller && seller.role === 'seller') {
+        // Get product count
+        const Product = require('../models/Product');
+        const productCount = await Product.countDocuments({ seller: seller._id, isActive: true });
+        
+        // Get average rating from products
+        const products = await Product.find({ seller: seller._id, isActive: true });
+        const avgRating = products.length > 0
+            ? products.reduce((sum, p) => sum + (p.rating || 0), 0) / products.length
+            : 0;
+        
+        // Get total reviews
+        const totalReviews = products.reduce((sum, p) => sum + (p.reviews?.length || 0), 0);
+
         res.json({
             _id: seller._id,
             name: seller.name,
+            email: seller.email,
+            phone: seller.phone,
             shopName: seller.shopName,
             shopDescription: seller.shopDescription,
             shopLogo: seller.shopLogo,
+            shopBanner: seller.shopBanner,
+            shopPhone: seller.shopPhone,
+            shopEmail: seller.shopEmail,
+            shopAddress: seller.shopAddress,
+            shopCity: seller.shopCity,
+            location: seller.location,
             isVerifiedSeller: seller.isVerifiedSeller,
-            email: seller.email,
-            phone: seller.phone
+            followersCount: seller.followersCount || 0,
+            totalSales: seller.totalSales || 0,
+            totalRevenue: seller.totalRevenue || 0,
+            // Calculated stats
+            productCount,
+            avgRating: Number(avgRating.toFixed(1)),
+            totalReviews,
+            joinedDate: seller.createdAt
         });
     } else {
         res.status(404);
         throw new Error('Seller not found');
     }
+});
+
+// @desc    Get seller statistics
+// @route   GET /api/users/seller/:id/statistics
+// @access  Public
+const getSellerStatistics = asyncHandler(async (req, res) => {
+    const seller = await User.findById(req.params.id);
+
+    if (!seller || seller.role !== 'seller') {
+        res.status(404);
+        throw new Error('Seller not found');
+    }
+
+    const Product = require('../models/Product');
+    const Order = require('../models/Order');
+
+    // Get all seller products
+    const products = await Product.find({ seller: seller._id, isActive: true });
+    const productIds = products.map(p => p._id);
+
+    // Get orders containing seller products
+    const orders = await Order.find({
+        'items.product': { $in: productIds },
+        status: 'delivered'
+    });
+
+    // Calculate statistics
+    const stats = {
+        totalProducts: products.length,
+        totalSales: seller.totalSales || 0,
+        totalRevenue: seller.totalRevenue || 0,
+        avgRating: 0,
+        totalReviews: 0,
+        followersCount: seller.followersCount || 0,
+        // Category breakdown
+        categories: {},
+        // Recent sales trend (last 30 days)
+        recentOrders: 0
+    };
+
+    // Calculate average rating and reviews
+    if (products.length > 0) {
+        stats.avgRating = products.reduce((sum, p) => sum + (p.rating || 0), 0) / products.length;
+        stats.totalReviews = products.reduce((sum, p) => sum + (p.reviews?.length || 0), 0);
+    }
+
+    // Calculate category breakdown
+    products.forEach(product => {
+        stats.categories[product.category] = (stats.categories[product.category] || 0) + 1;
+    });
+
+    // Recent orders (last 30 days)
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    stats.recentOrders = orders.filter(o => o.createdAt >= thirtyDaysAgo).length;
+
+    res.json({
+        success: true,
+        statistics: stats
+    });
+});
+
+// @desc    Follow/Unfollow a seller
+// @route   POST /api/users/seller/:id/follow
+// @access  Private
+const toggleFollowSeller = asyncHandler(async (req, res) => {
+    const seller = await User.findById(req.params.id);
+
+    if (!seller || seller.role !== 'seller') {
+        res.status(404);
+        throw new Error('Seller not found');
+    }
+
+    const userId = req.user._id;
+    const isFollowing = seller.followers.includes(userId);
+
+    if (isFollowing) {
+        // Unfollow
+        seller.followers = seller.followers.filter(id => id.toString() !== userId.toString());
+        seller.followersCount = Math.max(0, (seller.followersCount || 0) - 1);
+    } else {
+        // Follow
+        seller.followers.push(userId);
+        seller.followersCount = (seller.followersCount || 0) + 1;
+    }
+
+    await seller.save();
+
+    res.json({
+        success: true,
+        following: !isFollowing,
+        followersCount: seller.followersCount
+    });
+});
+
+// @desc    Get seller reviews (from product reviews)
+// @route   GET /api/users/seller/:id/reviews
+// @access  Public
+const getSellerReviews = asyncHandler(async (req, res) => {
+    const { page = 1, limit = 10 } = req.query;
+    
+    const seller = await User.findById(req.params.id);
+
+    if (!seller || seller.role !== 'seller') {
+        res.status(404);
+        throw new Error('Seller not found');
+    }
+
+    const Product = require('../models/Product');
+    
+    // Get all seller products with reviews
+    const products = await Product.find({ 
+        seller: seller._id, 
+        isActive: true,
+        'reviews.0': { $exists: true } // Only products with at least one review
+    }).populate('reviews.user', 'name avatar');
+
+    // Flatten all reviews with product context
+    let allReviews = [];
+    products.forEach(product => {
+        if (product.reviews && product.reviews.length > 0) {
+            product.reviews.forEach(review => {
+                allReviews.push({
+                    ...review.toObject(),
+                    productId: product._id,
+                    productName: product.name,
+                    productImage: product.images?.[0]
+                });
+            });
+        }
+    });
+
+    // Sort by date (newest first)
+    allReviews.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+    // Pagination
+    const skip = (page - 1) * limit;
+    const paginatedReviews = allReviews.slice(skip, skip + Number(limit));
+
+    res.json({
+        success: true,
+        count: paginatedReviews.length,
+        total: allReviews.length,
+        page: Number(page),
+        pages: Math.ceil(allReviews.length / limit),
+        reviews: paginatedReviews
+    });
 });
 
 module.exports = {
@@ -291,5 +472,8 @@ module.exports = {
     updateAddress,
     deleteAddress,
     toggleWishlist,
-    getSellerInfo
+    getSellerInfo,
+    getSellerStatistics,
+    toggleFollowSeller,
+    getSellerReviews
 };

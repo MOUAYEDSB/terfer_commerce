@@ -10,6 +10,19 @@ export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
 
+    const updateUser = (nextUser) => {
+        setUser(nextUser);
+        if (nextUser) {
+            localStorage.setItem('user', JSON.stringify(nextUser));
+            if (nextUser.token) {
+                localStorage.setItem('token', nextUser.token);
+            }
+        } else {
+            localStorage.removeItem('user');
+            localStorage.removeItem('token');
+        }
+    };
+
     useEffect(() => {
         const storedUser = localStorage.getItem('user');
         if (storedUser) {
@@ -21,11 +34,7 @@ export const AuthProvider = ({ children }) => {
     const login = async (email, password) => {
         try {
             const { data } = await axios.post('http://localhost:5000/api/users/login', { email, password });
-            setUser(data);
-            localStorage.setItem('user', JSON.stringify(data));
-            if (data.token) {
-                localStorage.setItem('token', data.token);
-            }
+            updateUser(data);
             return { success: true, user: data };
         } catch (error) {
             console.error('Login error:', error.response?.data?.message || error.message);
@@ -51,13 +60,11 @@ export const AuthProvider = ({ children }) => {
     };
 
     const logout = () => {
-        setUser(null);
-        localStorage.removeItem('user');
-        localStorage.removeItem('token');
+        updateUser(null);
     };
 
     return (
-        <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+        <AuthContext.Provider value={{ user, loading, login, register, logout, updateUser }}>
             {children}
         </AuthContext.Provider>
     );

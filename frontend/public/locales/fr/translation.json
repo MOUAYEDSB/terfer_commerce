@@ -63,6 +63,40 @@
             "service_title": "Service Client",
             "service_desc": "Disponible 7j/7 pour vous aider"
         },
+        "flash_deals": {
+            "badge": "Vente Flash",
+            "title": "Offres Éclair - Offres Limitées",
+            "subtitle": "Ne manquez pas ces offres incroyables",
+            "hours": "Heures",
+            "minutes": "Minutes",
+            "seconds": "Secondes",
+            "add_to_cart": "Ajouter au panier",
+            "view_all": "Voir toutes les offres"
+        },
+        "top_sellers": {
+            "badge": "Fiables & Vérifiés",
+            "title": "Top Vendeurs",
+            "subtitle": "Découvrez nos vendeurs les mieux notés avec les meilleures produits et services",
+            "visit_shop": "Visiter la boutique",
+            "view_all": "Voir tous les vendeurs",
+            "products": "produits",
+            "reviews": "avis"
+        },
+        "featured_sellers": {
+            "badge": "Vendeurs d'Excellence",
+            "title": "Nos Vendeurs Vedettes",
+            "subtitle": "Rencontrez les meilleurs vendeurs de notre marketplace avec des produits de qualité et un service exceptionnel",
+            "default_description": "Boutique certifiée proposant une large sélection de produits de qualité avec un service client dédié",
+            "location_unknown": "Tunisie",
+            "verified": "Vérifié",
+            "member_since": "Membre depuis",
+            "reviews": "avis",
+            "products": "Produits",
+            "followers": "Abonnés",
+            "sales": "Ventes",
+            "visit_shop": "Visiter la boutique",
+            "view_all": "Voir tous les vendeurs"
+        },
         "wholesale": {
             "badge": "Acheter malin",
             "title": "Achetez en gros ou en détail, selon vos besoins",

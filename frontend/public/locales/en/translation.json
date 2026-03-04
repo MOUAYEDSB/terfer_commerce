@@ -63,7 +63,39 @@
             "service_title": "Customer Service",
             "service_desc": "Available 24/7 to help you"
         },
-        "wholesale": {
+        "flash_deals": {
+            "badge": "Flash Sale",
+            "title": "Lightning Deals - Limited Time Offers",
+            "subtitle": "Don't miss these incredible offers",
+            "hours": "Hours",
+            "minutes": "Minutes",
+            "seconds": "Seconds",
+            "add_to_cart": "Add to Cart",
+            "view_all": "View All Deals"
+        },
+        "top_sellers": {
+            "badge": "Trusted & Verified",
+            "title": "Top Sellers",
+            "subtitle": "Discover our best-rated sellers with quality products and excellent service",
+            "visit_shop": "Visit Shop",
+            "view_all": "View All Sellers",
+            "products": "products",
+            "reviews": "reviews"
+        },        "featured_sellers": {
+            "badge": "Excellence Sellers",
+            "title": "Our Featured Sellers",
+            "subtitle": "Meet the best sellers on our marketplace with quality products and exceptional service",
+            "default_description": "Certified shop offering a wide selection of quality products with dedicated customer service",
+            "location_unknown": "Tunisia",
+            "verified": "Verified",
+            "member_since": "Member since",
+            "reviews": "reviews",
+            "products": "Products",
+            "followers": "Followers",
+            "sales": "Sales",
+            "visit_shop": "Visit Shop",
+            "view_all": "View All Sellers"
+        },        "wholesale": {
             "badge": "Shop Smart",
             "title": "Buy wholesale or retail, according to your needs",
             "subtitle": "Enjoy competitive prices for wholesale purchases, or order individually for your daily needs. Everything is in one shop.",

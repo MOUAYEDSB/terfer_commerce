@@ -5,9 +5,15 @@ const Product = require('../models/Product');
 // @route   GET /api/products
 // @access  Public
 const getProducts = asyncHandler(async (req, res) => {
-    const { category, search, minPrice, maxPrice, seller, sort, page = 1, limit = 12 } = req.query;
+    const { category, search, minPrice, maxPrice, seller, sort, hasDiscount, page = 1, limit = 12 } = req.query;
 
     const query = { isActive: true };
+
+    // Filter by products with discount (Flash Deals)
+    if (hasDiscount === 'true') {
+        query.oldPrice = { $exists: true, $gt: 0 };
+        query.$expr = { $gt: ['$oldPrice', '$price'] };
+    }
 
     // Filter by category
     if (category) {
@@ -36,6 +42,10 @@ const getProducts = asyncHandler(async (req, res) => {
     if (sort === 'price_asc') sortOption = { price: 1 };
     else if (sort === 'price_desc') sortOption = { price: -1 };
     else if (sort === 'rating') sortOption = { rating: -1 };
+    else if (sort === 'discount') {
+        // Sort by discount percentage (oldPrice - price) / oldPrice
+        sortOption = { oldPrice: -1 }; // Products with higher oldPrice first
+    }
     else sortOption = { createdAt: -1 }; // newest first
 
     const skip = (page - 1) * limit;
@@ -351,7 +361,100 @@ const toggleLikeProduct = asyncHandler(async (req, res) => {
     });
 });
 
+// @desc    Get flash deals (products with discounts)
+// @route   GET /api/products/flash-deals
+// @access  Public
+const getFlashDeals = asyncHandler(async (req, res) => {
+    const { limit = 8 } = req.query;
 
+    // Find products with oldPrice > price (discounted products)
+    const products = await Product.find({
+        isActive: true,
+        oldPrice: { $exists: true, $gt: 0 },
+        $expr: { $gt: ['$oldPrice', '$price'] }
+    })
+        .populate('seller', 'name shopName')
+        .limit(Number(limit))
+        .sort({ createdAt: -1 }); // Most recent deals first
+
+    // Calculate discount percentage and add to response
+    const productsWithDiscount = products.map(product => {
+        const productObj = product.toObject();
+        const discountPercent = Math.round(((product.oldPrice - product.price) / product.oldPrice) * 100);
+        productObj.discountPercent = discountPercent;
+        
+        // Add final price with commission
+        const commissionRate = product.platformCommissionRate || 20;
+        productObj.finalPrice = product.price * (1 + commissionRate / 100);
+        
+        return productObj;
+    });
+
+    // Sort by discount percentage (highest first)
+    productsWithDiscount.sort((a, b) => b.discountPercent - a.discountPercent);
+
+    res.json({
+        success: true,
+        count: productsWithDiscount.length,
+        products: productsWithDiscount
+    });
+});
+
+// @desc    Get top sellers based on sales and ratings
+// @route   GET /api/products/top-sellers
+// @access  Public
+const getTopSellers = asyncHandler(async (req, res) => {
+    const { limit = 8 } = req.query;
+
+    // Aggregate products by seller and calculate metrics
+    const topSellers = await Product.aggregate([
+        { $match: { isActive: true } },
+        {
+            $group: {
+                _id: '$seller',
+                totalProducts: { $sum: 1 },
+                avgRating: { $avg: '$rating' },
+                totalReviews: { $sum: { $size: { $ifNull: ['$reviews', []] } } },
+                shopName: { $first: '$shop' }
+            }
+        },
+        {
+            $lookup: {
+                from: 'users',
+                localField: '_id',
+                foreignField: '_id',
+                as: 'sellerInfo'
+            }
+        },
+        { $unwind: { path: '$sellerInfo', preserveNullAndEmptyArrays: true } },
+        {
+            $project: {
+                _id: 1,
+                totalProducts: 1,
+                avgRating: { $ifNull: ['$avgRating', 4.5] },
+                totalReviews: 1,
+                shopName: { $ifNull: ['$shopName', '$sellerInfo.shopName'] },
+                shopDescription: '$sellerInfo.shopDescription',
+                shopBanner: '$sellerInfo.shopBanner',
+                shopCity: '$sellerInfo.shopCity',
+                isVerified: { $ifNull: ['$sellerInfo.isVerified', false] },
+                followersCount: { $ifNull: ['$sellerInfo.followersCount', 0] },
+                totalSales: { $ifNull: ['$sellerInfo.totalSales', 0] },
+                totalRevenue: { $ifNull: ['$sellerInfo.totalRevenue', 0] },
+                memberSince: '$sellerInfo.createdAt'
+            }
+        },
+        // Sort by rating first, then by product count
+        { $sort: { avgRating: -1, totalProducts: -1 } },
+        { $limit: Number(limit) }
+    ]);
+
+    res.json({
+        success: true,
+        count: topSellers.length,
+        sellers: topSellers
+    });
+});
 
 
 module.exports = {
@@ -362,5 +465,7 @@ module.exports = {
     deleteProduct,
     createProductReview,
     getProductsByCategory,
-    toggleLikeProduct
+    toggleLikeProduct,
+    getFlashDeals,
+    getTopSellers
 };
