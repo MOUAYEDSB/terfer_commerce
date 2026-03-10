@@ -14,7 +14,7 @@ const ProductPage = () => {
     const isRtl = i18n.language === 'ar';
     const { id } = useParams();
     const navigate = useNavigate();
-    const { addToCart } = useCart();
+    const { addToCart, cartItems } = useCart();
     const { toggleWishlist, isInWishlist } = useWishlist();
     const { user } = useAuth();
 
@@ -86,10 +86,19 @@ const ProductPage = () => {
 
     const handleBuyNow = () => {
         if (!product) return;
-        addToCart({ ...product, id: product._id }, quantity, {
+        const options = {
             selectedColor: selectedColor ?? undefined,
             selectedSize: selectedSize ?? undefined
-        });
+        };
+        const alreadyInCart = cartItems.some(
+            (item) =>
+                item.id === product._id &&
+                item.selectedColor === options.selectedColor &&
+                item.selectedSize === options.selectedSize
+        );
+        if (!alreadyInCart) {
+            addToCart({ ...product, id: product._id }, quantity, options);
+        }
         navigate('/checkout');
     };
 

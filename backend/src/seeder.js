@@ -1,23 +1,26 @@
-const mongoose = require('mongoose');
+const path = require('path');
 const dotenv = require('dotenv');
+
+// Charger .env depuis le dossier backend (comme server.js)
+dotenv.config({ path: path.join(__dirname, '..', '.env') });
+
+const mongoose = require('mongoose');
 const User = require('./models/User');
 const Product = require('./models/Product');
 const Order = require('./models/Order');
 const connectDB = require('./config/db');
 
-dotenv.config();
-
 const users = [
     {
         name: 'Admin User',
         email: 'admin@terfer.tn',
-        password: 'admin123',
+        password: 'Admin123!',
         role: 'admin'
     },
     {
         name: 'Mohamed Seller',
         email: 'mohamed@seller.tn',
-        password: 'seller123',
+        password: 'Seller123!',
         role: 'seller',
         shopName: 'Moda Tunis',
         shopDescription: 'Boutique de mode tendance à Tunis',
@@ -26,7 +29,7 @@ const users = [
     {
         name: 'Sarah Seller',
         email: 'sarah@seller.tn',
-        password: 'seller123',
+        password: 'Seller123!',
         role: 'seller',
         shopName: 'Tech Store',
         shopDescription: 'Votre destination high-tech',
@@ -35,7 +38,7 @@ const users = [
     {
         name: 'John Doe',
         email: 'john@customer.tn',
-        password: 'customer123',
+        password: 'Customer123!',
         role: 'customer',
         phone: '+216 12 345 678',
         addresses: [{

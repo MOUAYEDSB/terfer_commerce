@@ -1,4 +1,4 @@
-const rateLimit = require('express-rate-limit');
+const { rateLimit, ipKeyGenerator } = require('express-rate-limit');
 
 // General API limiter - 100 requests per 15 minutes
 const apiLimiter = rateLimit({
@@ -16,7 +16,8 @@ const loginLimiter = rateLimit({
     message: 'Too many login attempts, please try again after 15 minutes',
     skipSuccessfulRequests: true, // Don't count successful requests
     keyGenerator: (req, res) => {
-        return req.body.email || req.ip; // Use email as key to prevent enumeration
+        if (req.body?.email) return req.body.email;
+        return ipKeyGenerator(req.ip);
     },
 });
 
