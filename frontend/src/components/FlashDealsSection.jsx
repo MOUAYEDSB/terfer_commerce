@@ -12,17 +12,19 @@ const FlashDealsSection = () => {
     const [deals, setDeals] = useState([]);
     const [loading, setLoading] = useState(true);
     const [countdown, setCountdown] = useState({ hours: 0, minutes: 0, seconds: 0 });
+    const [endTime, setEndTime] = useState(null);
     const { toggleWishlist, isInWishlist } = useWishlist();
     const { addToCart } = useCart();
 
-    // Calculate time remaining (24 hour flash sale)
-    const getTimeRemaining = () => {
+    // Calculate time remaining until specific endTime
+    const getTimeRemaining = (target) => {
+        if (!target) return { hours: 0, minutes: 0, seconds: 0 };
         const now = new Date();
-        const endOfDay = new Date(now);
-        endOfDay.setHours(23, 59, 59, 999);
-        
-        const diff = endOfDay - now;
-        
+        const end = new Date(target);
+        const diff = end - now;
+        if (diff <= 0) {
+            return { hours: 0, minutes: 0, seconds: 0 };
+        }
         return {
             hours: Math.floor(diff / (1000 * 60 * 60)),
             minutes: Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)),
@@ -38,6 +40,16 @@ const FlashDealsSection = () => {
                 
                 if (data.success && data.products) {
                     setDeals(data.products);
+                    // Prend la date de fin la plus proche parmi les deals
+                    const activeEnds = data.products
+                        .map(p => p.flashDealEnd)
+                        .filter(Boolean)
+                        .map(d => new Date(d).getTime());
+                    if (activeEnds.length > 0) {
+                        const nearest = new Date(Math.min(...activeEnds));
+                        setEndTime(nearest.toISOString());
+                        setCountdown(getTimeRemaining(nearest));
+                    }
                 }
                 setLoading(false);
             } catch (error) {
@@ -47,14 +59,16 @@ const FlashDealsSection = () => {
         };
 
         fetchDeals();
-
-        // Update countdown every second
-        const interval = setInterval(() => {
-            setCountdown(getTimeRemaining());
-        }, 1000);
-
-        return () => clearInterval(interval);
     }, []);
+
+    // Update countdown every second based on endTime
+    useEffect(() => {
+        if (!endTime) return;
+        const interval = setInterval(() => {
+            setCountdown(getTimeRemaining(endTime));
+        }, 1000);
+        return () => clearInterval(interval);
+    }, [endTime]);
 
     const handleAddToCart = (deal) => {
         addToCart({
@@ -76,7 +90,8 @@ const FlashDealsSection = () => {
         );
     }
 
-    if (deals.length === 0) {
+    // Si aucune deal active ou le compte à rebours est terminé, ne rien afficher
+    if (deals.length === 0 || (countdown.hours === 0 && countdown.minutes === 0 && countdown.seconds === 0)) {
         return null;
     }
 

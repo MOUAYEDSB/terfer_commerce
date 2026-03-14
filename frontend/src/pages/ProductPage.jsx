@@ -35,6 +35,8 @@ const ProductPage = () => {
     const [reviewError, setReviewError] = useState(null);
     const [reviewSuccess, setReviewSuccess] = useState(null);
 
+    const WHOLESALE_QTY_THRESHOLD = 10;
+
     const fetchProduct = useCallback(async () => {
         try {
             setLoading(true);
@@ -71,9 +73,35 @@ const ProductPage = () => {
         return product.stock || 0;
     })();
 
+    // Clamp quantity if the user switches to a variant with less available stock.
+    useEffect(() => {
+        if (!product) return;
+        if (availableStock <= 0) {
+            if (quantity !== 1) setQuantity(1);
+            return;
+        }
+        if (quantity > availableStock) setQuantity(availableStock);
+    }, [availableStock, product, quantity]);
+
+    const clampQuantity = (q) => {
+        const max = Number(availableStock || 0);
+        const n = Math.trunc(Number(q));
+        if (!Number.isFinite(n)) return 1;
+        if (n < 1) return 1;
+        if (max > 0 && n > max) return max;
+        return n;
+    };
+
     const handleQuantityChange = (type) => {
-        if (type === 'dec' && quantity > 1) setQuantity(quantity - 1);
-        if (type === 'inc' && quantity < availableStock) setQuantity(quantity + 1);
+        if (type === 'dec' && quantity > 1) setQuantity(clampQuantity(quantity - 1));
+        if (type === 'inc' && quantity < availableStock) setQuantity(clampQuantity(quantity + 1));
+    };
+
+    const handleQuantityInputChange = (e) => {
+        // Allow typing a number instead of only using the stepper arrows.
+        const next = e.target.value;
+        if (next === '') return; // keep current value until user finishes typing
+        setQuantity(clampQuantity(next));
     };
 
     const handleAddToCart = () => {
@@ -175,6 +203,13 @@ const ProductPage = () => {
         })
         : null;
 
+    const retailUnitPrice = Number(product.finalPrice || product.price || 0);
+    const wholesaleUnitPrice = Number(product.finalWholesalePrice || product.wholesalePrice || 0);
+    const hasWholesale = Number.isFinite(wholesaleUnitPrice) && wholesaleUnitPrice > 0;
+    const isWholesaleApplied = hasWholesale && quantity >= WHOLESALE_QTY_THRESHOLD;
+    const unitPrice = isWholesaleApplied ? wholesaleUnitPrice : retailUnitPrice;
+    const lineTotal = unitPrice * quantity;
+
     return (
         <div className={`bg-gray-50 min-h-screen py-10 ${isRtl ? 'rtl' : 'ltr'}`} dir={isRtl ? 'rtl' : 'ltr'}>
             <div className="container mx-auto px-4">
@@ -248,12 +283,16 @@ const ProductPage = () => {
                         <div className="mb-8">
                             {/* Main Price Display */}
                             <div className="bg-gradient-to-br from-primary/15 via-transparent to-primary/5 p-6 rounded-2xl mb-4 border-2 border-primary/30 shadow-md hover:shadow-lg transition">
-                                <div className="flex items-center gap-10 flex-wrap">
+                                <div className="flex items-center gap-8 flex-wrap">
                                     {/* Current Price */}
                                     <div className="flex flex-col">
-                                        <span className="text-xs tracking-widest text-primary font-bold uppercase mb-2 flex items-center gap-2"><DollarSign size={14} /> Prix actuel</span>
+                                        <span className="text-xs tracking-widest text-primary font-bold uppercase mb-2 flex items-center gap-2">
+                                            <DollarSign size={14} /> Prix unitaire {isWholesaleApplied ? '(gros)' : ''}
+                                        </span>
                                         <div className="flex items-baseline gap-1">
-                                            <span className="text-3xl font-black text-primary">{(product.finalPrice || product.price)?.toFixed(2)}</span>
+                                            <span className={`${isWholesaleApplied ? 'text-2xl md:text-3xl' : 'text-3xl md:text-4xl'} font-black text-primary`}>
+                                                {Number(unitPrice || 0).toFixed(2)}
+                                            </span>
                                             <span className="text-sm text-gray-600 font-semibold">TND</span>
                                         </div>
                                     </div>
@@ -268,19 +307,47 @@ const ProductPage = () => {
                                     
                                     {/* Wholesale Price */}
                                     {product.wholesalePrice && product.wholesalePrice > 0 && (
-                                        <div className="bg-gradient-to-br from-blue-50 to-blue-100/50 px-5 py-4 rounded-xl border-2 border-blue-300 shadow-sm flex items-center gap-3">
+                                        <div className={`bg-gradient-to-br from-blue-50 to-blue-100/50 ${isWholesaleApplied ? 'px-4 py-3' : 'px-5 py-4'} rounded-xl border-2 border-blue-300 shadow-sm flex items-center gap-3 shrink-0`}>
                                             <div>
                                                 <span className="text-xs tracking-widest text-blue-700 font-bold uppercase block mb-2 flex items-center gap-2"><Briefcase size={14} /> Prix en gros</span>
                                                 <div className="flex items-baseline gap-1">
-                                                    <span className="text-3xl font-black text-blue-600">{((product.wholesalePrice * 1.20) || product.wholesalePrice)?.toFixed(2)}</span>
+                                                    <span className={`${isWholesaleApplied ? 'text-2xl md:text-3xl' : 'text-3xl'} font-black text-blue-600`}>
+                                                        {Number(wholesaleUnitPrice || 0).toFixed(2)}
+                                                    </span>
                                                     <span className="text-sm text-blue-600 font-semibold">TND</span>
                                                 </div>
                                             </div>
                                             <div className="text-xs text-blue-700 font-semibold text-right whitespace-nowrap">
-                                                À partir de<br/>10 pièces
+                                                A partir de<br />10 pieces
                                             </div>
                                         </div>
                                     )}
+                                </div>
+                            </div>
+
+                            {/* Total to Pay (updates with quantity) */}
+                            <div className="bg-white border border-gray-200 rounded-2xl p-5 flex items-center justify-between gap-6 flex-wrap">
+                                <div className="min-w-[220px]">
+                                    <div className="text-xs tracking-widest text-gray-500 font-bold uppercase mb-1">
+                                        Total a payer
+                                    </div>
+                                    <div className={`${isWholesaleApplied ? 'text-xl md:text-2xl' : 'text-2xl md:text-3xl'} font-black text-gray-900`}>
+                                        {Number(lineTotal || 0).toFixed(2)} <span className="text-sm font-semibold text-gray-600">TND</span>
+                                    </div>
+                                    {hasWholesale && !isWholesaleApplied && (
+                                        <div className="text-xs text-blue-700 font-semibold mt-2">
+                                            Passez a {WHOLESALE_QTY_THRESHOLD} pieces pour activer le prix de gros ({Number(wholesaleUnitPrice || 0).toFixed(2)} TND / piece).
+                                        </div>
+                                    )}
+                                    {hasWholesale && isWholesaleApplied && (
+                                        <div className="text-xs text-blue-700 font-semibold mt-2">
+                                            Prix de gros applique.
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="text-sm text-gray-600 font-semibold">
+                                    <span className="text-gray-900 font-bold">{quantity}</span> x {Number(unitPrice || 0).toFixed(2)} TND
                                 </div>
                             </div>
                             
@@ -370,7 +437,18 @@ const ProductPage = () => {
                                 <h3 className="text-sm font-semibold text-gray-900">{t('product.quantity')}</h3>
                                 <div className="flex items-center border border-gray-300 rounded-lg">
                                     <button onClick={() => handleQuantityChange('dec')} className="p-2 hover:text-primary"><Minus size={16} /></button>
-                                    <span className="w-12 text-center font-semibold">{quantity}</span>
+                                    <input
+                                        type="number"
+                                        inputMode="numeric"
+                                        min={1}
+                                        max={availableStock > 0 ? availableStock : undefined}
+                                        value={quantity}
+                                        disabled={availableStock === 0}
+                                        onChange={handleQuantityInputChange}
+                                        onBlur={(e) => setQuantity(clampQuantity(e.target.value))}
+                                        onWheel={(e) => e.currentTarget.blur()}
+                                        className="w-16 text-center font-semibold bg-transparent outline-none appearance-none py-2"
+                                    />
                                     <button onClick={() => handleQuantityChange('inc')} className="p-2 hover:text-primary"><Plus size={16} /></button>
                                 </div>
                                 <span className="text-sm text-gray-500">

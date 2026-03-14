@@ -13,7 +13,7 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 const CheckoutPage = () => {
     const { t, i18n } = useTranslation();
     const isRtl = i18n.language === 'ar';
-    const { cartItems, cartTotal, clearCart } = useCart();
+    const { cartItems, cartTotal, clearCart, getItemUnitPrice, getItemLineTotal } = useCart();
     const { user } = useAuth();
     const navigate = useNavigate();
 
@@ -59,7 +59,8 @@ const CheckoutPage = () => {
                     product: item._id || item.id,
                     name: item.name,
                     quantity: item.quantity,
-                    price: item.price,
+                    // Persist the effective unit price used for this order (retail vs wholesale).
+                    price: getItemUnitPrice(item),
                     image: item.images?.[0] || item.image || '',
                     seller: item.seller?._id || item.seller,
                     shop: item.shop || item.seller?.shopName || 'TerFer'
@@ -276,7 +277,7 @@ const CheckoutPage = () => {
 
                             <div className="space-y-4 mb-6 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
                                 {cartItems.map((item) => (
-                                    <div key={item.id} className="flex gap-4 items-start py-2 border-b border-dashed border-gray-100 last:border-0">
+                                    <div key={`${item.id}-${item.selectedColor}-${item.selectedSize}`} className="flex gap-4 items-start py-2 border-b border-dashed border-gray-100 last:border-0">
                                         <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden shrink-0 border border-gray-200">
                                             <img src={getImgUrl(item.image || (item.images && item.images[0]))} alt={item.name} className="w-full h-full object-cover" />
                                         </div>
@@ -285,7 +286,7 @@ const CheckoutPage = () => {
                                             <p className="text-xs text-gray-500">{item.brand || 'Boutique'}</p>
                                         </div>
                                         <div className="text-right shrink-0">
-                                            <p className="text-sm font-bold text-gray-900 mb-1">{(item.price * item.quantity).toFixed(0)} TND</p>
+                                            <p className="text-sm font-bold text-gray-900 mb-1">{getItemLineTotal(item).toFixed(0)} TND</p>
                                             <p className="text-xs text-gray-500 font-medium">x {item.quantity}</p>
                                         </div>
                                     </div>

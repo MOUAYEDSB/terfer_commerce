@@ -9,7 +9,7 @@ import { getImgUrl } from '../constants/productConstants';
 const CartPage = () => {
     const { t, i18n } = useTranslation();
     const isRtl = i18n.language === 'ar';
-    const { cartItems, updateQuantity, removeFromCart, cartTotal } = useCart();
+    const { cartItems, updateQuantity, removeFromCart, cartTotal, getItemLineTotal } = useCart();
 
     // Fixed shipping cost for now
     const shipping = cartItems.length > 0 ? 7 : 0;
@@ -96,7 +96,7 @@ const CartPage = () => {
                                             </button>
                                         </div>
                                         <div className="text-xl font-bold text-primary">
-                                            {(item.price * item.quantity).toFixed(0)} TND
+                                            {getItemLineTotal(item).toFixed(0)} TND
                                         </div>
                                     </div>
                                 </div>

@@ -29,6 +29,8 @@ const HomePage = () => {
     const [products, setProducts] = React.useState([]);
     const [loading, setLoading] = React.useState(true);
     const { toggleWishlist, isInWishlist } = useWishlist();
+    const heroTitle = t('home.hero.title');
+    const heroTitleTerIndex = heroTitle.toLowerCase().indexOf('ter');
 
     const heroImages = [
         "https://images.unsplash.com/photo-1483985988355-763728e1935b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
@@ -74,7 +76,15 @@ const HomePage = () => {
                         </div>
 
                         <h1 className="text-4xl md:text-6xl lg:text-7xl font-black text-gray-900 leading-tight mb-8 tracking-tighter uppercase whitespace-nowrap">
-                            {t('home.hero.title')}
+                            {heroTitleTerIndex >= 0 ? (
+                                <>
+                                    {heroTitle.slice(0, heroTitleTerIndex)}
+                                    <span className="text-primary">{heroTitle.slice(heroTitleTerIndex, heroTitleTerIndex + 3)}</span>
+                                    {heroTitle.slice(heroTitleTerIndex + 3)}
+                                </>
+                            ) : (
+                                heroTitle
+                            )}
                         </h1>
 
                         <p className="text-lg md:text-xl text-gray-500 mb-10 max-w-lg mx-auto lg:mx-0 leading-relaxed font-medium">

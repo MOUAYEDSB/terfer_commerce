@@ -366,12 +366,16 @@ const toggleLikeProduct = asyncHandler(async (req, res) => {
 // @access  Public
 const getFlashDeals = asyncHandler(async (req, res) => {
     const { limit = 8 } = req.query;
+    const now = new Date();
 
-    // Find products with oldPrice > price (discounted products)
+    // Find products with oldPrice > price (discounted) AND flash deal window active
     const products = await Product.find({
         isActive: true,
         oldPrice: { $exists: true, $gt: 0 },
-        $expr: { $gt: ['$oldPrice', '$price'] }
+        $expr: { $gt: ['$oldPrice', '$price'] },
+        flashDealActive: true,
+        flashDealStart: { $lte: now },
+        flashDealEnd: { $gte: now }
     })
         .populate('seller', 'name shopName')
         .limit(Number(limit))
@@ -382,6 +386,7 @@ const getFlashDeals = asyncHandler(async (req, res) => {
         const productObj = product.toObject();
         const discountPercent = Math.round(((product.oldPrice - product.price) / product.oldPrice) * 100);
         productObj.discountPercent = discountPercent;
+        productObj.flashDealEnd = product.flashDealEnd;
         
         // Add final price with commission
         const commissionRate = product.platformCommissionRate || 20;

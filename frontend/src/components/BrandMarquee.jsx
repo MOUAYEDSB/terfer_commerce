@@ -3,12 +3,12 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 
 const brands = [
-    { name: "Samsung", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Samsung_wordmark.svg/512px-Samsung_wordmark.svg.png" },
-    { name: "Nike", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Logo_NIKE.svg/512px-Logo_NIKE.svg.png" },
-    { name: "Adidas", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/20/Adidas_Logo.svg/512px-Adidas_Logo.svg.png" },
-    { name: "Apple", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Apple_logo_black.svg/512px-Apple_logo_black.svg.png" },
-    { name: "HM", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/H%26M-Logo.svg/512px-H%26M-Logo.svg.png" },
-    { name: "Zara", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fd/Zara_Logo.svg/512px-Zara_Logo.svg.png" }
+    { name: "Samsung", logo: "https://upload.wikimedia.org/wikipedia/commons/b/b4/Samsung_wordmark.svg" },
+    { name: "Nike", logo: "https://upload.wikimedia.org/wikipedia/commons/a/a6/Logo_NIKE.svg" },
+    { name: "Adidas", logo: "https://upload.wikimedia.org/wikipedia/commons/2/20/Adidas_Logo.svg" },
+    { name: "Apple", logo: "/assets/brands/apple.svg" },
+    { name: "H&M", logo: "https://upload.wikimedia.org/wikipedia/commons/5/53/H%26M-Logo.svg" },
+    { name: "Zara", logo: "https://upload.wikimedia.org/wikipedia/commons/f/fd/Zara_Logo.svg" }
 ];
 
 const BrandMarquee = () => {
@@ -22,25 +22,31 @@ const BrandMarquee = () => {
             <div className="relative w-full overflow-hidden">
                 <div className="flex w-[200%] animate-scroll-reverse">
                     {/* First set of 6 logos */}
-                    <div className="flex w-1/2 justify-around items-center px-4">
+                    <div className="flex w-1/2 items-center justify-around gap-10 px-6">
                         {brands.map((brand, index) => (
-                            <div key={`1-${index}`} className="flex-shrink-0 mx-10">
+                            <div
+                                key={`1-${index}`}
+                                className="flex-shrink-0 w-40 md:w-44 h-14 md:h-16 flex items-center justify-center"
+                            >
                                 <img
                                     src={brand.logo}
                                     alt={brand.name}
-                                    className={`${brand.name === 'Samsung' ? 'h-5 md:h-7' : 'h-10 md:h-14'} w-auto object-contain brightness-0 opacity-60 hover:opacity-100 transition-all duration-300 cursor-pointer hover:scale-110`}
+                                    className="max-h-full max-w-full object-contain brightness-0 opacity-60 hover:opacity-100 transition-all duration-300 cursor-pointer hover:scale-105"
                                 />
                             </div>
                         ))}
                     </div>
                     {/* Second set of 6 logos (for seamless loop) */}
-                    <div className="flex w-1/2 justify-around items-center px-4">
+                    <div className="flex w-1/2 items-center justify-around gap-10 px-6">
                         {brands.map((brand, index) => (
-                            <div key={`2-${index}`} className="flex-shrink-0 mx-10">
+                            <div
+                                key={`2-${index}`}
+                                className="flex-shrink-0 w-40 md:w-44 h-14 md:h-16 flex items-center justify-center"
+                            >
                                 <img
                                     src={brand.logo}
                                     alt={brand.name}
-                                    className={`${brand.name === 'Samsung' ? 'h-5 md:h-7' : 'h-10 md:h-14'} w-auto object-contain brightness-0 opacity-60 hover:opacity-100 transition-all duration-300 cursor-pointer hover:scale-110`}
+                                    className="max-h-full max-w-full object-contain brightness-0 opacity-60 hover:opacity-100 transition-all duration-300 cursor-pointer hover:scale-105"
                                 />
                             </div>
                         ))}

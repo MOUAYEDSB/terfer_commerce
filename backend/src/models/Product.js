@@ -117,6 +117,17 @@ const productSchema = new mongoose.Schema({
     likesCount: {
         type: Number,
         default: 0
+    },
+    // Flash deals: contrôlés par superadmin
+    flashDealActive: {
+        type: Boolean,
+        default: false
+    },
+    flashDealStart: {
+        type: Date
+    },
+    flashDealEnd: {
+        type: Date
     }
 }, {
     timestamps: true
