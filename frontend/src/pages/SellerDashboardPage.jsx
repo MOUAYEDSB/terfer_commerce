@@ -148,7 +148,7 @@ const SellerDashboardPage = () => {
                                             </div>
                                             <div className="flex-1 min-w-0">
                                                 <p className="text-sm font-semibold text-gray-900 truncate">{p.name}</p>
-                                                <p className="text-[10px] text-gray-400 line-clamp-1">{p.description}</p>
+                                                <p className="text-[10px] text-gray-400 line-clamp-1">{p.utilisation || p.description}</p>
                                                 <p className="text-xs text-gray-500 truncate">{p.category}</p>
                                             </div>
                                             <div className="text-right">

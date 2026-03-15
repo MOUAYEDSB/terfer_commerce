@@ -1,5 +1,6 @@
 const asyncHandler = require('express-async-handler');
 const Product = require('../models/Product');
+const Order = require('../models/Order');
 
 // @desc    Get all products with filters
 // @route   GET /api/products
@@ -138,6 +139,7 @@ const createProduct = asyncHandler(async (req, res) => {
     const {
         name,
         description,
+        utilisation,
         price,
         oldPrice,
         wholesalePrice,
@@ -162,6 +164,7 @@ const createProduct = asyncHandler(async (req, res) => {
     const product = await Product.create({
         name,
         description,
+        utilisation,
         price,
         oldPrice,
         wholesalePrice,
@@ -461,6 +464,98 @@ const getTopSellers = asyncHandler(async (req, res) => {
     });
 });
 
+// @desc    Get best seller products based on order items quantity
+// @route   GET /api/products/best-sellers
+// @access  Public
+const getBestSellerProducts = asyncHandler(async (req, res) => {
+    const { limit = 8 } = req.query;
+
+    const eligibleStatuses = ['confirmed', 'processing', 'shipped', 'delivered'];
+
+    const results = await Order.aggregate([
+        { $match: { status: { $in: eligibleStatuses } } },
+        { $unwind: '$items' },
+        {
+            $group: {
+                _id: '$items.product',
+                totalQuantity: { $sum: '$items.quantity' },
+                totalRevenue: { $sum: { $multiply: ['$items.price', '$items.quantity'] } }
+            }
+        },
+        { $sort: { totalQuantity: -1, totalRevenue: -1 } },
+        { $limit: Number(limit) },
+        {
+            $lookup: {
+                from: 'products',
+                localField: '_id',
+                foreignField: '_id',
+                as: 'product'
+            }
+        },
+        { $unwind: { path: '$product', preserveNullAndEmptyArrays: false } },
+        { $match: { 'product.isActive': true } },
+        {
+            $lookup: {
+                from: 'users',
+                localField: 'product.seller',
+                foreignField: '_id',
+                as: 'seller'
+            }
+        },
+        { $unwind: { path: '$seller', preserveNullAndEmptyArrays: true } },
+        {
+            $project: {
+                _id: '$product._id',
+                name: '$product.name',
+                description: '$product.description',
+                price: '$product.price',
+                oldPrice: '$product.oldPrice',
+                wholesalePrice: '$product.wholesalePrice',
+                platformCommissionRate: '$product.platformCommissionRate',
+                images: '$product.images',
+                category: '$product.category',
+                subcategory: '$product.subcategory',
+                brand: '$product.brand',
+                colors: '$product.colors',
+                sizes: '$product.sizes',
+                variants: '$product.variants',
+                stock: '$product.stock',
+                sellerId: '$product.seller',
+                seller: {
+                    $cond: [
+                        { $ifNull: ['$seller._id', false] },
+                        { _id: '$seller._id', name: '$seller.name', shopName: '$seller.shopName' },
+                        '$product.seller'
+                    ]
+                },
+                shop: '$product.shop',
+                rating: '$product.rating',
+                numReviews: '$product.numReviews',
+                likesCount: '$product.likesCount',
+                createdAt: '$product.createdAt',
+                updatedAt: '$product.updatedAt',
+                soldQuantity: '$totalQuantity',
+                soldRevenue: '$totalRevenue'
+            }
+        }
+    ]);
+
+    const products = results.map((p) => {
+        const commissionRate = p.platformCommissionRate || 20;
+        return {
+            ...p,
+            finalPrice: p.price * (1 + commissionRate / 100),
+            displayPrice: p.price * (1 + commissionRate / 100)
+        };
+    });
+
+    res.json({
+        success: true,
+        count: products.length,
+        products
+    });
+});
+
 
 module.exports = {
     getProducts,
@@ -472,5 +567,6 @@ module.exports = {
     getProductsByCategory,
     toggleLikeProduct,
     getFlashDeals,
-    getTopSellers
+    getTopSellers,
+    getBestSellerProducts
 };

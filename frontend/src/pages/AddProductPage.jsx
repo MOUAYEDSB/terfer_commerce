@@ -49,6 +49,7 @@ const AddProductPage = () => {
     const [formData, setFormData] = useState({
         name: '',
         description: '',
+        utilisation: '',
         price: '',
         oldPrice: '',
         wholesalePrice: '',
@@ -82,6 +83,7 @@ const AddProductPage = () => {
                 setFormData({
                     name: product.name || '',
                     description: product.description || '',
+                    utilisation: product.utilisation || '',
                     price: product.price?.toString() || '',
                     oldPrice: product.oldPrice?.toString() || '',
                     wholesalePrice: product.wholesalePrice?.toString() || '',
@@ -307,6 +309,7 @@ const AddProductPage = () => {
             const productData = {
                 name: formData.name,
                 description: formData.description,
+                utilisation: formData.utilisation,
                 price: parseFloat(formData.price),
                 oldPrice: formData.oldPrice ? parseFloat(formData.oldPrice) : undefined,
                 wholesalePrice: formData.wholesalePrice ? parseFloat(formData.wholesalePrice) : undefined,
@@ -476,6 +479,20 @@ const AddProductPage = () => {
                                             rows={5}
                                             className="block w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition resize-none"
                                             placeholder="Décrivez votre produit en détail..."
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                            Utilisation
+                                        </label>
+                                        <textarea
+                                            name="utilisation"
+                                            value={formData.utilisation}
+                                            onChange={handleChange}
+                                            rows={4}
+                                            className="block w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition resize-none"
+                                            placeholder="Ex: comment utiliser / recommandations / instructions..."
                                         />
                                     </div>
 

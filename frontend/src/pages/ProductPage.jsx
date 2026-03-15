@@ -26,7 +26,7 @@ const ProductPage = () => {
     const [selectedColor, setSelectedColor] = useState(null); // nom couleur ou index si pas de noms
     const [selectedSize, setSelectedSize] = useState(null);
     const [quantity, setQuantity] = useState(1);
-    const [activeTab, setActiveTab] = useState('description');
+    const [activeTab, setActiveTab] = useState('utilisation');
     const [showFullDescription, setShowFullDescription] = useState(false);
     const tabsRef = useRef(null);
     const [reviewRating, setReviewRating] = useState(5);
@@ -354,11 +354,11 @@ const ProductPage = () => {
                             {/* Description Preview with Scroll Arrow */}
                             <div className="mt-4">
                                 <p className="text-gray-600 text-base leading-relaxed inline">
-                                    {product.description || 'Aucune description disponible.'}
+                                    {product.utilisation || product.description || 'Aucune description disponible.'}
                                     {' '}
                                     <button
                                         onClick={() => {
-                                            setActiveTab('description');
+                                            setActiveTab('utilisation');
                                             setTimeout(() => {
                                                 const element = tabsRef.current;
                                                 if (element) {
@@ -489,21 +489,25 @@ const ProductPage = () => {
                 {/* Tabs Section (Desc, Reviews, etc) */}
                 <div ref={tabsRef} className="mt-12 bg-white rounded-2xl shadow-sm p-6 md:p-10">
                     <div className="flex gap-8 border-b border-gray-200 mb-6 overflow-x-auto">
-                        {['description', 'reviews', 'seller'].map((tab) => (
+                        {['utilisation', 'reviews', 'seller'].map((tab) => (
                             <button
                                 key={tab}
                                 onClick={() => setActiveTab(tab)}
                                 className={`pb-4 text-lg font-semibold transition whitespace-nowrap ${activeTab === tab ? 'text-primary border-b-2 border-primary' : 'text-gray-400 hover:text-gray-700'}`}
                             >
-                                {t(`product.${tab}`)}
+                                {tab === 'utilisation'
+                                    ? t('product.utilisation', { defaultValue: 'Utilisation' })
+                                    : tab === 'reviews'
+                                        ? t('product.reviews', { defaultValue: 'Avis clients' })
+                                        : t('product.seller', { defaultValue: 'Vendeur' })}
                             </button>
                         ))}
                     </div>
 
                     <div className="animate-fade-in">
-                        {activeTab === 'description' && (
+                        {activeTab === 'utilisation' && (
                             <div className="prose max-w-none text-gray-600 leading-relaxed whitespace-pre-line">
-                                {product.description || 'Aucune description disponible.'}
+                                {product.utilisation || product.description || 'Aucune description disponible.'}
                             </div>
                         )}
                         {activeTab === 'reviews' && (

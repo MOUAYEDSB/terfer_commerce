@@ -146,7 +146,7 @@ const SellerProductsPage = () => {
                                                         </div>
                                                         <div className="min-w-0">
                                                             <p className="font-semibold text-gray-900 truncate">{p.name}</p>
-                                                            <p className="text-[10px] text-gray-400 line-clamp-1 mb-1">{p.description}</p>
+                                                            <p className="text-[10px] text-gray-400 line-clamp-1 mb-1">{p.utilisation || p.description}</p>
                                                             <p className="text-xs text-gray-500 truncate">{p.brand || p.shop}</p>
                                                         </div>
                                                     </div>

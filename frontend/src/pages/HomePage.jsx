@@ -28,6 +28,8 @@ const HomePage = () => {
     const [currentImageIndex, setCurrentImageIndex] = React.useState(0);
     const [products, setProducts] = React.useState([]);
     const [loading, setLoading] = React.useState(true);
+    const [bestSellers, setBestSellers] = React.useState([]);
+    const [bestSellersLoading, setBestSellersLoading] = React.useState(true);
     const { toggleWishlist, isInWishlist } = useWishlist();
     const heroTitle = t('home.hero.title');
     const heroTitleTerIndex = heroTitle.toLowerCase().indexOf('ter');
@@ -51,6 +53,20 @@ const HomePage = () => {
             }
         };
         fetchProducts();
+    }, []);
+
+    React.useEffect(() => {
+        const fetchBestSellers = async () => {
+            try {
+                const { data } = await axios.get('http://localhost:5000/api/products/best-sellers?limit=4');
+                setBestSellers(data.products || []);
+                setBestSellersLoading(false);
+            } catch (error) {
+                console.error('Error fetching best sellers:', error);
+                setBestSellersLoading(false);
+            }
+        };
+        fetchBestSellers();
     }, []);
 
     React.useEffect(() => {
@@ -270,6 +286,83 @@ const HomePage = () => {
                                 <p className="text-gray-500">{t('home.new_arrivals.no_products')}</p>
                             </div>
                         )}
+                    </div>
+
+                    {/* Best Sellers */}
+                    <div className="mt-16 pt-16 border-t border-gray-200/70">
+                        <div className="flex justify-between items-center mb-10">
+                            <h2 className="text-3xl font-bold text-gray-900">{t('home.best_sellers.title', { defaultValue: 'Meilleures ventes' })}</h2>
+                            <Link to="/shop" className="text-primary font-semibold hover:underline flex items-center gap-1">
+                                {t('home.best_sellers.view_all', { defaultValue: 'Voir tout' })} <ArrowRight size={16} className={isRtl ? 'rotate-180' : ''} />
+                            </Link>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                            {bestSellersLoading ? (
+                                Array(4).fill(0).map((_, idx) => (
+                                    <div key={idx} className="animate-pulse bg-white rounded-2xl p-4 shadow-sm h-96">
+                                        <div className="bg-gray-200 h-64 rounded-xl mb-4"></div>
+                                        <div className="bg-gray-200 h-4 w-3/4 rounded mb-2"></div>
+                                        <div className="bg-gray-200 h-4 w-1/2 rounded"></div>
+                                    </div>
+                                ))
+                            ) : bestSellers.length > 0 ? (
+                                bestSellers.map((product) => (
+                                    <div key={product._id} className="bg-white rounded-2xl shadow-sm hover:shadow-xl transition duration-300 overflow-hidden group">
+                                        <div className="relative h-72 bg-gray-100 overflow-hidden">
+                                            <Link to={`/product/${product._id}`} className="block h-full w-full">
+                                                <img src={getImgUrl(product.images?.[0])} alt={product.name} className="w-full h-full object-cover group-hover:scale-110 transition duration-500" />
+                                            </Link>
+                                            <button
+                                                onClick={() => toggleWishlist({ ...product, id: product._id })}
+                                                className={`absolute top-4 ${isRtl ? 'left-4' : 'right-4'} p-2 rounded-full shadow-md transition ${isInWishlist(product._id) ? 'bg-red-50 text-red-500' : 'bg-white text-gray-400 hover:text-red-500'}`}
+                                                aria-label="Ajouter aux favoris"
+                                            >
+                                                <Heart size={18} fill={isInWishlist(product._id) ? 'currentColor' : 'none'} />
+                                            </button>
+                                            <button className={`absolute bottom-4 ${isRtl ? 'left-4' : 'right-4'} bg-white text-gray-900 p-3 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition duration-300 hover:bg-primary hover:text-white`}>
+                                                <ArrowRight size={20} className={isRtl ? 'rotate-180' : ''} />
+                                            </button>
+                                            <span className={`absolute top-4 ${isRtl ? 'right-4' : 'left-4'} bg-primary/90 backdrop-blur text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide`}>
+                                                {t('home.best_sellers.badge', { defaultValue: 'Top ventes' })}
+                                            </span>
+                                            <span className={`absolute bottom-4 ${isRtl ? 'right-4' : 'left-4'} bg-white/90 backdrop-blur text-xs font-bold px-3 py-1 rounded-full`}>
+                                                {t('home.best_sellers.sold', { count: product.soldQuantity || 0, defaultValue: '{{count}} vendus' })}
+                                            </span>
+                                        </div>
+                                        <div className="p-6">
+                                            <div className="flex justify-between items-start mb-2">
+                                                <div>
+                                                    <Link to={`/shop/${product.seller?._id || product.sellerId || product.seller}`} className="text-sm text-gray-500 mb-1 hover:text-primary hover:underline block">{product.shop}</Link>
+                                                    <Link to={`/product/${product._id}`} className="text-lg font-bold text-gray-900 leading-tight hover:text-primary transition block">
+                                                        {product.name}
+                                                    </Link>
+                                                    <p className="text-sm text-gray-500 line-clamp-2 mt-1">{product.description}</p>
+                                                </div>
+                                                <div className="flex items-center gap-1 text-yellow-500 text-sm font-bold">
+                                                    <Star size={14} fill="currentColor" /> {product.rating || 0}
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center justify-between mt-4">
+                                                <div className="flex items-baseline gap-2">
+                                                    <p className="text-xl font-bold text-primary">{(product.finalPrice || product.price)?.toFixed(2)} TND</p>
+                                                    {product.oldPrice && product.oldPrice > 0 && (
+                                                        <p className="text-xl text-gray-400 font-semibold line-through">{product.oldPrice} TND</p>
+                                                    )}
+                                                </div>
+                                                <button className="text-sm font-semibold text-gray-900 border-b-2 border-gray-200 hover:border-gray-900 transition">
+                                                    {t('home.new_arrivals.add')}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="col-span-full text-center py-10">
+                                    <p className="text-gray-500">{t('home.best_sellers.no_products', { defaultValue: 'Aucun produit trouvé' })}</p>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
             </section>

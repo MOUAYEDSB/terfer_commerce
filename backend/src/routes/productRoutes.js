@@ -10,7 +10,8 @@ const {
     getProductsByCategory,
     toggleLikeProduct,
     getFlashDeals,
-    getTopSellers
+    getTopSellers,
+    getBestSellerProducts
 } = require('../controllers/productController');
 const { protect, seller } = require('../middleware/authMiddleware');
 
@@ -18,6 +19,7 @@ const { protect, seller } = require('../middleware/authMiddleware');
 router.get('/', getProducts);
 router.get('/flash-deals', getFlashDeals);
 router.get('/top-sellers', getTopSellers);
+router.get('/best-sellers', getBestSellerProducts);
 router.get('/category/:category', getProductsByCategory);
 router.get('/:id', getProductById);
 
