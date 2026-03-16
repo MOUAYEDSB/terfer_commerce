@@ -71,14 +71,14 @@ const AdminDashboardPage = () => {
     },
     {
       title: 'Revenu Total',
-      value: `${(stats?.totalRevenue || 0).toFixed(2)} DZD`,
+      value: `${(stats?.totalRevenue || 0).toFixed(2)} TND`,
       icon: DollarSign,
       color: 'bg-emerald-500',
       bgLight: 'bg-emerald-50'
     },
     {
       title: `Gains Plateforme (${stats?.platformCommissionRate || 20}%)`,
-      value: `${(stats?.platformEarnings || 0).toFixed(2)} DZD`,
+      value: `${(stats?.platformEarnings || 0).toFixed(2)} TND`,
       icon: TrendingUp,
       color: 'bg-indigo-500',
       bgLight: 'bg-indigo-50'
@@ -121,7 +121,7 @@ const AdminDashboardPage = () => {
               <h3 className="text-lg font-semibold">Gains Plateforme</h3>
               <TrendingUp className="w-8 h-8 opacity-80" />
             </div>
-            <p className="text-3xl font-bold mb-2">{(stats?.platformEarnings || 0).toFixed(2)} DZD</p>
+            <p className="text-3xl font-bold mb-2">{(stats?.platformEarnings || 0).toFixed(2)} TND</p>
             <p className="text-sm opacity-90">Commission de {stats?.platformCommissionRate || 20}% sur toutes les ventes</p>
             <div className="mt-4 pt-4 border-t border-white/20">
               <p className="text-sm">
@@ -135,7 +135,7 @@ const AdminDashboardPage = () => {
               <h3 className="text-lg font-semibold">Revenus Vendeurs</h3>
               <Store className="w-8 h-8 opacity-80" />
             </div>
-            <p className="text-3xl font-bold mb-2">{(stats?.sellerEarnings || 0).toFixed(2)} DZD</p>
+            <p className="text-3xl font-bold mb-2">{(stats?.sellerEarnings || 0).toFixed(2)} TND</p>
             <p className="text-sm opacity-90">Total des gains des vendeurs</p>
             <div className="mt-4 pt-4 border-t border-white/20">
               <p className="text-sm">
@@ -168,7 +168,7 @@ const AdminDashboardPage = () => {
                       {seller._id?.shopName || 'N/A'}
                     </td>
                     <td className="px-4 py-3 text-sm text-right font-semibold text-green-600">
-                      {seller.totalSales.toFixed(2)} DZD
+                      {seller.totalSales.toFixed(2)} TND
                     </td>
                     <td className="px-4 py-3 text-sm text-right text-gray-600">
                       {seller.totalOrders}
@@ -219,7 +219,7 @@ const AdminDashboardPage = () => {
                       </span>
                     </td>
                     <td className="px-4 py-3 text-sm text-right font-semibold text-gray-900">
-                      {order.total.toFixed(2)} DZD
+                      {order.total.toFixed(2)} TND
                     </td>
                     <td className="px-4 py-3 text-sm text-right text-gray-600">
                       {new Date(order.createdAt).toLocaleDateString('fr-FR')}

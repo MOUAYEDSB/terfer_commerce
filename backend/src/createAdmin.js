@@ -1,7 +1,10 @@
 const mongoose = require('mongoose');
 const User = require('./models/User');
-const bcrypt = require('bcryptjs');
-require('dotenv').config();
+const path = require('path');
+const dotenv = require('dotenv');
+
+// Always load .env from backend root (works regardless of current working directory)
+dotenv.config({ path: path.join(__dirname, '..', '.env') });
 
 const DEFAULT_ADMIN_EMAIL = 'adminterfer@gmail.com';
 const DEFAULT_ADMIN_PASSWORD = 'AdminTerfer@123';

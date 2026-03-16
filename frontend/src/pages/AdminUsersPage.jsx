@@ -289,7 +289,7 @@ const AdminUsersPage = () => {
                           </p>
                         </div>
                         <div className="text-right">
-                          <p className="font-semibold">{order.total.toFixed(2)} DZD</p>
+                          <p className="font-semibold">{order.total.toFixed(2)} TND</p>
                           <span className={`text-xs px-2 py-1 rounded-full ${
                             order.status === 'delivered' ? 'bg-green-100 text-green-800' :
                             order.status === 'shipped' ? 'bg-blue-100 text-blue-800' :
@@ -321,7 +321,7 @@ const AdminUsersPage = () => {
                           )}
                           <div className="flex-1">
                             <p className="font-medium text-sm">{product.name}</p>
-                            <p className="text-sm text-gray-600">{product.price.toFixed(2)} DZD</p>
+                            <p className="text-sm text-gray-600">{product.price.toFixed(2)} TND</p>
                           </div>
                           <div className="text-sm text-gray-600">
                             Stock: {product.stock}

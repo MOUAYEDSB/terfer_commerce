@@ -1,21 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import AdminLayout from '../components/AdminLayout';
-import { DollarSign, TrendingUp, Store, Calendar } from 'lucide-react';
+import { DollarSign, TrendingUp, Store, Calendar, RotateCcw } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const AdminEarningsPage = () => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [timeframe, setTimeframe] = useState('all'); // all, today, week, month
+  const [weeks, setWeeks] = useState(12);
+  const [resetting, setResetting] = useState(false);
 
   useEffect(() => {
     fetchEarnings();
-  }, [timeframe]);
+  }, [timeframe, weeks]);
 
   const fetchEarnings = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/admin/stats', {
+      const response = await fetch(`http://localhost:5000/api/admin/stats?weeks=${weeks}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -27,6 +29,36 @@ const AdminEarningsPage = () => {
     } catch (error) {
       toast.error('Erreur lors du chargement des gains');
     } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResetStats = async () => {
+    const confirmed = window.confirm(
+      'RÃ©initialiser les stats ? Ceci supprimera toutes les commandes (revenu, gains plateforme/vendeurs).'
+    );
+    if (!confirmed) return;
+
+    try {
+      setResetting(true);
+      const token = localStorage.getItem('token');
+      const response = await fetch('http://localhost:5000/api/admin/stats/reset', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ confirm: true })
+      });
+
+      if (!response.ok) throw new Error('Failed to reset stats');
+      toast.success('Stats rÃ©initialisÃ©es');
+      setLoading(true);
+      await fetchEarnings();
+    } catch (error) {
+      toast.error('Erreur lors de la rÃ©initialisation');
+    } finally {
+      setResetting(false);
       setLoading(false);
     }
   };
@@ -50,6 +82,30 @@ const AdminEarningsPage = () => {
             <h1 className="text-3xl font-bold text-gray-900">Gains de la Plateforme</h1>
             <p className="text-gray-600 mt-1">Commission de {stats?.platformCommissionRate || 20}% sur toutes les ventes</p>
           </div>
+          <div className="flex items-center gap-2">
+            <div className="hidden md:flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-3 py-2">
+              <Calendar className="w-4 h-4 text-gray-500" />
+              <select
+                value={weeks}
+                onChange={(e) => setWeeks(parseInt(e.target.value, 10))}
+                className="text-sm outline-none bg-transparent text-gray-700"
+              >
+                <option value={4}>4 semaines</option>
+                <option value={12}>12 semaines</option>
+                <option value={24}>24 semaines</option>
+                <option value={52}>52 semaines</option>
+              </select>
+            </div>
+            <button
+              onClick={handleResetStats}
+              disabled={resetting}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition disabled:opacity-60"
+              title="RÃ©initialiser revenu/gains"
+            >
+              <RotateCcw className="w-4 h-4" />
+              {resetting ? 'RÃ©initialisation...' : 'RÃ©initialiser'}
+            </button>
+          </div>
         </div>
 
         {/* Main Stats */}
@@ -59,7 +115,7 @@ const AdminEarningsPage = () => {
               <h3 className="text-lg font-semibold">Gains Plateforme</h3>
               <DollarSign className="w-8 h-8 opacity-80" />
             </div>
-            <p className="text-4xl font-bold mb-2">{(stats?.platformEarnings || 0).toFixed(2)} DZD</p>
+            <p className="text-4xl font-bold mb-2">{(stats?.platformEarnings || 0).toFixed(2)} TND</p>
             <p className="text-sm opacity-90">Commission totale</p>
           </div>
 
@@ -68,7 +124,7 @@ const AdminEarningsPage = () => {
               <h3 className="text-lg font-semibold">Revenus Vendeurs</h3>
               <Store className="w-8 h-8 opacity-80" />
             </div>
-            <p className="text-4xl font-bold mb-2">{(stats?.sellerEarnings || 0).toFixed(2)} DZD</p>
+            <p className="text-4xl font-bold mb-2">{(stats?.sellerEarnings || 0).toFixed(2)} TND</p>
             <p className="text-sm opacity-90">Total après commission</p>
           </div>
 
@@ -77,7 +133,7 @@ const AdminEarningsPage = () => {
               <h3 className="text-lg font-semibold">Revenu Total</h3>
               <TrendingUp className="w-8 h-8 opacity-80" />
             </div>
-            <p className="text-4xl font-bold mb-2">{(stats?.totalRevenue || 0).toFixed(2)} DZD</p>
+            <p className="text-4xl font-bold mb-2">{(stats?.totalRevenue || 0).toFixed(2)} TND</p>
             <p className="text-sm opacity-90">Toutes les ventes</p>
           </div>
         </div>
@@ -133,7 +189,7 @@ const AdminEarningsPage = () => {
               <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                 <span className="text-sm text-gray-600">Gain moyen par commande</span>
                 <span className="text-sm font-bold text-gray-900">
-                  {((stats?.platformEarnings / stats?.totalOrders) || 0).toFixed(2)} DZD
+                  {((stats?.platformEarnings / stats?.totalOrders) || 0).toFixed(2)} TND
                 </span>
               </div>
               <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
@@ -157,10 +213,92 @@ const AdminEarningsPage = () => {
                 Le vendeur définit son prix de base, et le prix final affiché au client inclut automatiquement cette commission.
               </p>
               <p className="text-sm text-blue-800 mt-2">
-                <strong>Exemple :</strong> Si un vendeur met un produit à 100 DZD, le client paiera 120 DZD (100 DZD pour le vendeur + 20 DZD de commission).
+                <strong>Exemple :</strong> Si un vendeur met un produit à 100 TND, le client paiera 120 TND (100 TND pour le vendeur + 20 TND de commission).
               </p>
             </div>
           </div>
+        </div>
+
+        {/* Seller Breakdown */}
+        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+          <h3 className="text-lg font-bold text-gray-900 mb-4">Gains par boutique</h3>
+          {stats?.sellerBreakdown?.length ? (
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Boutique</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Vendeur</th>
+                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Ventes</th>
+                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Gains plateforme</th>
+                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Gains vendeur</th>
+                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Commandes</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {stats.sellerBreakdown.map((row) => (
+                    <tr key={row._id?._id || row._id} className="hover:bg-gray-50">
+                      <td className="px-4 py-3 text-sm text-gray-900">{row._id?.shopName || 'N/A'}</td>
+                      <td className="px-4 py-3 text-sm text-gray-700">{row._id?.name || 'N/A'}</td>
+                      <td className="px-4 py-3 text-sm text-right font-medium text-gray-900">
+                        {(row.grossSales || 0).toFixed(2)} TND
+                      </td>
+                      <td className="px-4 py-3 text-sm text-right font-semibold text-indigo-600">
+                        {(row.platformEarnings || 0).toFixed(2)} TND
+                      </td>
+                      <td className="px-4 py-3 text-sm text-right font-semibold text-emerald-600">
+                        {(row.sellerEarnings || 0).toFixed(2)} TND
+                      </td>
+                      <td className="px-4 py-3 text-sm text-right text-gray-700">{row.totalOrders || 0}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <p className="text-sm text-gray-600">Aucune donnÃ©e pour le moment.</p>
+          )}
+        </div>
+
+        {/* Weekly Breakdown */}
+        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+          <h3 className="text-lg font-bold text-gray-900 mb-4">Gains par semaine</h3>
+          {stats?.weeklyBreakdown?.length ? (
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Semaine</th>
+                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Ventes</th>
+                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Gains plateforme</th>
+                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Gains vendeurs</th>
+                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Commandes</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {stats.weeklyBreakdown.map((row) => (
+                    <tr key={`${row.year}-${row.week}`} className="hover:bg-gray-50">
+                      <td className="px-4 py-3 text-sm text-gray-900">
+                        S{row.week} / {row.year}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-right font-medium text-gray-900">
+                        {(row.grossSales || 0).toFixed(2)} TND
+                      </td>
+                      <td className="px-4 py-3 text-sm text-right font-semibold text-indigo-600">
+                        {(row.platformEarnings || 0).toFixed(2)} TND
+                      </td>
+                      <td className="px-4 py-3 text-sm text-right font-semibold text-emerald-600">
+                        {(row.sellerEarnings || 0).toFixed(2)} TND
+                      </td>
+                      <td className="px-4 py-3 text-sm text-right text-gray-700">{row.totalOrders || 0}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <p className="text-sm text-gray-600">Aucune donnÃ©e pour la pÃ©riode sÃ©lectionnÃ©e.</p>
+          )}
         </div>
       </div>
     </AdminLayout>

@@ -174,7 +174,7 @@ const AdminProductsPage = () => {
 
                 <div className="flex items-center justify-between pt-2">
                   <div>
-                    <p className="text-lg font-bold text-orange-500">{product.price.toFixed(2)} DZD</p>
+                    <p className="text-lg font-bold text-orange-500">{product.price.toFixed(2)} TND</p>
                     <p className="text-sm text-gray-500">Stock: {product.stock}</p>
                   </div>
                 </div>

@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const {
     getAdminStats,
+    resetAdminStats,
     getAllUsers,
     getUserById,
     updateUser,
@@ -21,6 +22,7 @@ router.use(admin);
 
 // Stats
 router.get('/stats', getAdminStats);
+router.post('/stats/reset', resetAdminStats);
 
 // Users Management
 router.get('/users', getAllUsers);

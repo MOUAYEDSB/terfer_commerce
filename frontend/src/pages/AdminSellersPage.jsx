@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AdminLayout from '../components/AdminLayout';
-import { Store, TrendingUp, Package, ShoppingCart, Eye, Ban, CheckCircle, X, Plus } from 'lucide-react';
+import { Store, TrendingUp, Package, ShoppingCart, Eye, Ban, CheckCircle, X, Plus, Trash2, Edit } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const AdminSellersPage = () => {
@@ -10,6 +10,9 @@ const AdminSellersPage = () => {
   const [loading, setLoading] = useState(true);
   const [selectedSeller, setSelectedSeller] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [editSeller, setEditSeller] = useState(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     fetchSellers();
@@ -52,6 +55,75 @@ const AdminSellersPage = () => {
     }
   };
 
+  const openEditSeller = async (sellerId) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:5000/api/admin/users/${sellerId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) throw new Error('Failed to fetch seller details');
+      const data = await response.json();
+      setEditSeller({
+        _id: data.user._id,
+        name: data.user.name || '',
+        email: data.user.email || '',
+        phone: data.user.phone || '',
+        shopName: data.user.shopName || '',
+        shopDescription: data.user.shopDescription || '',
+        shopPhone: data.user.shopPhone || '',
+        shopEmail: data.user.shopEmail || '',
+        shopAddress: data.user.shopAddress || '',
+        shopCity: data.user.shopCity || ''
+      });
+      setShowEditModal(true);
+    } catch (error) {
+      toast.error('Erreur lors du chargement pour modification');
+    }
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editSeller?._id) return;
+
+    try {
+      setSaving(true);
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:5000/api/admin/users/${editSeller._id}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          name: editSeller.name,
+          email: editSeller.email,
+          phone: editSeller.phone,
+          shopName: editSeller.shopName,
+          shopDescription: editSeller.shopDescription,
+          shopPhone: editSeller.shopPhone,
+          shopEmail: editSeller.shopEmail,
+          shopAddress: editSeller.shopAddress,
+          shopCity: editSeller.shopCity
+        })
+      });
+
+      if (!response.ok) throw new Error('Failed to update seller');
+      toast.success('Boutique mise Ã  jour');
+      setShowEditModal(false);
+      setEditSeller(null);
+      if (selectedSeller?.user?._id === editSeller._id) {
+        await viewSellerDetails(editSeller._id);
+      }
+      fetchSellers();
+    } catch (error) {
+      toast.error('Erreur lors de la mise Ã  jour');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const handleToggleActive = async (sellerId, currentStatus) => {
     try {
       const token = localStorage.getItem('token');
@@ -69,6 +141,33 @@ const AdminSellersPage = () => {
       fetchSellers();
     } catch (error) {
       toast.error('Erreur lors de la mise à jour');
+    }
+  };
+
+  const handleDeleteSeller = async (sellerId) => {
+    const confirmed = window.confirm(
+      'Confirmer la suppression de cette boutique ? Cette action supprimera aussi tous ses produits.'
+    );
+    if (!confirmed) return;
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:5000/api/admin/users/${sellerId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) throw new Error('Failed to delete seller');
+      toast.success('Boutique supprimée');
+      if (selectedSeller?.user?._id === sellerId) {
+        setShowModal(false);
+        setSelectedSeller(null);
+      }
+      fetchSellers();
+    } catch (error) {
+      toast.error('Erreur lors de la suppression de la boutique');
     }
   };
 
@@ -173,7 +272,20 @@ const AdminSellersPage = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {sellers.map((seller) => (
+                {sellers.length === 0 ? (
+                  <tr>
+                    <td colSpan="7" className="px-6 py-10 text-center">
+                      <p className="text-sm text-gray-600 mb-4">Aucune boutique trouvÃ©e.</p>
+                      <button
+                        onClick={() => navigate('/admin/sellers/create')}
+                        className="inline-flex items-center gap-2 bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg transition"
+                      >
+                        <Plus size={18} />
+                        CrÃ©er un Vendeur
+                      </button>
+                    </td>
+                  </tr>
+                ) : sellers.map((seller) => (
                   <tr key={seller._id} className="hover:bg-gray-50">
                     <td className="px-6 py-4">
                       <div>
@@ -192,7 +304,7 @@ const AdminSellersPage = () => {
                     <td className="px-6 py-4 text-sm text-right text-gray-900">{seller.totalProducts}</td>
                     <td className="px-6 py-4 text-sm text-right text-gray-900">{seller.totalOrders}</td>
                     <td className="px-6 py-4 text-sm text-right font-semibold text-green-600">
-                      {seller.totalSales.toFixed(2)} DZD
+                      {seller.totalSales.toFixed(2)} TND
                     </td>
                     <td className="px-6 py-4">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
@@ -201,34 +313,54 @@ const AdminSellersPage = () => {
                         {seller.isActive ? 'Active' : 'Suspendue'}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-right space-x-2">
-                      <button
-                        onClick={() => viewSellerDetails(seller._id)}
-                        className="inline-flex items-center px-3 py-1 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
-                      >
-                        <Eye size={16} className="mr-1" />
-                        Voir
-                      </button>
-                      <button
-                        onClick={() => handleToggleActive(seller._id, seller.isActive)}
-                        className={`inline-flex items-center px-3 py-1 rounded-lg transition ${
-                          seller.isActive
-                            ? 'bg-red-500 text-white hover:bg-red-600'
-                            : 'bg-green-500 text-white hover:bg-green-600'
-                        }`}
-                      >
-                        {seller.isActive ? (
-                          <>
-                            <Ban size={16} className="mr-1" />
-                            Suspendre
-                          </>
-                        ) : (
-                          <>
-                            <CheckCircle size={16} className="mr-1" />
-                            Activer
-                          </>
-                        )}
-                      </button>
+                    <td className="px-6 py-4 text-right">
+                      <div className="inline-flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => viewSellerDetails(seller._id)}
+                          className="inline-flex items-center px-3 py-1.5 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
+                          title="Voir les détails"
+                        >
+                          <Eye size={16} className="mr-1" />
+                          Voir
+                        </button>
+                        <button
+                          onClick={() => openEditSeller(seller._id)}
+                          className="inline-flex items-center px-3 py-1.5 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition"
+                          title="Modifier la boutique"
+                        >
+                          <Edit size={16} className="mr-1" />
+                          Modifier
+                        </button>
+                        <button
+                          onClick={() => handleToggleActive(seller._id, seller.isActive)}
+                          className={`inline-flex items-center px-3 py-1.5 rounded-lg transition ${
+                            seller.isActive
+                              ? 'bg-red-500 text-white hover:bg-red-600'
+                              : 'bg-green-500 text-white hover:bg-green-600'
+                          }`}
+                          title={seller.isActive ? 'Suspendre' : 'Activer'}
+                        >
+                          {seller.isActive ? (
+                            <>
+                              <Ban size={16} className="mr-1" />
+                              Suspendre
+                            </>
+                          ) : (
+                            <>
+                              <CheckCircle size={16} className="mr-1" />
+                              Activer
+                            </>
+                          )}
+                        </button>
+                        <button
+                          onClick={() => handleDeleteSeller(seller._id)}
+                          className="inline-flex items-center px-3 py-1.5 bg-gray-900 text-white rounded-lg hover:bg-black transition"
+                          title="Supprimer la boutique"
+                        >
+                          <Trash2 size={16} className="mr-1" />
+                          Supprimer
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -292,7 +424,7 @@ const AdminSellersPage = () => {
                         )}
                         <div className="flex-1 min-w-0">
                           <p className="font-medium text-sm truncate">{product.name}</p>
-                          <p className="text-sm text-gray-600">{product.price.toFixed(2)} DZD</p>
+                          <p className="text-sm text-gray-600">{product.price.toFixed(2)} TND</p>
                           <p className="text-xs text-gray-500">Stock: {product.stock}</p>
                         </div>
                       </div>
@@ -315,7 +447,7 @@ const AdminSellersPage = () => {
                           </p>
                         </div>
                         <div className="text-right">
-                          <p className="font-semibold">{order.total.toFixed(2)} DZD</p>
+                          <p className="font-semibold">{order.total.toFixed(2)} TND</p>
                           <span className={`text-xs px-2 py-1 rounded-full ${
                             order.status === 'delivered' ? 'bg-green-100 text-green-800' :
                             order.status === 'shipped' ? 'bg-blue-100 text-blue-800' :
@@ -327,6 +459,140 @@ const AdminSellersPage = () => {
                       </div>
                     ))}
                   </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Edit Seller Modal */}
+        {showEditModal && editSeller && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="p-6 border-b border-gray-200 flex justify-between items-center sticky top-0 bg-white">
+                <h3 className="text-xl font-bold">Modifier la boutique</h3>
+                <button
+                  onClick={() => {
+                    if (saving) return;
+                    setShowEditModal(false);
+                    setEditSeller(null);
+                  }}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <X size={24} />
+                </button>
+              </div>
+
+              <div className="p-6 space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm text-gray-600 mb-1">Nom boutique</label>
+                    <input
+                      value={editSeller.shopName}
+                      onChange={(e) => setEditSeller(s => ({ ...s, shopName: e.target.value }))}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm text-gray-600 mb-1">Ville</label>
+                    <input
+                      value={editSeller.shopCity}
+                      onChange={(e) => setEditSeller(s => ({ ...s, shopCity: e.target.value }))}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-sm text-gray-600 mb-1">Description</label>
+                    <textarea
+                      rows={3}
+                      value={editSeller.shopDescription}
+                      onChange={(e) => setEditSeller(s => ({ ...s, shopDescription: e.target.value }))}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    />
+                  </div>
+                </div>
+
+                <div className="border-t pt-6">
+                  <h4 className="font-semibold text-gray-900 mb-3">Infos vendeur</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm text-gray-600 mb-1">Nom</label>
+                      <input
+                        value={editSeller.name}
+                        onChange={(e) => setEditSeller(s => ({ ...s, name: e.target.value }))}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm text-gray-600 mb-1">TÃ©lÃ©phone</label>
+                      <input
+                        value={editSeller.phone}
+                        onChange={(e) => setEditSeller(s => ({ ...s, phone: e.target.value }))}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      />
+                    </div>
+                    <div className="md:col-span-2">
+                      <label className="block text-sm text-gray-600 mb-1">Email</label>
+                      <input
+                        type="email"
+                        value={editSeller.email}
+                        onChange={(e) => setEditSeller(s => ({ ...s, email: e.target.value }))}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="border-t pt-6">
+                  <h4 className="font-semibold text-gray-900 mb-3">Contact boutique</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm text-gray-600 mb-1">TÃ©lÃ©phone boutique</label>
+                      <input
+                        value={editSeller.shopPhone}
+                        onChange={(e) => setEditSeller(s => ({ ...s, shopPhone: e.target.value }))}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm text-gray-600 mb-1">Email boutique</label>
+                      <input
+                        type="email"
+                        value={editSeller.shopEmail}
+                        onChange={(e) => setEditSeller(s => ({ ...s, shopEmail: e.target.value }))}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      />
+                    </div>
+                    <div className="md:col-span-2">
+                      <label className="block text-sm text-gray-600 mb-1">Adresse</label>
+                      <input
+                        value={editSeller.shopAddress}
+                        onChange={(e) => setEditSeller(s => ({ ...s, shopAddress: e.target.value }))}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-2 pt-2">
+                  <button
+                    onClick={() => {
+                      if (saving) return;
+                      setShowEditModal(false);
+                      setEditSeller(null);
+                    }}
+                    className="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition disabled:opacity-60"
+                    disabled={saving}
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    onClick={handleSaveEdit}
+                    className="px-4 py-2 rounded-lg bg-orange-600 text-white hover:bg-orange-700 transition disabled:opacity-60"
+                    disabled={saving}
+                  >
+                    {saving ? 'Enregistrement...' : 'Enregistrer'}
+                  </button>
                 </div>
               </div>
             </div>

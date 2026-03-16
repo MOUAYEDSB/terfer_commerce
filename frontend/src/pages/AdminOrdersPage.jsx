@@ -194,7 +194,7 @@ const AdminOrdersPage = () => {
                       </span>
                     </td>
                     <td className="px-6 py-4 text-sm text-right font-semibold text-gray-900">
-                      {order.total.toFixed(2)} DZD
+                      {order.total.toFixed(2)} TND
                     </td>
                     <td className="px-6 py-4 text-sm text-right text-gray-600">
                       {new Date(order.createdAt).toLocaleDateString('fr-FR')}
@@ -276,11 +276,11 @@ const AdminOrdersPage = () => {
                             Boutique: {item.seller?.shopName || item.seller?.name || 'N/A'}
                           </p>
                           <p className="text-sm text-gray-600">
-                            Quantité: {item.quantity} × {item.price.toFixed(2)} DZD
+                            Quantité: {item.quantity} × {item.price.toFixed(2)} TND
                           </p>
                         </div>
                         <div className="text-right">
-                          <p className="font-semibold">{(item.quantity * item.price).toFixed(2)} DZD</p>
+                          <p className="font-semibold">{(item.quantity * item.price).toFixed(2)} TND</p>
                         </div>
                       </div>
                     ))}
@@ -291,16 +291,16 @@ const AdminOrdersPage = () => {
                 <div className="border-t border-gray-200 pt-4">
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-gray-600">Sous-total</span>
-                    <span className="font-medium">{selectedOrder.subtotal.toFixed(2)} DZD</span>
+                    <span className="font-medium">{selectedOrder.subtotal.toFixed(2)} TND</span>
                   </div>
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-gray-600">Livraison</span>
-                    <span className="font-medium">{selectedOrder.shippingCost.toFixed(2)} DZD</span>
+                    <span className="font-medium">{selectedOrder.shippingCost.toFixed(2)} TND</span>
                   </div>
                   <div className="flex justify-between items-center pt-2 border-t border-gray-200">
                     <span className="text-lg font-bold">Total</span>
                     <span className="text-lg font-bold text-orange-500">
-                      {selectedOrder.total.toFixed(2)} DZD
+                      {selectedOrder.total.toFixed(2)} TND
                     </span>
                   </div>
                 </div>

@@ -15,9 +15,15 @@ const generateToken = (id) => {
 const registerUser = async (req, res, next) => {
     try {
         const { name, email, password, role, shopName, shopDescription } = req.body;
+        const normalizedEmail = (email || '').trim().toLowerCase();
+
+        if (!normalizedEmail || !password || !name) {
+            res.status(400);
+            throw new Error('Name, email and password are required');
+        }
 
         // Check if user exists
-        const userExists = await User.findOne({ email });
+        const userExists = await User.findOne({ email: normalizedEmail });
 
         if (userExists) {
             res.status(400);
@@ -27,7 +33,7 @@ const registerUser = async (req, res, next) => {
         // Create user
         const user = await User.create({
             name,
-            email,
+            email: normalizedEmail,
             password,
             role: role || 'customer',
             shopName: role === 'seller' ? shopName : undefined,
@@ -58,10 +64,16 @@ const registerUser = async (req, res, next) => {
 const loginUser = async (req, res, next) => {
     try {
         const { email, password } = req.body;
+        const normalizedEmail = (email || '').trim().toLowerCase();
 
-        const user = await User.findOne({ email }).select('+password');
+        if (!normalizedEmail || !password) {
+            res.status(400);
+            throw new Error('Email and password are required');
+        }
 
-        if (user && (await user.matchPassword(password))) {
+        const user = await User.findOne({ email: normalizedEmail }).select('+password');
+
+        if (user && user.isActive !== false && (await user.matchPassword(password))) {
             res.json({
                 _id: user._id,
                 name: user.name,

@@ -148,16 +148,33 @@ const updateUser = asyncHandler(async (req, res) => {
         throw new Error('User not found');
     }
 
-    const { name, email, role, isActive, shopName, shopDescription } = req.body;
+    const {
+        name,
+        email,
+        role,
+        isActive,
+        phone,
+        shopName,
+        shopDescription,
+        shopPhone,
+        shopEmail,
+        shopAddress,
+        shopCity
+    } = req.body;
 
-    user.name = name || user.name;
-    user.email = email || user.email;
-    user.role = role || user.role;
-    user.isActive = isActive !== undefined ? isActive : user.isActive;
-    
+    if (name !== undefined) user.name = name;
+    if (email !== undefined) user.email = email;
+    if (role !== undefined) user.role = role;
+    if (phone !== undefined) user.phone = phone;
+    if (isActive !== undefined) user.isActive = isActive;
+
     if (user.role === 'seller') {
-        user.shopName = shopName || user.shopName;
-        user.shopDescription = shopDescription || user.shopDescription;
+        if (shopName !== undefined) user.shopName = shopName;
+        if (shopDescription !== undefined) user.shopDescription = shopDescription;
+        if (shopPhone !== undefined) user.shopPhone = shopPhone;
+        if (shopEmail !== undefined) user.shopEmail = shopEmail;
+        if (shopAddress !== undefined) user.shopAddress = shopAddress;
+        if (shopCity !== undefined) user.shopCity = shopCity;
     }
 
     const updatedUser = await user.save();
@@ -169,6 +186,198 @@ const updateUser = asyncHandler(async (req, res) => {
         role: updatedUser.role,
         isActive: updatedUser.isActive,
         shopName: updatedUser.shopName
+    });
+});
+
+// @desc    Get admin stats with breakdowns (seller + weekly)
+// @route   GET /api/admin/stats
+// @access  Private/Admin
+const getAdminStatsDetailed = asyncHandler(async (req, res) => {
+    const platformCommissionRate = 20;
+    const platformCommissionFactor = platformCommissionRate / 100;
+
+    const totalUsers = await User.countDocuments();
+    const totalSellers = await User.countDocuments({ role: 'seller' });
+    const totalCustomers = await User.countDocuments({ role: 'customer' });
+    const totalProducts = await Product.countDocuments();
+    const totalOrders = await Order.countDocuments();
+
+    const totalRevenueAgg = await Order.aggregate([
+        { $group: { _id: null, totalRevenue: { $sum: '$total' } } }
+    ]);
+    const totalRevenue = totalRevenueAgg[0]?.totalRevenue || 0;
+
+    const earningsAgg = await Order.aggregate([
+        { $unwind: '$items' },
+        {
+            $addFields: {
+                itemTotal: { $multiply: ['$items.price', '$items.quantity'] },
+                commission: {
+                    $ifNull: [
+                        '$items.platformCommission',
+                        { $multiply: [{ $multiply: ['$items.price', '$items.quantity'] }, platformCommissionFactor] }
+                    ]
+                }
+            }
+        },
+        {
+            $group: {
+                _id: null,
+                platformEarnings: { $sum: '$commission' },
+                sellerEarnings: { $sum: { $subtract: ['$itemTotal', '$commission'] } }
+            }
+        }
+    ]);
+
+    const platformEarnings = earningsAgg[0]?.platformEarnings || 0;
+    const sellerEarnings = earningsAgg[0]?.sellerEarnings || 0;
+
+    const recentOrders = await Order.find({})
+        .populate('user', 'name email')
+        .sort({ createdAt: -1 })
+        .limit(10);
+
+    const sellerBreakdown = await Order.aggregate([
+        { $unwind: '$items' },
+        {
+            $addFields: {
+                itemTotal: { $multiply: ['$items.price', '$items.quantity'] },
+                commission: {
+                    $ifNull: [
+                        '$items.platformCommission',
+                        { $multiply: [{ $multiply: ['$items.price', '$items.quantity'] }, platformCommissionFactor] }
+                    ]
+                }
+            }
+        },
+        {
+            $group: {
+                _id: '$items.seller',
+                grossSales: { $sum: '$itemTotal' },
+                platformEarnings: { $sum: '$commission' },
+                sellerEarnings: { $sum: { $subtract: ['$itemTotal', '$commission'] } },
+                orders: { $addToSet: '$_id' }
+            }
+        },
+        {
+            $project: {
+                grossSales: 1,
+                platformEarnings: 1,
+                sellerEarnings: 1,
+                totalOrders: { $size: '$orders' }
+            }
+        },
+        { $sort: { platformEarnings: -1 } }
+    ]);
+
+    const populatedSellerBreakdown = await User.populate(sellerBreakdown, {
+        path: '_id',
+        select: 'name email shopName'
+    });
+
+    const weeks = Math.max(1, Math.min(parseInt(req.query.weeks, 10) || 12, 104));
+    const fromDate = new Date(Date.now() - weeks * 7 * 24 * 60 * 60 * 1000);
+
+    const weeklyBreakdown = await Order.aggregate([
+        { $match: { createdAt: { $gte: fromDate } } },
+        { $unwind: '$items' },
+        {
+            $addFields: {
+                itemTotal: { $multiply: ['$items.price', '$items.quantity'] },
+                commission: {
+                    $ifNull: [
+                        '$items.platformCommission',
+                        { $multiply: [{ $multiply: ['$items.price', '$items.quantity'] }, platformCommissionFactor] }
+                    ]
+                }
+            }
+        },
+        {
+            $group: {
+                _id: {
+                    year: { $isoWeekYear: '$createdAt' },
+                    week: { $isoWeek: '$createdAt' }
+                },
+                grossSales: { $sum: '$itemTotal' },
+                platformEarnings: { $sum: '$commission' },
+                sellerEarnings: { $sum: { $subtract: ['$itemTotal', '$commission'] } },
+                orders: { $addToSet: '$_id' }
+            }
+        },
+        {
+            $project: {
+                _id: 0,
+                year: '$_id.year',
+                week: '$_id.week',
+                grossSales: 1,
+                platformEarnings: 1,
+                sellerEarnings: 1,
+                totalOrders: { $size: '$orders' }
+            }
+        },
+        { $sort: { year: -1, week: -1 } }
+    ]);
+
+    const topSellers = await Order.aggregate([
+        { $unwind: '$items' },
+        {
+            $group: {
+                _id: '$items.seller',
+                totalSales: { $sum: { $multiply: ['$items.price', '$items.quantity'] } },
+                orders: { $addToSet: '$_id' }
+            }
+        },
+        {
+            $project: {
+                totalSales: 1,
+                totalOrders: { $size: '$orders' }
+            }
+        },
+        { $sort: { totalSales: -1 } },
+        { $limit: 5 }
+    ]);
+
+    const populatedTopSellers = await User.populate(topSellers, {
+        path: '_id',
+        select: 'name email shopName'
+    });
+
+    res.json({
+        totalUsers,
+        totalSellers,
+        totalCustomers,
+        totalProducts,
+        totalOrders,
+        totalRevenue,
+        platformEarnings,
+        sellerEarnings,
+        platformCommissionRate,
+        recentOrders,
+        topSellers: populatedTopSellers,
+        sellerBreakdown: populatedSellerBreakdown,
+        weeklyBreakdown,
+        weeklyFrom: fromDate,
+        weeklyWeeks: weeks
+    });
+});
+
+// @desc    Reset stats (delete all orders)
+// @route   POST /api/admin/stats/reset
+// @access  Private/Admin
+const resetAdminStats = asyncHandler(async (req, res) => {
+    const confirm = req.body?.confirm;
+
+    if (confirm !== true) {
+        res.status(400);
+        throw new Error('Confirmation required');
+    }
+
+    const deleteResult = await Order.deleteMany({});
+    await User.updateMany({ role: 'seller' }, { $set: { totalSales: 0, totalRevenue: 0 } });
+
+    res.json({
+        message: 'Stats reset',
+        deletedOrders: deleteResult.deletedCount || 0
     });
 });
 
@@ -187,6 +396,11 @@ const deleteUser = asyncHandler(async (req, res) => {
     if (user.role === 'admin') {
         res.status(400);
         throw new Error('Cannot delete admin account');
+    }
+
+    // If seller is deleted, also remove their products to avoid orphaned listings
+    if (user.role === 'seller') {
+        await Product.deleteMany({ seller: user._id });
     }
 
     await user.deleteOne();
@@ -403,7 +617,8 @@ const getSellersStats = asyncHandler(async (req, res) => {
 });
 
 module.exports = {
-    getAdminStats,
+    getAdminStats: getAdminStatsDetailed,
+    resetAdminStats,
     getAllUsers,
     getUserById,
     updateUser,
