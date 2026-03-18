@@ -351,28 +351,51 @@ const ProductPage = () => {
                                 </div>
                             </div>
                             
-                            {/* Description Preview with Scroll Arrow */}
+                            {/* Description (under price) */}
                             <div className="mt-4">
-                                <p className="text-gray-600 text-base leading-relaxed inline">
-                                    {product.utilisation || product.description || 'Aucune description disponible.'}
-                                    {' '}
-                                    <button
-                                        onClick={() => {
-                                            setActiveTab('utilisation');
-                                            setTimeout(() => {
-                                                const element = tabsRef.current;
-                                                if (element) {
-                                                    const yOffset = -200;
-                                                    const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
-                                                    window.scrollTo({ top: y, behavior: 'smooth' });
-                                                }
-                                            }, 100);
-                                        }}
-                                        className="text-primary hover:text-primary/80 transition inline align-middle"
-                                    >
-                                        <ChevronDown size={20} />
-                                    </button>
-                                </p>
+                                {(() => {
+                                    const desc = (product.description || '').trim();
+                                    const hasDesc = desc.length > 0;
+                                    const short = hasDesc && desc.length > 260 ? `${desc.slice(0, 260)}...` : desc;
+                                    const shouldToggle = hasDesc && desc.length > 260;
+
+                                    return (
+                                        <div className="text-gray-600 text-base leading-relaxed whitespace-pre-line">
+                                            <p className="inline">
+                                                {hasDesc ? (showFullDescription ? desc : short) : 'Aucune description disponible.'}
+                                            </p>
+                                            {shouldToggle && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setShowFullDescription((v) => !v)}
+                                                    className="ml-2 text-primary hover:text-primary/80 font-semibold transition inline-flex items-center gap-1 align-middle"
+                                                >
+                                                    {showFullDescription ? 'Voir moins' : 'Voir plus'}
+                                                    <ChevronDown size={18} className={showFullDescription ? 'rotate-180 transition' : 'transition'} />
+                                                </button>
+                                            )}
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setActiveTab('utilisation');
+                                                    setTimeout(() => {
+                                                        const element = tabsRef.current;
+                                                        if (element) {
+                                                            const yOffset = -200;
+                                                            const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
+                                                            window.scrollTo({ top: y, behavior: 'smooth' });
+                                                        }
+                                                    }, 100);
+                                                }}
+                                                className="ml-2 text-primary hover:text-primary/80 transition inline-flex items-center align-middle"
+                                                aria-label="Aller à la section utilisation"
+                                                title="Voir utilisation"
+                                            >
+                                                <ChevronDown size={20} />
+                                            </button>
+                                        </div>
+                                    );
+                                })()}
                             </div>
                             
                             <p className="text-green-600 text-sm mt-3 flex items-center gap-1">
@@ -507,7 +530,7 @@ const ProductPage = () => {
                     <div className="animate-fade-in">
                         {activeTab === 'utilisation' && (
                             <div className="prose max-w-none text-gray-600 leading-relaxed whitespace-pre-line">
-                                {product.utilisation || product.description || 'Aucune description disponible.'}
+                                {product.utilisation || 'Aucune information d\'utilisation disponible.'}
                             </div>
                         )}
                         {activeTab === 'reviews' && (
