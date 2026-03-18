@@ -2,6 +2,7 @@ const asyncHandler = require('express-async-handler');
 const crypto = require('crypto');
 const User = require('../models/User');
 const generateToken = require('../utils/generateToken');
+const { sendPasswordResetEmail, assertEmailConfigured } = require('../services/emailService');
 
 /**
  * @desc    Request password reset token (Forgot Password)
@@ -41,19 +42,31 @@ const forgotPassword = asyncHandler(async (req, res) => {
     user.resetPasswordExpiry = resetTokenExpiry;
     await user.save({ validateBeforeSave: false });
 
-    // TODO: Send email with reset link
-    // const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
-    // await sendEmail({
-    //     email: user.email,
-    //     subject: 'Password Reset Link',
-    //     message: `Click here to reset your password: ${resetUrl}`
-    // });
+    const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/reset-password/${resetToken}`;
+
+    // Try to send email if configured, but don't fail the request if email isn't available.
+    let emailSent = false;
+    let emailError;
+    try {
+        assertEmailConfigured();
+        await sendPasswordResetEmail(user, resetToken);
+        emailSent = true;
+    } catch (e) {
+        emailSent = false;
+        emailError = e?.message || 'Email could not be sent';
+        console.warn('Password reset email not sent:', emailError);
+    }
 
     res.status(200).json({
         success: true,
-        message: 'Password reset link sent to email',
-        // FOR TESTING ONLY - Remove in production
-        resetToken: process.env.NODE_ENV === 'development' ? resetToken : undefined
+        message: emailSent
+            ? 'Password reset link sent to email'
+            : 'Password reset link generated (email not sent)',
+        emailSent,
+        emailError: process.env.NODE_ENV === 'production' ? undefined : emailError,
+        // Helpful for local/dev testing when email isn't configured.
+        resetToken: process.env.NODE_ENV === 'production' ? undefined : resetToken,
+        resetUrl: process.env.NODE_ENV === 'production' ? undefined : resetUrl
     });
 });
 
@@ -64,7 +77,8 @@ const forgotPassword = asyncHandler(async (req, res) => {
  */
 const resetPassword = asyncHandler(async (req, res) => {
     const { resetToken } = req.params;
-    const { password, passwordConfirm } = req.body;
+    const { password } = req.body;
+    const passwordConfirm = req.body?.passwordConfirm || req.body?.confirmPassword || req.body?.password;
 
     // Validate input
     if (!resetToken) {

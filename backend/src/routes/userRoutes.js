@@ -5,6 +5,8 @@ const {
     loginUser,
     getUserProfile,
     updateUserProfile,
+    changePassword,
+    updateNotifications,
     addAddress,
     updateAddress,
     deleteAddress,
@@ -36,6 +38,9 @@ router.get('/reset-password/:resetToken', verifyResetToken);
 router.route('/profile')
     .get(protect, getUserProfile)
     .put(protect, updateUserProfile);
+
+router.put('/change-password', protect, changePassword);
+router.put('/notifications', protect, updateNotifications);
 
 router.post('/addresses', protect, addAddress);
 router.route('/addresses/:addressId')

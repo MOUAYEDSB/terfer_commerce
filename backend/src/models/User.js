@@ -74,6 +74,10 @@ const userSchema = new mongoose.Schema({
     shopBanner: {
         type: String
     },
+    businessType: {
+        type: String,
+        default: 'products'
+    },
     isVerifiedSeller: {
         type: Boolean,
         default: false
@@ -109,9 +113,26 @@ const userSchema = new mongoose.Schema({
     shopCity: {
         type: String
     },
+    shopPostalCode: {
+        type: String
+    },
     location: {
         type: String,
         default: 'Tunisia'
+    },
+    bankAccount: {
+        type: String
+    },
+    bankName: {
+        type: String
+    },
+    accountHolder: {
+        type: String
+    },
+    notifications: {
+        orders: { type: Boolean, default: true },
+        products: { type: Boolean, default: true },
+        emails: { type: Boolean, default: true }
     },
     isActive: {
         type: Boolean,

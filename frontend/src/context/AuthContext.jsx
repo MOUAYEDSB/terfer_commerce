@@ -11,22 +11,33 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
 
     const updateUser = (nextUser) => {
-        setUser(nextUser);
         if (nextUser) {
-            localStorage.setItem('user', JSON.stringify(nextUser));
-            if (nextUser.token) {
-                localStorage.setItem('token', nextUser.token);
+            const existingToken = localStorage.getItem('token');
+            const mergedUser = {
+                ...nextUser,
+                token: nextUser.token || existingToken
+            };
+            setUser(mergedUser);
+            localStorage.setItem('user', JSON.stringify(mergedUser));
+            if (mergedUser.token) {
+                localStorage.setItem('token', mergedUser.token);
+            } else {
+                localStorage.removeItem('token');
             }
-        } else {
-            localStorage.removeItem('user');
-            localStorage.removeItem('token');
+            return;
         }
+
+        setUser(null);
+        localStorage.removeItem('user');
+        localStorage.removeItem('token');
     };
 
     useEffect(() => {
         const storedUser = localStorage.getItem('user');
         if (storedUser) {
-            setUser(JSON.parse(storedUser));
+            const parsed = JSON.parse(storedUser);
+            const existingToken = localStorage.getItem('token');
+            setUser({ ...parsed, token: parsed.token || existingToken });
         }
         setLoading(false);
     }, []);

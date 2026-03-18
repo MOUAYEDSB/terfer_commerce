@@ -10,6 +10,14 @@ const errorHandler = (err, req, res, next) => {
     let statusCode = res.statusCode === 200 ? 500 : res.statusCode;
     let message = err.message;
 
+    // Handle Multer errors / upload validation errors as 400 (Bad Request)
+    if (err?.name === 'MulterError') {
+        statusCode = 400;
+    }
+    if (typeof message === 'string' && message.toLowerCase().includes('only image files are allowed')) {
+        statusCode = 400;
+    }
+
     // Handle Mongoose validation error
     if (err.name === 'ValidationError') {
         const messages = Object.values(err.errors).map(val => val.message);

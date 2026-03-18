@@ -80,6 +80,19 @@ const loginUser = async (req, res, next) => {
                 email: user.email,
                 role: user.role,
                 shopName: user.shopName,
+                shopDescription: user.shopDescription,
+                shopLogo: user.shopLogo,
+                shopBanner: user.shopBanner,
+                phone: user.phone,
+                businessType: user.businessType,
+                shopAddress: user.shopAddress,
+                shopCity: user.shopCity,
+                shopPostalCode: user.shopPostalCode,
+                location: user.location,
+                bankAccount: user.bankAccount,
+                bankName: user.bankName,
+                accountHolder: user.accountHolder,
+                notifications: user.notifications,
                 avatar: user.avatar,
                 token: generateToken(user._id)
             });
@@ -113,6 +126,15 @@ const getUserProfile = asyncHandler(async (req, res) => {
             shopDescription: user.shopDescription,
             shopLogo: user.shopLogo,
             shopBanner: user.shopBanner,
+            businessType: user.businessType,
+            shopAddress: user.shopAddress,
+            shopCity: user.shopCity,
+            shopPostalCode: user.shopPostalCode,
+            location: user.location,
+            bankAccount: user.bankAccount,
+            bankName: user.bankName,
+            accountHolder: user.accountHolder,
+            notifications: user.notifications,
             isVerifiedSeller: user.isVerifiedSeller
         });
     } else {
@@ -143,6 +165,18 @@ const updateUserProfile = asyncHandler(async (req, res) => {
             user.shopDescription = req.body.shopDescription || user.shopDescription;
             user.shopLogo = req.body.shopLogo || user.shopLogo;
             user.shopBanner = req.body.shopBanner || user.shopBanner;
+
+            user.businessType = req.body.businessType || user.businessType;
+
+            // Accept both "shop*" fields and generic form fields from the frontend settings page.
+            user.shopAddress = req.body.shopAddress || req.body.address || user.shopAddress;
+            user.shopCity = req.body.shopCity || req.body.city || user.shopCity;
+            user.shopPostalCode = req.body.shopPostalCode || req.body.postalCode || user.shopPostalCode;
+            user.location = req.body.location || req.body.country || user.location;
+
+            user.bankAccount = req.body.bankAccount || user.bankAccount;
+            user.bankName = req.body.bankName || user.bankName;
+            user.accountHolder = req.body.accountHolder || user.accountHolder;
         }
 
         const updatedUser = await user.save();
@@ -158,12 +192,77 @@ const updateUserProfile = asyncHandler(async (req, res) => {
             shopDescription: updatedUser.shopDescription,
             shopLogo: updatedUser.shopLogo,
             shopBanner: updatedUser.shopBanner,
+            businessType: updatedUser.businessType,
+            shopAddress: updatedUser.shopAddress,
+            shopCity: updatedUser.shopCity,
+            shopPostalCode: updatedUser.shopPostalCode,
+            location: updatedUser.location,
+            bankAccount: updatedUser.bankAccount,
+            bankName: updatedUser.bankName,
+            accountHolder: updatedUser.accountHolder,
+            notifications: updatedUser.notifications,
             token: generateToken(updatedUser._id)
         });
     } else {
         res.status(404);
         throw new Error('User not found');
     }
+});
+
+// @desc    Change current user's password
+// @route   PUT /api/users/change-password
+// @access  Private
+const changePassword = asyncHandler(async (req, res) => {
+    const { currentPassword, newPassword } = req.body || {};
+
+    if (!currentPassword || !newPassword) {
+        res.status(400);
+        throw new Error('Current password and new password are required');
+    }
+
+    const user = await User.findById(req.user._id).select('+password');
+    if (!user) {
+        res.status(404);
+        throw new Error('User not found');
+    }
+
+    const ok = await user.matchPassword(currentPassword);
+    if (!ok) {
+        res.status(401);
+        throw new Error('Current password is incorrect');
+    }
+
+    user.password = newPassword;
+    await user.save();
+
+    res.json({ success: true, message: 'Password updated successfully' });
+});
+
+// @desc    Update notification preferences
+// @route   PUT /api/users/notifications
+// @access  Private
+const updateNotifications = asyncHandler(async (req, res) => {
+    const user = await User.findById(req.user._id);
+    if (!user) {
+        res.status(404);
+        throw new Error('User not found');
+    }
+
+    const body = req.body || {};
+
+    // Accept both API shape {orders, products, emails} and frontend shape
+    // {orderNotifications, productNotifications, emailUpdates}.
+    const orders = body.orders ?? body.orderNotifications;
+    const products = body.products ?? body.productNotifications;
+    const emails = body.emails ?? body.emailUpdates;
+
+    if (typeof orders === 'boolean') user.notifications.orders = orders;
+    if (typeof products === 'boolean') user.notifications.products = products;
+    if (typeof emails === 'boolean') user.notifications.emails = emails;
+
+    await user.save();
+
+    res.json({ success: true, notifications: user.notifications });
 });
 
 // @desc    Add address to user
@@ -487,5 +586,7 @@ module.exports = {
     getSellerInfo,
     getSellerStatistics,
     toggleFollowSeller,
-    getSellerReviews
+    getSellerReviews,
+    changePassword,
+    updateNotifications
 };

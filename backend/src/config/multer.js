@@ -14,16 +14,30 @@ const storage = multer.diskStorage({
 });
 
 // File filter - only allow images
+// Some browsers/devices upload JPEGs with uncommon extensions (e.g. .jfif) or modern formats (e.g. .avif, .heic).
 const fileFilter = (req, file, cb) => {
-    const allowedTypes = /jpeg|jpg|png|gif|webp/;
-    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-    const mimetype = allowedTypes.test(file.mimetype);
+    const ext = path.extname(file.originalname || '').toLowerCase();
+    const mime = String(file.mimetype || '').toLowerCase();
 
-    if (mimetype && extname) {
+    const allowedExts = new Set([
+        '.jpeg', '.jpg', '.jfif',
+        '.png', '.gif', '.webp',
+        '.svg', '.avif', '.heic', '.heif'
+    ]);
+
+    const isImageMime = mime.startsWith('image/');
+    const isAllowedExt = ext ? allowedExts.has(ext) : false;
+
+    // Accept if extension is an allowed image extension (best effort),
+    // or if MIME type indicates an image (some uploads may omit extensions).
+    if (isAllowedExt || isImageMime) {
         return cb(null, true);
-    } else {
-        cb(new Error('Only image files are allowed!'));
     }
+
+    const detail = process.env.NODE_ENV === 'production'
+        ? ''
+        : ` (mime=${mime || 'unknown'}, ext=${ext || 'none'})`;
+    cb(new Error(`Only image files are allowed!${detail}`));
 };
 
 // Configure multer

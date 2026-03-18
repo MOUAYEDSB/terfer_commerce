@@ -12,6 +12,7 @@ const ForgotPasswordPage = () => {
     const [email, setEmail] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [emailSent, setEmailSent] = useState(false);
+    const [devResetUrl, setDevResetUrl] = useState('');
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -30,6 +31,7 @@ const ForgotPasswordPage = () => {
 
             if (response.ok) {
                 setEmailSent(true);
+                setDevResetUrl(data && data.resetUrl ? data.resetUrl : '');
                 toast.success(t('auth.reset_email_sent') || 'Email de réinitialisation envoyé !');
             } else {
                 toast.error(data.message || t('auth.reset_email_error') || 'Erreur lors de l\'envoi de l\'email');
@@ -59,6 +61,12 @@ const ForgotPasswordPage = () => {
                             {t('auth.reset_email_sent_message') || 'Nous avons envoyé un lien de réinitialisation à'}
                         </p>
                         <p className="text-sm font-semibold text-gray-900 mt-2">{email}</p>
+                        {devResetUrl && (
+                            <div className="mt-6 p-4 bg-gray-50 border border-gray-200 rounded-lg text-left">
+                                <p className="text-xs font-semibold text-gray-700 mb-2">Reset link (dev)</p>
+                                <a href={devResetUrl} className="text-sm text-primary break-all hover:underline">{devResetUrl}</a>
+                            </div>
+                        )}
                         <p className="text-sm text-gray-500 mt-4">
                             {t('auth.check_spam') || 'Vérifiez aussi votre dossier spam si vous ne voyez pas l\'email.'}
                         </p>

@@ -7,7 +7,6 @@ const AdminCreateSellerPage = () => {
     const [formData, setFormData] = useState({
         name: '',
         email: '',
-        password: '',
         phone: '',
         shopName: '',
         shopDescription: ''
@@ -29,14 +28,8 @@ const AdminCreateSellerPage = () => {
         setError('');
         setSuccess('');
 
-        // Validation
-        if (!formData.name || !formData.email || !formData.password || !formData.phone || !formData.shopName) {
-            setError('Please fill in all required fields');
-            return;
-        }
-
-        if (formData.password.length < 6) {
-            setError('Password must be at least 6 characters');
+        if (!formData.email) {
+            setError('Email is required');
             return;
         }
 
@@ -44,13 +37,21 @@ const AdminCreateSellerPage = () => {
 
         try {
             const token = localStorage.getItem('token');
+            const payload = {
+                email: formData.email,
+                name: formData.name,
+                phone: formData.phone,
+                shopName: formData.shopName,
+                shopDescription: formData.shopDescription
+            };
+
             const response = await fetch('http://localhost:5000/api/admin/sellers/create', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify(formData)
+                body: JSON.stringify(payload)
             });
 
             const data = await response.json();
@@ -59,17 +60,22 @@ const AdminCreateSellerPage = () => {
                 throw new Error(data.message || 'Failed to create seller');
             }
 
-            setSuccess(`Seller "${formData.name}" created successfully with email: ${formData.email}`);
+            if (data.emailSent) {
+                setSuccess(`Invitation sent to ${formData.email}. The seller will receive a generated password and a login link by email.`);
+            } else if (data.generatedPassword) {
+                const extra = data.emailError ? ` Email error: ${data.emailError}` : '';
+                setSuccess(`Seller created, but email was not sent. Temporary password: ${data.generatedPassword} (send it to the seller + use /login).${extra}`);
+            } else {
+                setSuccess(`Seller created, but email was not sent. Check backend email configuration.`);
+            }
             setFormData({
                 name: '',
                 email: '',
-                password: '',
                 phone: '',
                 shopName: '',
                 shopDescription: ''
             });
 
-            // Redirect after 2 seconds
             setTimeout(() => {
                 navigate('/admin/sellers');
             }, 2000);
@@ -83,7 +89,7 @@ const AdminCreateSellerPage = () => {
     return (
         <div className="p-8 bg-slate-900 min-h-screen">
             <div className="max-w-2xl mx-auto">
-                <h1 className="text-3xl font-bold text-white mb-8">Create New Seller</h1>
+                <h1 className="text-3xl font-bold text-white mb-8">Invite Seller</h1>
 
                 <div className="bg-slate-800 rounded-lg shadow-lg p-8">
                     {error && (
@@ -101,14 +107,13 @@ const AdminCreateSellerPage = () => {
                     )}
 
                     <form onSubmit={handleSubmit} className="space-y-6">
-                        {/* Personal Information Section */}
                         <div className="border-b border-slate-700 pb-6">
-                            <h2 className="text-lg font-semibold text-orange-400 mb-4">Personal Information</h2>
-                            
+                            <h2 className="text-lg font-semibold text-orange-400 mb-4">Seller Information</h2>
+
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-sm font-medium text-slate-300 mb-2">
-                                        Full Name *
+                                        Full Name
                                     </label>
                                     <input
                                         type="text"
@@ -117,22 +122,20 @@ const AdminCreateSellerPage = () => {
                                         onChange={handleChange}
                                         placeholder="John Doe"
                                         className="w-full bg-slate-700 border border-slate-600 rounded px-4 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-orange-500"
-                                        required
                                     />
                                 </div>
 
                                 <div>
                                     <label className="block text-sm font-medium text-slate-300 mb-2">
-                                        Phone Number *
+                                        Phone Number
                                     </label>
                                     <input
                                         type="tel"
                                         name="phone"
                                         value={formData.phone}
                                         onChange={handleChange}
-                                        placeholder="+213 772 123 456"
+                                        placeholder="+216 12 345 678"
                                         className="w-full bg-slate-700 border border-slate-600 rounded px-4 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-orange-500"
-                                        required
                                     />
                                 </div>
                             </div>
@@ -152,30 +155,17 @@ const AdminCreateSellerPage = () => {
                                 />
                             </div>
 
-                            <div className="mt-4">
-                                <label className="block text-sm font-medium text-slate-300 mb-2">
-                                    Password *
-                                </label>
-                                <input
-                                    type="password"
-                                    name="password"
-                                    value={formData.password}
-                                    onChange={handleChange}
-                                    placeholder="••••••••"
-                                    className="w-full bg-slate-700 border border-slate-600 rounded px-4 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-orange-500"
-                                    required
-                                />
-                                <p className="text-xs text-slate-400 mt-1">Minimum 6 characters</p>
+                            <div className="mt-4 p-3 rounded border border-slate-700 bg-slate-900/40 text-sm text-slate-300">
+                                A password will be generated automatically and sent to the seller by email with a link to the login page.
                             </div>
                         </div>
 
-                        {/* Shop Information Section */}
                         <div className="border-b border-slate-700 pb-6">
-                            <h2 className="text-lg font-semibold text-orange-400 mb-4">Shop Information</h2>
-                            
+                            <h2 className="text-lg font-semibold text-orange-400 mb-4">Shop Information (Optional)</h2>
+
                             <div>
                                 <label className="block text-sm font-medium text-slate-300 mb-2">
-                                    Shop Name *
+                                    Shop Name
                                 </label>
                                 <input
                                     type="text"
@@ -184,7 +174,6 @@ const AdminCreateSellerPage = () => {
                                     onChange={handleChange}
                                     placeholder="My Awesome Shop"
                                     className="w-full bg-slate-700 border border-slate-600 rounded px-4 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-orange-500"
-                                    required
                                 />
                             </div>
 
@@ -203,7 +192,6 @@ const AdminCreateSellerPage = () => {
                             </div>
                         </div>
 
-                        {/* Buttons */}
                         <div className="flex gap-4 justify-end">
                             <button
                                 type="button"
@@ -217,7 +205,7 @@ const AdminCreateSellerPage = () => {
                                 disabled={loading}
                                 className="px-6 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded font-medium transition disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                {loading ? 'Creating...' : 'Create Seller'}
+                                {loading ? 'Sending...' : 'Send Invite'}
                             </button>
                         </div>
                     </form>

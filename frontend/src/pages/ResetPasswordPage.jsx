@@ -87,7 +87,7 @@ const ResetPasswordPage = () => {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ password }),
+                body: JSON.stringify({ password, passwordConfirm: confirmPassword }),
             });
 
             const data = await response.json();

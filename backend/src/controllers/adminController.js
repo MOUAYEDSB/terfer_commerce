@@ -2,6 +2,8 @@ const asyncHandler = require('express-async-handler');
 const User = require('../models/User');
 const Product = require('../models/Product');
 const Order = require('../models/Order');
+const generatePassword = require('../utils/generatePassword');
+const { sendSellerInviteEmail, assertEmailConfigured } = require('../services/emailService');
 
 // @desc    Get admin dashboard stats
 // @route   GET /api/admin/stats
@@ -411,33 +413,88 @@ const deleteUser = asyncHandler(async (req, res) => {
 // @route   POST /api/admin/sellers/create
 // @access  Private/Admin
 const createSeller = asyncHandler(async (req, res) => {
-    const { name, email, password, shopName, shopDescription, phone } = req.body;
+    const {
+        email,
+        name,
+        shopName,
+        shopDescription,
+        phone
+    } = req.body;
+
+    const normalizedEmail = (email || '').trim().toLowerCase();
 
     // Validation
-    if (!name || !email || !password || !shopName) {
+    if (!normalizedEmail) {
         res.status(400);
-        throw new Error('Name, email, password and shop name are required');
+        throw new Error('Email is required');
+    }
+
+    let emailConfigured = true;
+    let emailConfigError = null;
+    try {
+        assertEmailConfigured();
+    } catch (err) {
+        emailConfigured = false;
+        emailConfigError = err.message;
+
+        // In production, do not create accounts if email invite can't be delivered
+        if (process.env.NODE_ENV === 'production') {
+            res.status(500);
+            throw new Error(err.message);
+        }
     }
 
     // Check if user already exists
-    const userExists = await User.findOne({ email });
+    const userExists = await User.findOne({ email: normalizedEmail });
     if (userExists) {
         res.status(400);
         throw new Error('User already exists');
     }
 
+    const trimmedName = (name || '').toString().trim();
+    const trimmedShopName = (shopName || '').toString().trim();
+
+    // If admin doesn't provide a name, use the input email (not a generated local-part).
+    const sellerName = trimmedName || normalizedEmail;
+    const sellerShopName = trimmedShopName || undefined;
+
+    const generatedPassword = generatePassword({ length: 12 });
+
     // Create seller
     const seller = await User.create({
-        name,
-        email,
-        password,
+        name: sellerName,
+        email: normalizedEmail,
+        password: generatedPassword,
         phone,
         role: 'seller',
-        shopName,
+        shopName: sellerShopName,
         shopDescription,
         isActive: true,
         isVerifiedSeller: true
     });
+
+    let emailSent = false;
+    let emailError = emailConfigError;
+    let emailResult = null;
+    if (emailConfigured) {
+        try {
+            emailResult = await sendSellerInviteEmail({
+                sellerEmail: seller.email,
+                sellerName: seller.name,
+                generatedPassword
+            });
+            emailSent = true;
+            emailError = null;
+        } catch (err) {
+            emailError = err.message;
+            // In production, keep behavior strict: rollback if email fails
+            if (process.env.NODE_ENV === 'production') {
+                await seller.deleteOne();
+                res.status(500);
+                throw new Error('Failed to send invite email. Seller account was not created.');
+            }
+        }
+    }
 
     res.status(201).json({
         _id: seller._id,
@@ -448,7 +505,13 @@ const createSeller = asyncHandler(async (req, res) => {
         shopDescription: seller.shopDescription,
         phone: seller.phone,
         isActive: seller.isActive,
-        message: 'Seller created successfully'
+        emailSent,
+        emailError: emailSent ? null : emailError,
+        emailResult: (process.env.NODE_ENV !== 'production') ? emailResult : undefined,
+        generatedPassword: (!emailSent && process.env.NODE_ENV !== 'production') ? generatedPassword : null,
+        message: emailSent
+            ? 'Seller created successfully and invite email sent'
+            : 'Seller created successfully, but invite email was not sent'
     });
 });
 

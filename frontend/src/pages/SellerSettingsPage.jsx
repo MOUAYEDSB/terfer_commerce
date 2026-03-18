@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Settings, Save, Loader2, Eye, EyeOff, Bell, Lock, Shield, CreditCard, MapPin, Store, Image, Upload, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 import SellerLayout from '../components/SellerLayout';
 
-const API_URL = 'http://localhost:5000';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 const authFetch = async (path, options = {}) => {
     const token = localStorage.getItem('token');
@@ -37,10 +37,10 @@ const SellerSettingsPage = () => {
         shopName: user?.shopName || '',
         shopDescription: user?.shopDescription || '',
         businessType: user?.businessType || 'products',
-        address: user?.address || '',
-        city: user?.city || '',
-        country: user?.country || 'Tunisia',
-        postalCode: user?.postalCode || '',
+        address: user?.shopAddress || user?.address || '',
+        city: user?.shopCity || user?.city || '',
+        country: user?.location || user?.country || 'Tunisia',
+        postalCode: user?.shopPostalCode || user?.postalCode || '',
         bankAccount: user?.bankAccount || '',
         bankName: user?.bankName || '',
         accountHolder: user?.accountHolder || '',
@@ -62,9 +62,31 @@ const SellerSettingsPage = () => {
     const [hasChanges, setHasChanges] = useState(false);
     const [bannerImage, setBannerImage] = useState(user?.shopBanner || '');
     const [uploadingBanner, setUploadingBanner] = useState(false);
+    const didLoadProfileRef = useRef(false);
 
     useEffect(() => {
         if (!user) return;
+
+        if (!didLoadProfileRef.current) {
+            didLoadProfileRef.current = true;
+            // Load a fresh profile so settings have the full data (shop banner, notifications, etc.)
+            // Keeps the existing token (AuthContext merges token automatically).
+            (async () => {
+                try {
+                    const profile = await authFetch('/api/users/profile', { method: 'GET' });
+                    updateUser(profile);
+                    setNotifications({
+                        orderNotifications: profile?.notifications?.orders !== false,
+                        productNotifications: profile?.notifications?.products !== false,
+                        emailUpdates: profile?.notifications?.emails !== false,
+                    });
+                } catch (e) {
+                    // Non-blocking: fallback to whatever is already in AuthContext.
+                    console.error('Failed to load profile:', e);
+                }
+            })();
+        }
+
         setFormData({
             name: user.name || '',
             email: user.email || '',
@@ -72,10 +94,10 @@ const SellerSettingsPage = () => {
             shopName: user.shopName || '',
             shopDescription: user.shopDescription || '',
             businessType: user.businessType || 'products',
-            address: user.address || '',
-            city: user.city || '',
-            country: user.country || 'Tunisia',
-            postalCode: user.postalCode || '',
+            address: user.shopAddress || user.address || '',
+            city: user.shopCity || user.city || '',
+            country: user.location || user.country || 'Tunisia',
+            postalCode: user.shopPostalCode || user.postalCode || '',
             bankAccount: user.bankAccount || '',
             bankName: user.bankName || '',
             accountHolder: user.accountHolder || '',
