@@ -10,6 +10,7 @@ import { ArrowRight, Star, Heart } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { getImgUrl } from '../constants/productConstants';
 import { useWishlist } from '../context/WishlistContext';
+import { useAuth } from '../context/AuthContext';
 
 const categories = [
     { name: "Mode", image: "https://images.unsplash.com/photo-1483985988355-763728e1935b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", count: "1.2k" },
@@ -31,6 +32,7 @@ const HomePage = () => {
     const [bestSellers, setBestSellers] = React.useState([]);
     const [bestSellersLoading, setBestSellersLoading] = React.useState(true);
     const { toggleWishlist, isInWishlist } = useWishlist();
+    const { user } = useAuth();
     const heroTitle = t('home.hero.title');
     const heroTitleTerIndex = heroTitle.toLowerCase().indexOf('ter');
 
@@ -91,7 +93,16 @@ const HomePage = () => {
                             <span className="text-[10px] font-bold text-gray-400 tracking-[0.2em] uppercase">{t('home.hero.badge')}</span>
                         </div>
 
-                        <h1 className="text-4xl md:text-6xl lg:text-7xl font-black text-gray-900 leading-tight mb-8 tracking-tighter uppercase whitespace-nowrap">
+                        {user && user.role === 'customer' && (
+                            <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary border border-primary/20 mb-6 shadow-sm ${isRtl ? 'flex-row-reverse' : ''}`}>
+                                <span className="text-sm font-semibold leading-none">
+                                    {t('home.welcome_user', { defaultValue: 'Bienvenue' })},{' '}
+                                    <span className="font-black">{user.name}</span>
+                                </span>
+                            </div>
+                        )}
+
+                        <h1 className="text-4xl md:text-6xl lg:text-7xl font-black text-gray-900 leading-[1.05] mb-8 tracking-tight break-words">
                             {heroTitleTerIndex >= 0 ? (
                                 <>
                                     {heroTitle.slice(0, heroTitleTerIndex)}

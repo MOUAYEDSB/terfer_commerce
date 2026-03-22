@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+﻿import React, { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { getImgUrl } from '../constants/productConstants';
@@ -6,13 +6,14 @@ import {
     Star, 
     ShoppingBag, 
     Users, 
-    MapPin, 
     ChevronLeft, 
     ChevronRight, 
     BadgeCheck,
     TrendingUp,
     Heart
 } from 'lucide-react';
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 const FeaturedSellersSection = () => {
     const { t, i18n } = useTranslation();
@@ -25,22 +26,21 @@ const FeaturedSellersSection = () => {
     useEffect(() => {
         const fetchFeaturedSellers = async () => {
             try {
-                const response = await fetch('http://localhost:5000/api/products/top-sellers?limit=6');
+                const response = await fetch(`${API_URL}/api/products/top-sellers?limit=6`);
                 const data = await response.json();
                 
                 if (data.success && data.sellers) {
                     const formattedSellers = data.sellers.map(seller => ({
                         _id: seller._id,
                         name: seller.shopName || 'Vendeur Premium',
-                        description: seller.shopDescription || t('featured_sellers.default_description'),
+                        description: seller.shopDescription || t('home.featured_sellers.default_description'),
                         banner: seller.shopBanner
                             ? getImgUrl(seller.shopBanner)
                             : 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800&h=400&fit=crop',
                         avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(seller.shopName || 'Seller')}&background=random&size=200`,
-                        city: seller.shopCity || t('featured_sellers.location_unknown'),
                         products: seller.totalProducts,
-                        rating: seller.avgRating,
-                        reviews: seller.totalReviews,
+                        rating: Number(seller.avgRating || 0),
+                        reviews: Number(seller.totalReviews || 0),
                         followers: seller.followersCount || 0,
                         sales: seller.totalSales || 0,
                         verified: seller.isVerified,
@@ -86,7 +86,7 @@ const FeaturedSellersSection = () => {
             <section className="py-20 bg-gradient-to-br from-primary/5 via-white to-blue-50">
                 <div className="container mx-auto px-4">
                     <div className="text-center mb-12">
-                        <h2 className="text-4xl font-bold text-gray-900 mb-2">{t('featured_sellers.title')}</h2>
+                        <h2 className="text-4xl font-bold text-gray-900 mb-2">{t('home.featured_sellers.title')}</h2>
                         <div className="flex justify-center gap-2 mt-8">
                             {[...Array(3)].map((_, i) => (
                                 <div key={i} className="w-64 h-96 bg-gray-200 rounded-3xl animate-pulse"></div>
@@ -107,15 +107,15 @@ const FeaturedSellersSection = () => {
             <div className="container mx-auto px-4">
                 {/* Header */}
                 <div className="text-center mb-16">
-                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-full text-sm font-bold tracking-wide uppercase mb-6">
-                        <TrendingUp size={16} />
-                        <span>{t('featured_sellers.badge')}</span>
+                    <div className={`inline-flex items-center gap-2 px-4 py-2 bg-white/70 backdrop-blur text-primary rounded-full text-xs md:text-sm font-extrabold tracking-wide border border-primary/20 shadow-sm mb-6 ${isRtl ? 'flex-row-reverse' : ''}`}>
+                        <TrendingUp size={16} className="shrink-0" />
+                        <span className="leading-none">{t('home.featured_sellers.badge')}</span>
                     </div>
-                    <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-                        {t('featured_sellers.title')}
+                    <h2 className="text-3xl md:text-5xl font-black text-gray-900 mb-4 tracking-tight">
+                        {t('home.featured_sellers.title')}
                     </h2>
-                    <p className="text-gray-600 text-lg max-w-3xl mx-auto">
-                        {t('featured_sellers.subtitle')}
+                    <p className="text-gray-600 text-base md:text-lg max-w-3xl mx-auto leading-relaxed">
+                        {t('home.featured_sellers.subtitle')}
                     </p>
                 </div>
 
@@ -163,7 +163,7 @@ const FeaturedSellersSection = () => {
                                         {seller.verified && (
                                             <div className="absolute top-4 right-4 bg-white/95 backdrop-blur-sm rounded-full px-3 py-1.5 flex items-center gap-1.5 shadow-lg">
                                                 <BadgeCheck size={16} className="text-blue-500" />
-                                                <span className="text-xs font-bold text-gray-900">{t('featured_sellers.verified')}</span>
+                                                <span className="text-xs font-bold text-gray-900">{t('home.featured_sellers.verified')}</span>
                                             </div>
                                         )}
 
@@ -179,19 +179,14 @@ const FeaturedSellersSection = () => {
 
                                     {/* Content */}
                                     <div className="pt-16 px-6 pb-6">
-                                        {/* Name & Location */}
+                                        {/* Name */}
                                         <div className="mb-4">
-                                            <h3 className="text-2xl font-bold text-gray-900 mb-2 line-clamp-1">
+                                            <h3 className="text-xl md:text-2xl font-extrabold text-gray-900 mb-2 line-clamp-1 tracking-tight">
                                                 {seller.name}
                                             </h3>
-                                            <div className="flex items-center gap-2 text-gray-600">
-                                                <MapPin size={16} className="text-primary" />
-                                                <span className="text-sm">{seller.city}</span>
-                                                <span className="text-xs text-gray-400">•</span>
-                                                <span className="text-xs text-gray-500">
-                                                    {t('featured_sellers.member_since')} {seller.memberSince}
-                                                </span>
-                                            </div>
+                                        </div>
+                                        <div className="text-xs text-gray-500">
+                                            {seller.memberSince}
                                         </div>
 
                                         {/* Rating */}
@@ -213,7 +208,7 @@ const FeaturedSellersSection = () => {
                                                 {seller.rating.toFixed(1)}
                                             </span>
                                             <span className="text-sm text-gray-500">
-                                                ({seller.reviews} {t('featured_sellers.reviews')})
+                                                ({Number(seller.reviews || 0)})
                                             </span>
                                         </div>
 
@@ -229,21 +224,18 @@ const FeaturedSellersSection = () => {
                                                     <ShoppingBag size={18} />
                                                 </div>
                                                 <div className="text-xl font-bold text-gray-900">{seller.products}</div>
-                                                <div className="text-xs text-gray-500">{t('featured_sellers.products')}</div>
                                             </div>
                                             <div className="text-center">
                                                 <div className="flex items-center justify-center text-primary mb-1">
                                                     <Users size={18} />
                                                 </div>
                                                 <div className="text-xl font-bold text-gray-900">{seller.followers}</div>
-                                                <div className="text-xs text-gray-500">{t('featured_sellers.followers')}</div>
                                             </div>
                                             <div className="text-center">
                                                 <div className="flex items-center justify-center text-primary mb-1">
                                                     <TrendingUp size={18} />
                                                 </div>
                                                 <div className="text-xl font-bold text-gray-900">{seller.sales}</div>
-                                                <div className="text-xs text-gray-500">{t('featured_sellers.sales')}</div>
                                             </div>
                                         </div>
 
@@ -252,7 +244,7 @@ const FeaturedSellersSection = () => {
                                             to={`/shop/${seller._id}`}
                                             className="block w-full text-center bg-primary hover:bg-primary/90 text-white font-semibold py-3.5 rounded-xl transition-all duration-300 shadow-md hover:shadow-xl group-hover:scale-[1.02]"
                                         >
-                                            {t('featured_sellers.visit_shop')}
+                                            {t('home.featured_sellers.visit_shop')}
                                         </Link>
                                     </div>
                                 </div>
@@ -283,7 +275,7 @@ const FeaturedSellersSection = () => {
                         to="/shop"
                         className="inline-flex items-center gap-2 px-8 py-4 bg-white hover:bg-gray-50 text-gray-900 font-semibold rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-200 hover:border-primary/30"
                     >
-                        <span>{t('featured_sellers.view_all')}</span>
+                        <span>{t('home.featured_sellers.view_all')}</span>
                         <ChevronRight size={20} className={isRtl ? 'rotate-180' : ''} />
                     </Link>
                 </div>
