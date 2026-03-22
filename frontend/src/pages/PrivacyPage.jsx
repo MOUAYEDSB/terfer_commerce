@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { useTranslation } from 'react-i18next';
 
 const contentByLang = {
@@ -136,4 +136,3 @@ const PrivacyPage = () => {
 };
 
 export default PrivacyPage;
-

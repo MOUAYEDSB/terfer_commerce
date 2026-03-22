@@ -11,7 +11,6 @@ const authFetch = async (path, options = {}) => {
     const headers = {
         'Content-Type': 'application/json',
         ...(options.headers || {}),
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
     };
     const res = await fetch(`${API_URL}${path}`, { ...options, headers });
     if (!res.ok) {
@@ -214,7 +213,6 @@ const SellerSettingsPage = () => {
             const response = await fetch(`${API_URL}/api/upload/banner`, {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${token}`
                 },
                 body: formData
             });

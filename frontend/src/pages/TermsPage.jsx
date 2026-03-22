@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { useTranslation } from 'react-i18next';
 
 const contentByLang = {
@@ -130,4 +130,3 @@ const TermsPage = () => {
 };
 
 export default TermsPage;
-

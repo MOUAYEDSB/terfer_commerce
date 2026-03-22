@@ -24,7 +24,6 @@ const AdminOrdersPage = () => {
     try {
       const response = await fetch('http://localhost:5000/api/admin/sellers', {
         headers: {
-          'Authorization': `Bearer ${token}`
         }
       });
       if (response.ok) {
@@ -44,7 +43,6 @@ const AdminOrdersPage = () => {
 
       const response = await fetch(`http://localhost:5000/api/admin/orders?${params}`, {
         headers: {
-          'Authorization': `Bearer ${token}`
         }
       });
 

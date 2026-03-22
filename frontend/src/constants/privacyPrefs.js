@@ -1,4 +1,4 @@
-export const USER_PRIVACY_PREFS_NAME = 'terfer_cookie_consent';
+﻿export const USER_PRIVACY_PREFS_NAME = 'terfer_cookie_consent';
 
 const getCookieValue = (name) => {
     if (typeof document === 'undefined') return null;
@@ -21,4 +21,3 @@ export const setPrivacyConsent = (value) => {
 };
 
 export const shouldEnableOptionalCookies = () => getPrivacyConsent() === 'accepted';
-

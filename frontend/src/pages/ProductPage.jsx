@@ -153,7 +153,6 @@ const ProductPage = () => {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    ...(token ? { Authorization: `Bearer ${token}` } : {})
                 },
                 body: JSON.stringify({
                     rating: Number(reviewRating),

@@ -11,7 +11,6 @@ const authFetch = async (path, options = {}) => {
     const headers = {
         'Content-Type': 'application/json',
         ...(options.headers || {}),
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
     };
     const res = await fetch(`${API_URL}${path}`, { ...options, headers });
     if (!res.ok) {

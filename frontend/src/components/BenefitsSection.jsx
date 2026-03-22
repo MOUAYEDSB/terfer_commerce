@@ -1,4 +1,4 @@
-
+﻿
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Truck, ShieldCheck, Headphones, CreditCard } from 'lucide-react';

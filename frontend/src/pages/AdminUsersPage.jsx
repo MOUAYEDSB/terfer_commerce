@@ -25,7 +25,6 @@ const AdminUsersPage = () => {
 
       const response = await fetch(`http://localhost:5000/api/admin/users?${params}`, {
         headers: {
-          'Authorization': `Bearer ${token}`
         }
       });
 
@@ -51,7 +50,6 @@ const AdminUsersPage = () => {
       const response = await fetch(`http://localhost:5000/api/admin/users/${userId}`, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${token}`
         }
       });
 
@@ -68,7 +66,6 @@ const AdminUsersPage = () => {
       const response = await fetch(`http://localhost:5000/api/admin/users/${userId}`, {
         method: 'PUT',
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({ isActive: !currentStatus })
@@ -86,7 +83,6 @@ const AdminUsersPage = () => {
     try {
       const response = await fetch(`http://localhost:5000/api/admin/users/${userId}`, {
         headers: {
-          'Authorization': `Bearer ${token}`
         }
       });
 

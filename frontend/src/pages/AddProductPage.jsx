@@ -20,7 +20,6 @@ const API_URL = 'http://localhost:5000';
 const authFetch = async (path, options = {}) => {
     const headers = {
         ...(options.headers || {}),
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
     };
 
     if (!(options.body instanceof FormData)) {

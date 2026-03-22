@@ -1,4 +1,4 @@
-// Categories and their subcategories
+﻿// Categories and their subcategories
 export const CATEGORIES_WITH_SUBCATEGORIES = {
     'Mode': [
         'Vêtements Homme',

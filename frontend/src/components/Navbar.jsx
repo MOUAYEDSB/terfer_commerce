@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ShoppingCart, User, Search, Menu, Globe } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -12,6 +12,10 @@ const Navbar = () => {
     const { cartCount } = useCart();
     const { user, logout } = useAuth();
     const [searchQuery, setSearchQuery] = useState('');
+    const [isProfileOpen, setIsProfileOpen] = useState(false);
+    const [isLanguageOpen, setIsLanguageOpen] = useState(false);
+    const profileRef = useRef(null);
+    const languageRef = useRef(null);
 
     const handleSearch = (e) => {
         if (e) e.preventDefault();
@@ -25,7 +29,22 @@ const Navbar = () => {
 
     const changeLanguage = (lng) => {
         i18n.changeLanguage(lng);
+        setIsLanguageOpen(false);
     };
+
+    useEffect(() => {
+        const onClickOutside = (event) => {
+            if (profileRef.current && !profileRef.current.contains(event.target)) {
+                setIsProfileOpen(false);
+            }
+            if (languageRef.current && !languageRef.current.contains(event.target)) {
+                setIsLanguageOpen(false);
+            }
+        };
+
+        document.addEventListener('mousedown', onClickOutside);
+        return () => document.removeEventListener('mousedown', onClickOutside);
+    }, []);
 
     return (
         <nav className="bg-white shadow-md sticky top-0 z-50">
@@ -84,10 +103,15 @@ const Navbar = () => {
                     {/* Icons Navigation */}
                     <div className="flex items-center space-x-3 md:space-x-6">
                         {/* Language Selector */}
-                        <div className="relative group cursor-pointer hidden sm:flex items-center gap-1 text-gray-600 hover:text-blue-600 transition-colors">
-                            <Globe size={18} />
-                            <span className="uppercase text-xs font-bold leading-none">{i18n.language.split('-')[0]}</span>
-                            <div className="absolute right-0 top-full mt-2 w-32 bg-white shadow-xl rounded-xl py-2 hidden group-hover:block border border-gray-100 animate-fade-in z-50">
+                        <div ref={languageRef} className="relative hidden sm:block">
+                            <button
+                                onClick={() => setIsLanguageOpen((prev) => !prev)}
+                                className="cursor-pointer flex items-center gap-1 text-gray-600 hover:text-blue-600 transition-colors"
+                            >
+                                <Globe size={18} />
+                                <span className="uppercase text-xs font-bold leading-none">{i18n.language.split('-')[0]}</span>
+                            </button>
+                            <div className={`absolute right-0 top-full mt-2 w-32 bg-white shadow-xl rounded-xl py-2 border border-gray-100 animate-fade-in z-50 ${isLanguageOpen ? 'block' : 'hidden'}`}>
                                 <button onClick={() => changeLanguage('fr')} className="block w-full text-left px-4 py-2 hover:bg-gray-50 text-sm font-semibold">Français</button>
                                 <button onClick={() => changeLanguage('en')} className="block w-full text-left px-4 py-2 hover:bg-gray-50 text-sm font-semibold">English</button>
                                 <button onClick={() => changeLanguage('ar')} className="block w-full text-left px-4 py-2 hover:bg-gray-50 text-sm font-semibold">العربية</button>
@@ -105,43 +129,49 @@ const Navbar = () => {
                         </Link>
 
                         {/* User Profile Dropdown */}
-                        <div className="relative group cursor-pointer z-50">
-                            <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-all border border-gray-200">
+                        <div ref={profileRef} className="relative z-50">
+                            <button
+                                onClick={() => setIsProfileOpen((prev) => !prev)}
+                                className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-all border border-gray-200"
+                            >
                                 <User size={20} />
-                            </div>
+                            </button>
 
-                            <div className="absolute right-0 top-full mt-2 w-56 bg-white shadow-2xl rounded-2xl py-2 hidden group-hover:block border border-gray-100 animate-slide-up origin-top-right">
+                            <div className={`absolute right-0 top-full mt-2 w-56 bg-white shadow-2xl rounded-2xl py-2 border border-gray-100 animate-slide-up origin-top-right ${isProfileOpen ? 'block' : 'hidden'}`}>
                                 <div className="px-4 py-3 border-b border-gray-100 mb-1">
                                     <p className="font-black text-gray-900 text-sm">{user ? user.name : t('nav.my_account')}</p>
                                     <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider truncate">{user ? user.email : t('nav.welcome')}</p>
                                 </div>
                                 {user ? (
                                     <>
-                                        <Link to="/profile" className="flex items-center gap-3 px-4 py-2 hover:bg-gray-50 text-sm font-bold text-gray-700 hover:text-blue-600 transition-colors">
+                                        <Link to="/profile" onClick={() => setIsProfileOpen(false)} className="flex items-center gap-3 px-4 py-2 hover:bg-gray-50 text-sm font-bold text-gray-700 hover:text-blue-600 transition-colors">
                                             👤 {t('nav.profile')}
                                         </Link>
-                                        <Link to="/profile?tab=orders" className="flex items-center gap-3 px-4 py-2 hover:bg-gray-50 text-sm font-bold text-gray-700 hover:text-blue-600 transition-colors">
+                                        <Link to="/profile?tab=orders" onClick={() => setIsProfileOpen(false)} className="flex items-center gap-3 px-4 py-2 hover:bg-gray-50 text-sm font-bold text-gray-700 hover:text-blue-600 transition-colors">
                                             📦 {t('profile.orders')}
+                                        </Link>
+                                        <Link to="/profile?tab=wishlist" onClick={() => setIsProfileOpen(false)} className="flex items-center gap-3 px-4 py-2 hover:bg-gray-50 text-sm font-bold text-gray-700 hover:text-blue-600 transition-colors">
+                                            ❤️ {t('profile.wishlist')}
                                         </Link>
                                         {isSeller && (
                                             <div className="mt-1 pt-1 border-t border-gray-100">
-                                                <Link to="/seller/dashboard" className="flex items-center gap-3 px-4 py-2 hover:bg-blue-50 text-sm font-bold text-blue-600 transition-colors">
+                                                <Link to="/seller/dashboard" onClick={() => setIsProfileOpen(false)} className="flex items-center gap-3 px-4 py-2 hover:bg-blue-50 text-sm font-bold text-blue-600 transition-colors">
                                                     🏪 Dashboard Vendeur
                                                 </Link>
                                             </div>
                                         )}
                                         <div className="mt-1 pt-1 border-t border-gray-100">
-                                            <button onClick={logout} className="w-full flex items-center gap-3 px-4 py-2 hover:bg-red-50 text-sm font-bold text-red-500 transition-colors">
+                                            <button onClick={async () => { await logout(); setIsProfileOpen(false); }} className="w-full flex items-center gap-3 px-4 py-2 hover:bg-red-50 text-sm font-bold text-red-500 transition-colors">
                                                 🚪 {t('nav.logout')}
                                             </button>
                                         </div>
                                     </>
                                 ) : (
                                     <>
-                                        <Link to="/login" className="flex items-center gap-3 px-4 py-2 hover:bg-gray-50 text-sm font-bold text-gray-700 hover:text-blue-600 transition-colors">
+                                        <Link to="/login" onClick={() => setIsProfileOpen(false)} className="flex items-center gap-3 px-4 py-2 hover:bg-gray-50 text-sm font-bold text-gray-700 hover:text-blue-600 transition-colors">
                                             🔑 {t('auth.login_title')}
                                         </Link>
-                                        <Link to="/register" className="flex items-center gap-3 px-4 py-2 hover:bg-gray-50 text-sm font-bold text-gray-700 hover:text-blue-600 transition-colors">
+                                        <Link to="/register" onClick={() => setIsProfileOpen(false)} className="flex items-center gap-3 px-4 py-2 hover:bg-gray-50 text-sm font-bold text-gray-700 hover:text-blue-600 transition-colors">
                                             📝 {t('auth.register_title')}
                                         </Link>
                                     </>

@@ -24,7 +24,6 @@ const AdminSellersPage = () => {
     try {
       const response = await fetch('http://localhost:5000/api/admin/sellers', {
         headers: {
-          'Authorization': `Bearer ${token}`
         }
       });
 
@@ -42,7 +41,6 @@ const AdminSellersPage = () => {
     try {
       const response = await fetch(`http://localhost:5000/api/admin/users/${sellerId}`, {
         headers: {
-          'Authorization': `Bearer ${token}`
         }
       });
 
@@ -59,7 +57,6 @@ const AdminSellersPage = () => {
     try {
       const response = await fetch(`http://localhost:5000/api/admin/users/${sellerId}`, {
         headers: {
-          'Authorization': `Bearer ${token}`
         }
       });
 
@@ -91,7 +88,6 @@ const AdminSellersPage = () => {
       const response = await fetch(`http://localhost:5000/api/admin/users/${editSeller._id}`, {
         method: 'PUT',
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
@@ -127,7 +123,6 @@ const AdminSellersPage = () => {
       const response = await fetch(`http://localhost:5000/api/admin/users/${sellerId}`, {
         method: 'PUT',
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({ isActive: !currentStatus })
@@ -146,7 +141,6 @@ const AdminSellersPage = () => {
       const response = await fetch(`http://localhost:5000/api/admin/users/${sellerId}`, {
         method: 'PUT',
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({ isVerifiedSeller: true, isActive: true })
@@ -179,7 +173,6 @@ const AdminSellersPage = () => {
       const response = await fetch(`http://localhost:5000/api/admin/users/${sellerId}`, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${token}`
         }
       });
 
@@ -243,7 +236,6 @@ const AdminSellersPage = () => {
           fetch(`http://localhost:5000/api/admin/users/${seller._id}`, {
             method: 'PUT',
             headers: {
-              'Authorization': `Bearer ${token}`,
               'Content-Type': 'application/json'
             },
             body: JSON.stringify({ isVerifiedSeller: true, isActive: true })

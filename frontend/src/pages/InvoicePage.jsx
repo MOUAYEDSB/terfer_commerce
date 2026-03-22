@@ -29,7 +29,6 @@ const InvoicePage = () => {
                 }
                 const res = await fetch(`${API_URL}/api/orders/number/${orderId}`, {
                     headers: {
-                        ...(token ? { Authorization: `Bearer ${token}` } : {})
                     }
                 });
 

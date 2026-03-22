@@ -1,4 +1,4 @@
-import { shouldEnableOptionalCookies } from '../constants/privacyPrefs';
+﻿import { shouldEnableOptionalCookies } from '../constants/privacyPrefs';
 
 const setAnalyticsState = () => {
     window.terferAnalyticsEnabled = shouldEnableOptionalCookies();

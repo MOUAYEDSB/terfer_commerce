@@ -69,9 +69,7 @@ const ProfilePage = () => {
         try {
             setLoadingOrders(true);
             const res = await fetch(`${API_URL}/api/orders/myorders`, {
-                headers: {
-                    ...(token ? { Authorization: `Bearer ${token}` } : {})
-                }
+                credentials: 'include'
             });
 
             if (!res.ok) {
