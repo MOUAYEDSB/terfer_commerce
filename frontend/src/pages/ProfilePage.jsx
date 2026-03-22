@@ -1,5 +1,5 @@
 ﻿
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { Package, Heart, User, LogOut, ChevronRight, MapPin, CreditCard, ShoppingBag, Eye, Loader2 } from 'lucide-react';
@@ -42,16 +42,15 @@ const ProfilePage = () => {
     const { wishlistItems, removeFromWishlist } = useWishlist();
     const { user, logout } = useAuth();
     const navigate = useNavigate();
-    const [searchParams, setSearchParams] = useSearchParams();
+    const [searchParams] = useSearchParams();
 
-    const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'profile');
     const [orders, setOrders] = useState([]);
     const [loadingOrders, setLoadingOrders] = useState(false);
 
-    useEffect(() => {
-        if (searchParams.get('tab')) {
-            setActiveTab(searchParams.get('tab'));
-        }
+    const activeTab = useMemo(() => {
+        const tab = searchParams.get('tab') || 'profile';
+        const allowed = ['profile', 'orders', 'wishlist', 'settings'];
+        return allowed.includes(tab) ? tab : 'profile';
     }, [searchParams]);
 
     useEffect(() => {
@@ -63,7 +62,7 @@ const ProfilePage = () => {
         if (activeTab === 'orders') {
             fetchOrders();
         }
-    }, [activeTab, user]);
+    }, [activeTab, user, navigate]);
 
     const fetchOrders = async () => {
         try {
