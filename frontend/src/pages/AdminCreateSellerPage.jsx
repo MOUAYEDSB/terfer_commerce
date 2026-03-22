@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AlertCircle, CheckCircle } from 'lucide-react';
 
@@ -36,7 +36,6 @@ const AdminCreateSellerPage = () => {
         setLoading(true);
 
         try {
-            const token = localStorage.getItem('token');
             const payload = {
                 email: formData.email,
                 name: formData.name,

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import AdminLayout from '../components/AdminLayout';
 import { Search, Eye, X } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -22,7 +22,6 @@ const AdminOrdersPage = () => {
 
   const fetchSellers = async () => {
     try {
-      const token = localStorage.getItem('token');
       const response = await fetch('http://localhost:5000/api/admin/sellers', {
         headers: {
           'Authorization': `Bearer ${token}`
@@ -39,7 +38,6 @@ const AdminOrdersPage = () => {
 
   const fetchOrders = async () => {
     try {
-      const token = localStorage.getItem('token');
       const params = new URLSearchParams();
       if (statusFilter) params.append('status', statusFilter);
       if (sellerFilter) params.append('seller', sellerFilter);

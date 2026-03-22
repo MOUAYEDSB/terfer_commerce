@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Download, Printer, Mail, Loader2 } from 'lucide-react';
@@ -27,8 +27,6 @@ const InvoicePage = () => {
                 if (!user) {
                     throw new Error('Veuillez vous connecter');
                 }
-
-                const token = localStorage.getItem('token');
                 const res = await fetch(`${API_URL}/api/orders/number/${orderId}`, {
                     headers: {
                         ...(token ? { Authorization: `Bearer ${token}` } : {})

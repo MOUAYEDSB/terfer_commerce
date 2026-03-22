@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AdminLayout from '../components/AdminLayout';
 import { Search, Edit, Trash2, Check, X, Eye, Plus } from 'lucide-react';
@@ -19,7 +19,6 @@ const AdminUsersPage = () => {
 
   const fetchUsers = async () => {
     try {
-      const token = localStorage.getItem('token');
       const params = new URLSearchParams();
       if (roleFilter) params.append('role', roleFilter);
       if (search) params.append('search', search);
@@ -49,7 +48,6 @@ const AdminUsersPage = () => {
     if (!confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur?')) return;
 
     try {
-      const token = localStorage.getItem('token');
       const response = await fetch(`http://localhost:5000/api/admin/users/${userId}`, {
         method: 'DELETE',
         headers: {
@@ -67,7 +65,6 @@ const AdminUsersPage = () => {
 
   const handleToggleActive = async (userId, currentStatus) => {
     try {
-      const token = localStorage.getItem('token');
       const response = await fetch(`http://localhost:5000/api/admin/users/${userId}`, {
         method: 'PUT',
         headers: {
@@ -87,7 +84,6 @@ const AdminUsersPage = () => {
 
   const viewUserDetails = async (userId) => {
     try {
-      const token = localStorage.getItem('token');
       const response = await fetch(`http://localhost:5000/api/admin/users/${userId}`, {
         headers: {
           'Authorization': `Bearer ${token}`

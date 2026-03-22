@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import AdminLayout from '../components/AdminLayout';
 import { DollarSign, TrendingUp, Store, Calendar, RotateCcw } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -16,7 +16,6 @@ const AdminEarningsPage = () => {
 
   const fetchEarnings = async () => {
     try {
-      const token = localStorage.getItem('token');
       const response = await fetch(`http://localhost:5000/api/admin/stats?weeks=${weeks}`, {
         headers: {
           'Authorization': `Bearer ${token}`
@@ -41,7 +40,6 @@ const AdminEarningsPage = () => {
 
     try {
       setResetting(true);
-      const token = localStorage.getItem('token');
       const response = await fetch('http://localhost:5000/api/admin/stats/reset', {
         method: 'POST',
         headers: {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import AdminLayout from '../components/AdminLayout';
 import { Users, Store, Package, ShoppingCart, TrendingUp, DollarSign } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -13,7 +13,6 @@ const AdminDashboardPage = () => {
 
   const fetchStats = async () => {
     try {
-      const token = localStorage.getItem('token');
       const response = await fetch('http://localhost:5000/api/admin/stats', {
         headers: {
           'Authorization': `Bearer ${token}`

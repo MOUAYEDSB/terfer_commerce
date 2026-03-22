@@ -1,4 +1,4 @@
-
+﻿
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
@@ -52,7 +52,6 @@ const CheckoutPage = () => {
         setLoading(true);
 
         try {
-            const token = localStorage.getItem('token');
             
             const orderData = {
                 items: cartItems.map(item => ({

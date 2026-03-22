@@ -3,6 +3,7 @@ const router = express.Router();
 const {
     registerUser,
     loginUser,
+    logoutUser,
     getUserProfile,
     updateUserProfile,
     changePassword,
@@ -23,6 +24,7 @@ const { forgotPassword, resetPassword, verifyResetToken } = require('../controll
 // Public routes
 router.post('/register', registerLimiter, registerUser);
 router.post('/login', loginLimiter, loginUser);
+router.post('/logout', logoutUser);
 
 // Seller public routes
 router.get('/seller/:id', getSellerInfo);

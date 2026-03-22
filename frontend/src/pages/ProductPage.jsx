@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+﻿import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Star, ShoppingCart, Heart, Truck, RotateCcw, Minus, Plus, ChevronRight, Loader2, DollarSign, Tag, Briefcase, ChevronDown } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -149,7 +149,6 @@ const ProductPage = () => {
 
         setReviewSubmitting(true);
         try {
-            const token = localStorage.getItem('token');
             const res = await fetch(`${API_URL}/api/products/${id}/reviews`, {
                 method: 'POST',
                 headers: {

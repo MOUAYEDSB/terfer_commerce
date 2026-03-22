@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+﻿import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Settings, Save, Loader2, Eye, EyeOff, Bell, Lock, Shield, CreditCard, MapPin, Store, Image, Upload, X } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -8,7 +8,6 @@ import SellerLayout from '../components/SellerLayout';
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 const authFetch = async (path, options = {}) => {
-    const token = localStorage.getItem('token');
     const headers = {
         'Content-Type': 'application/json',
         ...(options.headers || {}),
@@ -212,8 +211,6 @@ const SellerSettingsPage = () => {
             setUploadingBanner(true);
             const formData = new FormData();
             formData.append('banner', file);
-
-            const token = localStorage.getItem('token');
             const response = await fetch(`${API_URL}/api/upload/banner`, {
                 method: 'POST',
                 headers: {

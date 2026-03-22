@@ -3,6 +3,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
+import CookieConsentBanner from './components/CookieConsentBanner';
 import HomePage from './pages/HomePage';
 import ProductPage from './pages/ProductPage';
 
@@ -22,6 +23,10 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
+import PrivacyPage from './pages/PrivacyPage';
+import TermsPage from './pages/TermsPage';
+import CookiesPage from './pages/CookiesPage';
+import NotFoundPage from './pages/NotFoundPage';
 import SellerDashboardPage from './pages/SellerDashboardPage';
 import SellerProductsPage from './pages/SellerProductsPage';
 import SellerOrdersPage from './pages/SellerOrdersPage';
@@ -63,6 +68,7 @@ const App = () => {
                                         <Route path="products" element={<AdminProductsPage />} />
                                         <Route path="orders" element={<AdminOrdersPage />} />
                                         <Route path="earnings" element={<AdminEarningsPage />} />
+                                        <Route path="*" element={<NotFoundPage section="admin" />} />
                                     </Routes>
                                 </ProtectedRoute>
                             } />
@@ -78,6 +84,7 @@ const App = () => {
                                         <Route path="orders" element={<SellerOrdersPage />} />
                                         <Route path="analytics" element={<SellerAnalyticsPage />} />
                                         <Route path="settings" element={<SellerSettingsPage />} />
+                                        <Route path="*" element={<NotFoundPage section="seller" />} />
                                     </Routes>
                                 </ProtectedRoute>
                             } />
@@ -103,8 +110,13 @@ const App = () => {
                                             <Route path="/register-seller" element={<RegisterPage />} />
                                             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
                                             <Route path="/reset-password/:resetToken" element={<ResetPasswordPage />} />
+                                            <Route path="/privacy" element={<PrivacyPage />} />
+                                            <Route path="/terms" element={<TermsPage />} />
+                                            <Route path="/cookies" element={<CookiesPage />} />
+                                            <Route path="*" element={<NotFoundPage section="public" />} />
                                         </Routes>
                                     </main>
+                                    <CookieConsentBanner />
                                     <Footer />
                                 </div>
                             } />

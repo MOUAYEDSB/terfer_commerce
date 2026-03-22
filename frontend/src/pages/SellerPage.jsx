@@ -80,9 +80,7 @@ const SellerPage = () => {
                 `http://localhost:5000/api/users/seller/${id}/follow`,
                 {},
                 {
-                    headers: {
-                        Authorization: `Bearer ${user.token}`
-                    }
+                    withCredentials: true
                 }
             );
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { Package, ShoppingBag, TrendingUp, Loader2, Plus } from 'lucide-react';
@@ -10,7 +10,6 @@ import { getImgUrl } from '../constants/productConstants';
 const API_URL = 'http://localhost:5000';
 
 const authFetch = async (path, options = {}) => {
-    const token = localStorage.getItem('token');
     const headers = {
         'Content-Type': 'application/json',
         ...(options.headers || {}),

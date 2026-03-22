@@ -12,39 +12,38 @@ export const AuthProvider = ({ children }) => {
 
     const updateUser = (nextUser) => {
         if (nextUser) {
-            const existingToken = localStorage.getItem('token');
-            const mergedUser = {
-                ...nextUser,
-                token: nextUser.token || existingToken
-            };
-            setUser(mergedUser);
-            localStorage.setItem('user', JSON.stringify(mergedUser));
-            if (mergedUser.token) {
-                localStorage.setItem('token', mergedUser.token);
-            } else {
-                localStorage.removeItem('token');
-            }
+            setUser(nextUser);
             return;
         }
 
         setUser(null);
-        localStorage.removeItem('user');
-        localStorage.removeItem('token');
     };
 
     useEffect(() => {
-        const storedUser = localStorage.getItem('user');
-        if (storedUser) {
-            const parsed = JSON.parse(storedUser);
-            const existingToken = localStorage.getItem('token');
-            setUser({ ...parsed, token: parsed.token || existingToken });
-        }
-        setLoading(false);
+        const bootstrapSession = async () => {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+
+            try {
+                const { data } = await axios.get('http://localhost:5000/api/users/profile', { withCredentials: true });
+                setUser(data);
+            } catch (_) {
+                setUser(null);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        bootstrapSession();
     }, []);
 
     const login = async (email, password) => {
         try {
-            const { data } = await axios.post('http://localhost:5000/api/users/login', { email, password });
+            const { data } = await axios.post(
+                'http://localhost:5000/api/users/login',
+                { email, password },
+                { withCredentials: true }
+            );
             updateUser(data);
             return { success: true, user: data };
         } catch (error) {
@@ -58,7 +57,7 @@ export const AuthProvider = ({ children }) => {
 
     const register = async (userData) => {
         try {
-            const { data } = await axios.post('http://localhost:5000/api/users/register', userData);
+            const { data } = await axios.post('http://localhost:5000/api/users/register', userData, { withCredentials: true });
             // Don't auto-login, just return success
             return { success: true, message: data?.message || 'Inscription réussie ! Veuillez vous connecter.' };
         } catch (error) {
@@ -70,7 +69,12 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    const logout = () => {
+    const logout = async () => {
+        try {
+            await axios.post('http://localhost:5000/api/users/logout', {}, { withCredentials: true });
+        } catch (_) {
+            // Ignore logout API errors and clear local auth state anyway.
+        }
         updateUser(null);
     };
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+﻿import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AdminLayout from '../components/AdminLayout';
 import { Store, Package, ShoppingCart, Eye, Ban, CheckCircle, X, Plus, Trash2, Edit, Search, RefreshCw } from 'lucide-react';
@@ -22,7 +22,6 @@ const AdminSellersPage = () => {
 
   const fetchSellers = async () => {
     try {
-      const token = localStorage.getItem('token');
       const response = await fetch('http://localhost:5000/api/admin/sellers', {
         headers: {
           'Authorization': `Bearer ${token}`
@@ -41,7 +40,6 @@ const AdminSellersPage = () => {
 
   const viewSellerDetails = async (sellerId) => {
     try {
-      const token = localStorage.getItem('token');
       const response = await fetch(`http://localhost:5000/api/admin/users/${sellerId}`, {
         headers: {
           'Authorization': `Bearer ${token}`
@@ -59,7 +57,6 @@ const AdminSellersPage = () => {
 
   const openEditSeller = async (sellerId) => {
     try {
-      const token = localStorage.getItem('token');
       const response = await fetch(`http://localhost:5000/api/admin/users/${sellerId}`, {
         headers: {
           'Authorization': `Bearer ${token}`
@@ -91,7 +88,6 @@ const AdminSellersPage = () => {
 
     try {
       setSaving(true);
-      const token = localStorage.getItem('token');
       const response = await fetch(`http://localhost:5000/api/admin/users/${editSeller._id}`, {
         method: 'PUT',
         headers: {
@@ -128,7 +124,6 @@ const AdminSellersPage = () => {
 
   const handleToggleActive = async (sellerId, currentStatus) => {
     try {
-      const token = localStorage.getItem('token');
       const response = await fetch(`http://localhost:5000/api/admin/users/${sellerId}`, {
         method: 'PUT',
         headers: {
@@ -148,7 +143,6 @@ const AdminSellersPage = () => {
 
   const handleApproveSeller = async (sellerId) => {
     try {
-      const token = localStorage.getItem('token');
       const response = await fetch(`http://localhost:5000/api/admin/users/${sellerId}`, {
         method: 'PUT',
         headers: {
@@ -182,7 +176,6 @@ const AdminSellersPage = () => {
     if (!confirmed) return;
 
     try {
-      const token = localStorage.getItem('token');
       const response = await fetch(`http://localhost:5000/api/admin/users/${sellerId}`, {
         method: 'DELETE',
         headers: {
@@ -245,7 +238,6 @@ const AdminSellersPage = () => {
     if (!confirmed) return;
 
     try {
-      const token = localStorage.getItem('token');
       const results = await Promise.all(
         pendingInFiltered.map((seller) =>
           fetch(`http://localhost:5000/api/admin/users/${seller._id}`, {

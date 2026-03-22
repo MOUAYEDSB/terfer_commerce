@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Facebook, Instagram, Linkedin, Send } from 'lucide-react';
 
@@ -71,9 +72,9 @@ const Footer = () => {
                 <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center text-gray-500 text-sm">
                     <p>&copy; {new Date().getFullYear()} TERFER. {t('footer.rights')}</p>
                     <div className="flex space-x-6 mt-4 md:mt-0">
-                        <a href="#" className="hover:text-white transition">{t('footer.privacy')}</a>
-                        <a href="#" className="hover:text-white transition">{t('footer.terms')}</a>
-                        <a href="#" className="hover:text-white transition">{t('footer.cookies')}</a>
+                        <Link to="/privacy" className="hover:text-white transition">{t('footer.privacy')}</Link>
+                        <Link to="/terms" className="hover:text-white transition">{t('footer.terms')}</Link>
+                        <Link to="/cookies" className="hover:text-white transition">{t('footer.cookies')}</Link>
                     </div>
                 </div>
             </div>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
     ArrowLeft, Upload, X, Loader2, Package, DollarSign,
@@ -18,7 +18,6 @@ import {
 const API_URL = 'http://localhost:5000';
 
 const authFetch = async (path, options = {}) => {
-    const token = localStorage.getItem('token');
     const headers = {
         ...(options.headers || {}),
         ...(token ? { Authorization: `Bearer ${token}` } : {}),

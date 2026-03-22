@@ -1,15 +1,15 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 import { Plus, Edit2, Trash2, Loader2, Package } from 'lucide-react';
 import toast from 'react-hot-toast';
 import SellerLayout from '../components/SellerLayout';
 import { getImgUrl } from '../constants/productConstants';
+import { useAuth } from '../context/AuthContext';
 
 const API_URL = 'http://localhost:5000';
 
 const authFetch = async (path, options = {}) => {
-    const token = localStorage.getItem('token');
     const headers = {
         'Content-Type': 'application/json',
         ...(options.headers || {}),
@@ -27,17 +27,17 @@ const SellerProductsPage = () => {
     const { t, i18n } = useTranslation();
     const isRtl = i18n.language === 'ar';
     const navigate = useNavigate();
+    const { user } = useAuth();
 
     const [loading, setLoading] = useState(true);
     const [products, setProducts] = useState([]);
 
     useEffect(() => {
-        const userRaw = localStorage.getItem('user');
-        if (!userRaw) {
+        if (!user) {
             navigate('/login');
             return;
         }
-        const user = JSON.parse(userRaw);
+
         if (user.role !== 'seller' && user.role !== 'admin') {
             toast.error('Accès réservé aux vendeurs');
             navigate('/');
@@ -56,7 +56,7 @@ const SellerProductsPage = () => {
             }
         };
         load();
-    }, [navigate, i18n.language]);
+    }, [navigate, i18n.language, user]);
 
     const handleDelete = async (id) => {
         if (!window.confirm('Supprimer ce produit ?')) return;

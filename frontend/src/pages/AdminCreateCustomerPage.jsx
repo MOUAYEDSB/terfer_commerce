@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AlertCircle, CheckCircle } from 'lucide-react';
 
@@ -41,7 +41,6 @@ const AdminCreateCustomerPage = () => {
         setLoading(true);
 
         try {
-            const token = localStorage.getItem('token');
             const response = await fetch('http://localhost:5000/api/admin/customers/create', {
                 method: 'POST',
                 headers: {

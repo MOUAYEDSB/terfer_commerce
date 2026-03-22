@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import AdminLayout from '../components/AdminLayout';
 import { Search, Trash2, Filter, Package } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -22,7 +22,6 @@ const AdminProductsPage = () => {
 
   const fetchSellers = async () => {
     try {
-      const token = localStorage.getItem('token');
       const response = await fetch('http://localhost:5000/api/admin/sellers', {
         headers: {
           'Authorization': `Bearer ${token}`
@@ -39,7 +38,6 @@ const AdminProductsPage = () => {
 
   const fetchProducts = async () => {
     try {
-      const token = localStorage.getItem('token');
       const params = new URLSearchParams();
       params.append('page', page);
       if (search) params.append('search', search);
@@ -72,7 +70,6 @@ const AdminProductsPage = () => {
     if (!confirm('Êtes-vous sûr de vouloir supprimer ce produit?')) return;
 
     try {
-      const token = localStorage.getItem('token');
       const response = await fetch(`http://localhost:5000/api/admin/products/${productId}`, {
         method: 'DELETE',
         headers: {

@@ -10,6 +10,31 @@ const generateToken = (id) => {
     });
 };
 
+const getAuthCookieOptions = () => {
+    const isProd = process.env.NODE_ENV === 'production';
+    return {
+        httpOnly: true,
+        secure: isProd,
+        sameSite: isProd ? 'none' : 'lax',
+        maxAge: 30 * 24 * 60 * 60 * 1000,
+        path: '/'
+    };
+};
+
+const setAuthCookie = (res, token) => {
+    res.cookie('auth_token', token, getAuthCookieOptions());
+};
+
+const clearAuthCookie = (res) => {
+    const options = getAuthCookieOptions();
+    res.clearCookie('auth_token', {
+        httpOnly: options.httpOnly,
+        secure: options.secure,
+        sameSite: options.sameSite,
+        path: options.path
+    });
+};
+
 // @desc    Register a new user
 // @route   POST /api/users/register
 // @access  Public
@@ -112,6 +137,8 @@ const loginUser = async (req, res, next) => {
                 res.status(403);
                 throw new Error('Votre compte vendeur est en attente de validation par l’administrateur.');
             }
+            const token = generateToken(user._id);
+            setAuthCookie(res, token);
 
             res.json({
                 _id: user._id,
@@ -134,7 +161,7 @@ const loginUser = async (req, res, next) => {
                 notifications: user.notifications,
                 avatar: user.avatar,
                 isVerifiedSeller: user.isVerifiedSeller,
-                token: generateToken(user._id)
+                token
             });
         } else {
             res.status(401);
@@ -614,9 +641,18 @@ const getSellerReviews = asyncHandler(async (req, res) => {
     });
 });
 
+// @desc    Logout user
+// @route   POST /api/users/logout
+// @access  Public
+const logoutUser = asyncHandler(async (req, res) => {
+    clearAuthCookie(res);
+    res.json({ success: true, message: 'Déconnexion réussie' });
+});
+
 module.exports = {
     registerUser,
     loginUser,
+    logoutUser,
     getUserProfile,
     updateUserProfile,
     addAddress,

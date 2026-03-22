@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { TrendingUp, Package, ShoppingBag, DollarSign, Users, Eye, ArrowUp, ArrowDown, Calendar, Loader2, BarChart3, PieChart } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -8,7 +8,6 @@ import SellerLayout from '../components/SellerLayout';
 const API_URL = 'http://localhost:5000';
 
 const authFetch = async (path, options = {}) => {
-    const token = localStorage.getItem('token');
     const headers = {
         'Content-Type': 'application/json',
         ...(options.headers || {}),

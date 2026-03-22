@@ -1,4 +1,4 @@
-
+﻿
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
@@ -68,7 +68,6 @@ const ProfilePage = () => {
     const fetchOrders = async () => {
         try {
             setLoadingOrders(true);
-            const token = localStorage.getItem('token');
             const res = await fetch(`${API_URL}/api/orders/myorders`, {
                 headers: {
                     ...(token ? { Authorization: `Bearer ${token}` } : {})
