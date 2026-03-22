@@ -3,7 +3,7 @@ const User = require('../models/User');
 const Product = require('../models/Product');
 const Order = require('../models/Order');
 const generatePassword = require('../utils/generatePassword');
-const { sendSellerInviteEmail, assertEmailConfigured } = require('../services/emailService');
+const { sendSellerInviteEmail, sendSellerApprovedEmail, assertEmailConfigured } = require('../services/emailService');
 
 // @desc    Get admin dashboard stats
 // @route   GET /api/admin/stats
@@ -155,6 +155,7 @@ const updateUser = asyncHandler(async (req, res) => {
         email,
         role,
         isActive,
+        isVerifiedSeller,
         phone,
         shopName,
         shopDescription,
@@ -170,7 +171,10 @@ const updateUser = asyncHandler(async (req, res) => {
     if (phone !== undefined) user.phone = phone;
     if (isActive !== undefined) user.isActive = isActive;
 
+    const wasSellerVerified = !!user.isVerifiedSeller;
+
     if (user.role === 'seller') {
+        if (isVerifiedSeller !== undefined) user.isVerifiedSeller = isVerifiedSeller;
         if (shopName !== undefined) user.shopName = shopName;
         if (shopDescription !== undefined) user.shopDescription = shopDescription;
         if (shopPhone !== undefined) user.shopPhone = shopPhone;
@@ -181,13 +185,33 @@ const updateUser = asyncHandler(async (req, res) => {
 
     const updatedUser = await user.save();
 
+    let approvalEmailSent = false;
+    let approvalEmailError = null;
+    const isNowSellerVerified = updatedUser.role === 'seller' && !!updatedUser.isVerifiedSeller;
+
+    if (updatedUser.role === 'seller' && !wasSellerVerified && isNowSellerVerified) {
+        try {
+            await sendSellerApprovedEmail({
+                sellerEmail: updatedUser.email,
+                sellerName: updatedUser.name
+            });
+            approvalEmailSent = true;
+        } catch (err) {
+            approvalEmailError = err.message;
+            console.error('Seller approval email error:', err.message);
+        }
+    }
+
     res.json({
         _id: updatedUser._id,
         name: updatedUser.name,
         email: updatedUser.email,
         role: updatedUser.role,
         isActive: updatedUser.isActive,
-        shopName: updatedUser.shopName
+        isVerifiedSeller: updatedUser.isVerifiedSeller,
+        shopName: updatedUser.shopName,
+        approvalEmailSent,
+        approvalEmailError
     });
 });
 
@@ -669,6 +693,7 @@ const getSellersStats = asyncHandler(async (req, res) => {
             shopName: seller.shopName,
             shopDescription: seller.shopDescription,
             isActive: seller.isActive,
+            isVerifiedSeller: seller.isVerifiedSeller,
             createdAt: seller.createdAt,
             totalProducts: products,
             totalOrders: orders.length,

@@ -60,7 +60,7 @@ export const AuthProvider = ({ children }) => {
         try {
             const { data } = await axios.post('http://localhost:5000/api/users/register', userData);
             // Don't auto-login, just return success
-            return { success: true, message: 'Inscription réussie ! Veuillez vous connecter.' };
+            return { success: true, message: data?.message || 'Inscription réussie ! Veuillez vous connecter.' };
         } catch (error) {
             console.error('Register error:', error.response?.data?.message || error.message);
             return {

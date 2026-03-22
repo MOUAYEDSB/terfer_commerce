@@ -1,6 +1,7 @@
 const asyncHandler = require('express-async-handler');
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
+const { sendSellerRegistrationPendingEmail } = require('../services/emailService');
 
 // Generate JWT Token
 const generateToken = (id) => {
@@ -31,16 +32,49 @@ const registerUser = async (req, res, next) => {
         }
 
         // Create user
+        const userRole = role || 'customer';
+
         const user = await User.create({
             name,
             email: normalizedEmail,
             password,
-            role: role || 'customer',
-            shopName: role === 'seller' ? shopName : undefined,
-            shopDescription: role === 'seller' ? shopDescription : undefined
+            role: userRole,
+            shopName: userRole === 'seller' ? shopName : undefined,
+            shopDescription: userRole === 'seller' ? shopDescription : undefined,
+            isVerifiedSeller: userRole === 'seller' ? false : undefined
         });
 
         if (user) {
+            if (user.role === 'seller') {
+                let emailSent = false;
+                let emailError = null;
+
+                try {
+                    await sendSellerRegistrationPendingEmail({
+                        sellerEmail: user.email,
+                        sellerName: user.name,
+                        shopName: user.shopName
+                    });
+                    emailSent = true;
+                } catch (err) {
+                    emailError = err.message;
+                    console.error('Seller pending email error:', err.message);
+                }
+
+                res.status(201).json({
+                    _id: user._id,
+                    name: user.name,
+                    email: user.email,
+                    role: user.role,
+                    shopName: user.shopName,
+                    isVerifiedSeller: user.isVerifiedSeller,
+                    emailSent,
+                    emailError: emailSent ? null : emailError,
+                    message: 'Inscription vendeur reçue. Votre compte est en attente de validation par l’administrateur.'
+                });
+                return;
+            }
+
             res.status(201).json({
                 _id: user._id,
                 name: user.name,
@@ -74,6 +108,11 @@ const loginUser = async (req, res, next) => {
         const user = await User.findOne({ email: normalizedEmail }).select('+password');
 
         if (user && user.isActive !== false && (await user.matchPassword(password))) {
+            if (user.role === 'seller' && !user.isVerifiedSeller) {
+                res.status(403);
+                throw new Error('Votre compte vendeur est en attente de validation par l’administrateur.');
+            }
+
             res.json({
                 _id: user._id,
                 name: user.name,
@@ -94,6 +133,7 @@ const loginUser = async (req, res, next) => {
                 accountHolder: user.accountHolder,
                 notifications: user.notifications,
                 avatar: user.avatar,
+                isVerifiedSeller: user.isVerifiedSeller,
                 token: generateToken(user._id)
             });
         } else {

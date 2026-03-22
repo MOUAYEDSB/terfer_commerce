@@ -309,6 +309,86 @@ const sendSellerInviteEmail = async ({ sellerEmail, sellerName, generatedPasswor
 };
 
 /**
+ * Send seller self-registration acknowledgment email (pending admin approval)
+ */
+const sendSellerRegistrationPendingEmail = async ({ sellerEmail, sellerName, shopName }) => {
+    const loginUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/login`;
+    const shopLabel = shopName ? `Boutique: ${shopName}` : '';
+
+    const message = `
+        Bonjour ${sellerName || ''},
+
+        Nous avons bien reçu votre demande d'inscription vendeur sur TerFer Commerce.
+        ${shopLabel}
+
+        Votre compte est actuellement en attente de validation par l'administrateur.
+        Vous recevrez un nouvel email dès que votre boutique sera approuvée.
+
+        Espace de connexion:
+        ${loginUrl}
+
+        Cordialement,
+        L'équipe TerFer Commerce
+    `;
+
+    const html = `
+        <h2>Demande vendeur reçue</h2>
+        <p>Bonjour ${sellerName || ''},</p>
+        <p>Nous avons bien reçu votre demande d'inscription vendeur sur <strong>TerFer Commerce</strong>.</p>
+        ${shopName ? `<p><strong>Boutique:</strong> ${shopName}</p>` : ''}
+        <p>Votre compte est actuellement <strong>en attente de validation</strong> par l'administrateur.</p>
+        <p>Vous recevrez un nouvel email dès que votre boutique sera approuvée.</p>
+        <p><a href="${loginUrl}" target="_blank" rel="noopener noreferrer" style="background: #4F46E5; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Accéder à la connexion</a></p>
+        <p>Ou copiez ce lien: <code>${loginUrl}</code></p>
+        <br>
+        <p>Cordialement,<br>L'équipe TerFer Commerce</p>
+    `;
+
+    return await sendEmail({
+        email: sellerEmail,
+        subject: 'Demande vendeur reçue - En attente de validation',
+        message,
+        html
+    });
+};
+
+/**
+ * Send seller approval email when admin validates account
+ */
+const sendSellerApprovedEmail = async ({ sellerEmail, sellerName }) => {
+    const loginUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/login`;
+
+    const message = `
+        Bonjour ${sellerName || ''},
+
+        Bonne nouvelle: votre compte vendeur TerFer Commerce est maintenant validé.
+
+        Vous pouvez vous connecter et commencer à publier vos produits:
+        ${loginUrl}
+
+        Cordialement,
+        L'équipe TerFer Commerce
+    `;
+
+    const html = `
+        <h2>Compte vendeur approuvé</h2>
+        <p>Bonjour ${sellerName || ''},</p>
+        <p>Bonne nouvelle: votre compte vendeur sur <strong>TerFer Commerce</strong> est maintenant validé.</p>
+        <p><a href="${loginUrl}" target="_blank" rel="noopener noreferrer" style="background: #4F46E5; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Se connecter</a></p>
+        <p>Ou copiez ce lien: <code>${loginUrl}</code></p>
+        <br>
+        <p>Cordialement,<br>L'équipe TerFer Commerce</p>
+    `;
+
+    return await sendEmail({
+        email: sellerEmail,
+        subject: 'Votre compte vendeur est validé - TerFer Commerce',
+        message,
+        html
+    });
+};
+
+/**
  * Send order confirmation email
  */
 const sendOrderConfirmationEmail = async (user, order) => {
@@ -350,5 +430,7 @@ module.exports = {
     sendPasswordResetEmail,
     sendWelcomeEmail,
     sendSellerInviteEmail,
+    sendSellerRegistrationPendingEmail,
+    sendSellerApprovedEmail,
     sendOrderConfirmationEmail
 };

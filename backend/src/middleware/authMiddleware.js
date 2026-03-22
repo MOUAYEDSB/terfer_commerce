@@ -43,12 +43,28 @@ const protect = asyncHandler(async (req, res, next) => {
 
 // Seller middleware
 const seller = (req, res, next) => {
-    if (req.user && (req.user.role === 'seller' || req.user.role === 'admin')) {
-        next();
-    } else {
+    if (!req.user) {
         res.status(403);
         throw new Error('Not authorized as seller');
     }
+
+    if (req.user.role === 'admin') {
+        next();
+        return;
+    }
+
+    if (req.user.role === 'seller') {
+        if (!req.user.isVerifiedSeller) {
+            res.status(403);
+            throw new Error('Seller account pending admin approval');
+        }
+
+        next();
+        return;
+    }
+
+    res.status(403);
+    throw new Error('Not authorized as seller');
 };
 
 // Admin middleware

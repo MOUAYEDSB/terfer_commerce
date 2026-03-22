@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AdminLayout from '../components/AdminLayout';
-import { Store, TrendingUp, Package, ShoppingCart, Eye, Ban, CheckCircle, X, Plus, Trash2, Edit } from 'lucide-react';
+import { Store, Package, ShoppingCart, Eye, Ban, CheckCircle, X, Plus, Trash2, Edit, Search, RefreshCw } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const AdminSellersPage = () => {
@@ -13,6 +13,8 @@ const AdminSellersPage = () => {
   const [editSeller, setEditSeller] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [activeFilter, setActiveFilter] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     fetchSellers();
@@ -144,6 +146,35 @@ const AdminSellersPage = () => {
     }
   };
 
+  const handleApproveSeller = async (sellerId) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:5000/api/admin/users/${sellerId}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ isVerifiedSeller: true, isActive: true })
+      });
+
+      if (!response.ok) throw new Error('Failed to approve seller');
+      const data = await response.json();
+
+      if (data.approvalEmailSent) {
+        toast.success('Vendeur validé et email envoyé');
+      } else if (data.approvalEmailError) {
+        toast.success('Vendeur validé (email non envoyé)');
+      } else {
+        toast.success('Vendeur validé');
+      }
+
+      fetchSellers();
+    } catch (error) {
+      toast.error('Erreur lors de la validation du vendeur');
+    }
+  };
+
   const handleDeleteSeller = async (sellerId) => {
     const confirmed = window.confirm(
       'Confirmer la suppression de cette boutique ? Cette action supprimera aussi tous ses produits.'
@@ -168,6 +199,78 @@ const AdminSellersPage = () => {
       fetchSellers();
     } catch (error) {
       toast.error('Erreur lors de la suppression de la boutique');
+    }
+  };
+
+  const filteredSellers = useMemo(() => {
+    let data = [...sellers];
+
+    if (activeFilter === 'pending') {
+      data = data.filter((seller) => !seller.isVerifiedSeller);
+    } else if (activeFilter === 'verified') {
+      data = data.filter((seller) => seller.isVerifiedSeller);
+    } else if (activeFilter === 'active') {
+      data = data.filter((seller) => seller.isActive);
+    } else if (activeFilter === 'suspended') {
+      data = data.filter((seller) => !seller.isActive);
+    }
+
+    const query = searchQuery.trim().toLowerCase();
+    if (query) {
+      data = data.filter((seller) => {
+        const name = (seller.name || '').toLowerCase();
+        const shop = (seller.shopName || '').toLowerCase();
+        const email = (seller.email || '').toLowerCase();
+        return name.includes(query) || shop.includes(query) || email.includes(query);
+      });
+    }
+
+    return data;
+  }, [sellers, activeFilter, searchQuery]);
+
+  const filterButtons = [
+    { key: 'all', label: 'Tous', count: sellers.length },
+    { key: 'pending', label: 'En attente', count: sellers.filter(s => !s.isVerifiedSeller).length },
+    { key: 'verified', label: 'Valides', count: sellers.filter(s => s.isVerifiedSeller).length },
+    { key: 'active', label: 'Actifs', count: sellers.filter(s => s.isActive).length },
+    { key: 'suspended', label: 'Suspendus', count: sellers.filter(s => !s.isActive).length }
+  ];
+
+  const pendingInFiltered = filteredSellers.filter((seller) => !seller.isVerifiedSeller);
+
+  const handleApproveFiltered = async () => {
+    if (pendingInFiltered.length === 0) return;
+
+    const confirmed = window.confirm(`Valider ${pendingInFiltered.length} vendeur(s) en attente ?`);
+    if (!confirmed) return;
+
+    try {
+      const token = localStorage.getItem('token');
+      const results = await Promise.all(
+        pendingInFiltered.map((seller) =>
+          fetch(`http://localhost:5000/api/admin/users/${seller._id}`, {
+            method: 'PUT',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ isVerifiedSeller: true, isActive: true })
+          })
+        )
+      );
+
+      const successCount = results.filter((r) => r.ok).length;
+      const failedCount = results.length - successCount;
+
+      if (failedCount > 0) {
+        toast.error(`${successCount} valides, ${failedCount} echecs`);
+      } else {
+        toast.success(`${successCount} vendeur(s) valides`);
+      }
+
+      fetchSellers();
+    } catch (error) {
+      toast.error('Erreur lors de la validation en masse');
     }
   };
 
@@ -200,7 +303,7 @@ const AdminSellersPage = () => {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
           <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
             <div className="flex items-center justify-between">
               <div>
@@ -223,6 +326,20 @@ const AdminSellersPage = () => {
               </div>
               <div className="bg-green-50 p-3 rounded-lg">
                 <CheckCircle className="text-green-500 w-6 h-6" />
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">En attente validation</p>
+                <p className="text-2xl font-bold text-gray-900 mt-2">
+                  {sellers.filter(s => !s.isVerifiedSeller).length}
+                </p>
+              </div>
+              <div className="bg-yellow-50 p-3 rounded-lg">
+                <CheckCircle className="text-yellow-500 w-6 h-6" />
               </div>
             </div>
           </div>
@@ -256,6 +373,62 @@ const AdminSellersPage = () => {
           </div>
         </div>
 
+        {/* Filters + Quick Actions */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 space-y-4">
+          <div className="flex flex-wrap items-center gap-2">
+            {filterButtons.map((filter) => (
+              <button
+                key={filter.key}
+                onClick={() => setActiveFilter(filter.key)}
+                className={`px-3 py-2 rounded-lg text-sm font-medium transition ${
+                  activeFilter === filter.key
+                    ? 'bg-orange-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                {filter.label} ({filter.count})
+              </button>
+            ))}
+          </div>
+
+          <div className="flex flex-col md:flex-row md:items-center gap-3">
+            <div className="relative flex-1">
+              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Rechercher par nom, boutique, email..."
+                className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              />
+            </div>
+
+            <button
+              onClick={handleApproveFiltered}
+              disabled={pendingInFiltered.length === 0}
+              className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
+            >
+              <CheckCircle size={16} />
+              Valider en attente ({pendingInFiltered.length})
+            </button>
+
+            <button
+              onClick={() => {
+                setActiveFilter('all');
+                setSearchQuery('');
+              }}
+              className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition"
+            >
+              <RefreshCw size={16} />
+              Reset filtres
+            </button>
+          </div>
+
+          <p className="text-sm text-gray-500">
+            {filteredSellers.length} resultat(s) affiche(s)
+          </p>
+        </div>
+
         {/* Sellers Table */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
           <div className="overflow-x-auto">
@@ -264,6 +437,7 @@ const AdminSellersPage = () => {
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Boutique</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Vendeur</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Validation</th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Produits</th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Commandes</th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Ventes</th>
@@ -272,20 +446,23 @@ const AdminSellersPage = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {sellers.length === 0 ? (
+                {filteredSellers.length === 0 ? (
                   <tr>
-                    <td colSpan="7" className="px-6 py-10 text-center">
-                      <p className="text-sm text-gray-600 mb-4">Aucune boutique trouvÃ©e.</p>
+                    <td colSpan="8" className="px-6 py-10 text-center">
+                      <p className="text-sm text-gray-600 mb-4">Aucune boutique trouvee pour ce filtre.</p>
                       <button
-                        onClick={() => navigate('/admin/sellers/create')}
-                        className="inline-flex items-center gap-2 bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg transition"
+                        onClick={() => {
+                          setActiveFilter('all');
+                          setSearchQuery('');
+                        }}
+                        className="inline-flex items-center gap-2 bg-gray-900 hover:bg-black text-white px-4 py-2 rounded-lg transition"
                       >
-                        <Plus size={18} />
-                        CrÃ©er un Vendeur
+                        <RefreshCw size={18} />
+                        Voir tous les vendeurs
                       </button>
                     </td>
                   </tr>
-                ) : sellers.map((seller) => (
+                ) : filteredSellers.map((seller) => (
                   <tr key={seller._id} className="hover:bg-gray-50">
                     <td className="px-6 py-4">
                       <div>
@@ -300,6 +477,13 @@ const AdminSellersPage = () => {
                         <div className="text-sm font-medium text-gray-900">{seller.name}</div>
                         <div className="text-sm text-gray-500">{seller.email}</div>
                       </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        seller.isVerifiedSeller ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                      }`}>
+                        {seller.isVerifiedSeller ? 'Validé' : 'En attente'}
+                      </span>
                     </td>
                     <td className="px-6 py-4 text-sm text-right text-gray-900">{seller.totalProducts}</td>
                     <td className="px-6 py-4 text-sm text-right text-gray-900">{seller.totalOrders}</td>
@@ -323,6 +507,16 @@ const AdminSellersPage = () => {
                           <Eye size={16} className="mr-1" />
                           Voir
                         </button>
+                        {!seller.isVerifiedSeller && (
+                          <button
+                            onClick={() => handleApproveSeller(seller._id)}
+                            className="inline-flex items-center px-3 py-1.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition"
+                            title="Valider le vendeur"
+                          >
+                            <CheckCircle size={16} className="mr-1" />
+                            Valider
+                          </button>
+                        )}
                         <button
                           onClick={() => openEditSeller(seller._id)}
                           className="inline-flex items-center px-3 py-1.5 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition"
@@ -399,6 +593,12 @@ const AdminSellersPage = () => {
                     <label className="text-sm text-gray-600">Date d'inscription</label>
                     <p className="font-medium">
                       {new Date(selectedSeller.user.createdAt).toLocaleDateString('fr-FR')}
+                    </p>
+                  </div>
+                  <div>
+                    <label className="text-sm text-gray-600">Validation vendeur</label>
+                    <p className="font-medium">
+                      {selectedSeller.user.isVerifiedSeller ? 'Validé' : 'En attente'}
                     </p>
                   </div>
                   <div className="col-span-2">
