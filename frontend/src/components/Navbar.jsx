@@ -1,6 +1,6 @@
 ﻿import React, { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ShoppingCart, User, Search, Menu, Globe } from 'lucide-react';
+import { ShoppingCart, User, Search, Menu, Globe, Package, Heart, MapPin, Phone, LayoutDashboard, LogOut, LogIn, UserPlus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { useCart } from '../context/CartContext';
@@ -145,34 +145,40 @@ const Navbar = () => {
                                 {user ? (
                                     <>
                                         <Link to="/profile" onClick={() => setIsProfileOpen(false)} className="flex items-center gap-3 px-4 py-2 hover:bg-gray-50 text-sm font-bold text-gray-700 hover:text-blue-600 transition-colors">
-                                            👤 {t('nav.profile')}
+                                            <User size={16} /> {t('nav.profile')}
                                         </Link>
                                         <Link to="/profile?tab=orders" onClick={() => setIsProfileOpen(false)} className="flex items-center gap-3 px-4 py-2 hover:bg-gray-50 text-sm font-bold text-gray-700 hover:text-blue-600 transition-colors">
-                                            📦 {t('profile.orders')}
+                                            <Package size={16} /> {t('profile.orders')}
                                         </Link>
                                         <Link to="/profile?tab=wishlist" onClick={() => setIsProfileOpen(false)} className="flex items-center gap-3 px-4 py-2 hover:bg-gray-50 text-sm font-bold text-gray-700 hover:text-blue-600 transition-colors">
-                                            ❤️ {t('profile.wishlist')}
+                                            <Heart size={16} /> {t('profile.wishlist')}
+                                        </Link>
+                                        <Link to="/profile?tab=addresses" onClick={() => setIsProfileOpen(false)} className="flex items-center gap-3 px-4 py-2 hover:bg-gray-50 text-sm font-bold text-gray-700 hover:text-blue-600 transition-colors">
+                                            <MapPin size={16} /> Mes adresses
+                                        </Link>
+                                        <Link to="/profile?tab=contact" onClick={() => setIsProfileOpen(false)} className="flex items-center gap-3 px-4 py-2 hover:bg-gray-50 text-sm font-bold text-gray-700 hover:text-blue-600 transition-colors">
+                                            <Phone size={16} /> Mes coordonnées
                                         </Link>
                                         {isSeller && (
                                             <div className="mt-1 pt-1 border-t border-gray-100">
                                                 <Link to="/seller/dashboard" onClick={() => setIsProfileOpen(false)} className="flex items-center gap-3 px-4 py-2 hover:bg-blue-50 text-sm font-bold text-blue-600 transition-colors">
-                                                    🏪 Dashboard Vendeur
+                                                    <LayoutDashboard size={16} /> Dashboard Vendeur
                                                 </Link>
                                             </div>
                                         )}
                                         <div className="mt-1 pt-1 border-t border-gray-100">
                                             <button onClick={async () => { await logout(); setIsProfileOpen(false); }} className="w-full flex items-center gap-3 px-4 py-2 hover:bg-red-50 text-sm font-bold text-red-500 transition-colors">
-                                                🚪 {t('nav.logout')}
+                                                <LogOut size={16} /> {t('nav.logout')}
                                             </button>
                                         </div>
                                     </>
                                 ) : (
                                     <>
                                         <Link to="/login" onClick={() => setIsProfileOpen(false)} className="flex items-center gap-3 px-4 py-2 hover:bg-gray-50 text-sm font-bold text-gray-700 hover:text-blue-600 transition-colors">
-                                            🔑 {t('auth.login_title')}
+                                            <LogIn size={16} /> {t('auth.login_title')}
                                         </Link>
                                         <Link to="/register" onClick={() => setIsProfileOpen(false)} className="flex items-center gap-3 px-4 py-2 hover:bg-gray-50 text-sm font-bold text-gray-700 hover:text-blue-600 transition-colors">
-                                            📝 {t('auth.register_title')}
+                                            <UserPlus size={16} /> {t('auth.register_title')}
                                         </Link>
                                     </>
                                 )}

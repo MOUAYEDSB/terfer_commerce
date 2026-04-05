@@ -47,6 +47,15 @@ const userSchema = new mongoose.Schema({
         address: String,
         city: String,
         postalCode: String,
+        label: {
+            type: String,
+            enum: ['home', 'work', 'other'],
+            default: 'home'
+        },
+        notes: {
+            type: String,
+            default: ''
+        },
         country: {
             type: String,
             default: 'Tunisia'

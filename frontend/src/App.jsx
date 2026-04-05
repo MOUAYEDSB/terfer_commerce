@@ -100,6 +100,7 @@ const App = () => {
                                             <Route path="/cart" element={<CartPage />} />
                                             <Route path="/checkout" element={<CheckoutPage />} />
                                             <Route path="/profile" element={<ProfilePage />} />
+                                            <Route path="/profile/:tab" element={<ProfilePage />} />
                                             <Route path="/order/:orderId" element={<OrderDetailPage />} />
                                             <Route path="/order/:orderId/invoice" element={<InvoicePage />} />
                                             <Route path="/shop/:id" element={<SellerPage />} />

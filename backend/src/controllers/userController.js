@@ -35,6 +35,12 @@ const clearAuthCookie = (res) => {
     });
 };
 
+const isValidPhone = (value) => {
+    if (!value) return true;
+    const normalized = String(value).replace(/\s+/g, '');
+    return /^(\+216)?\d{8,12}$/.test(normalized);
+};
+
 // @desc    Register a new user
 // @route   POST /api/users/register
 // @access  Public
@@ -217,10 +223,42 @@ const updateUserProfile = asyncHandler(async (req, res) => {
     const user = await User.findById(req.user._id);
 
     if (user) {
-        user.name = req.body.name || user.name;
-        user.email = req.body.email || user.email;
-        user.phone = req.body.phone || user.phone;
-        user.avatar = req.body.avatar || user.avatar;
+        if (req.body.phone !== undefined && !isValidPhone(req.body.phone)) {
+            res.status(400);
+            throw new Error('Numéro de téléphone invalide');
+        }
+
+        if (req.body.name !== undefined) {
+            const normalizedName = String(req.body.name || '').trim();
+            if (!normalizedName) {
+                res.status(400);
+                throw new Error('Nom invalide');
+            }
+            user.name = normalizedName;
+        }
+        if (req.body.phone !== undefined) user.phone = String(req.body.phone || '').trim();
+        if (req.body.avatar !== undefined) user.avatar = req.body.avatar;
+
+        if (req.body.email !== undefined) {
+            const normalizedEmail = String(req.body.email || '').trim().toLowerCase();
+
+            if (!normalizedEmail) {
+                res.status(400);
+                throw new Error('Email invalide');
+            }
+
+            const existingUser = await User.findOne({
+                email: normalizedEmail,
+                _id: { $ne: user._id }
+            });
+
+            if (existingUser) {
+                res.status(400);
+                throw new Error('Email déjà utilisé');
+            }
+
+            user.email = normalizedEmail;
+        }
 
         if (req.body.password) {
             user.password = req.body.password;
@@ -339,7 +377,17 @@ const addAddress = asyncHandler(async (req, res) => {
     const user = await User.findById(req.user._id);
 
     if (user) {
-        const { fullName, phone, address, city, postalCode, isDefault } = req.body;
+        const { fullName, phone, address, city, postalCode, country, label, notes, isDefault } = req.body;
+
+        if (!fullName || !phone || !address || !city || !postalCode) {
+            res.status(400);
+            throw new Error('fullName, phone, address, city and postalCode are required');
+        }
+
+        if (!isValidPhone(phone)) {
+            res.status(400);
+            throw new Error('Numéro de téléphone invalide');
+        }
 
         // If this is default, unset other defaults
         if (isDefault) {
@@ -352,6 +400,9 @@ const addAddress = asyncHandler(async (req, res) => {
             address,
             city,
             postalCode,
+            country: country || 'Tunisia',
+            label: label || 'home',
+            notes: notes || '',
             isDefault: isDefault || user.addresses.length === 0
         });
 
@@ -373,11 +424,19 @@ const updateAddress = asyncHandler(async (req, res) => {
         const address = user.addresses.id(req.params.addressId);
 
         if (address) {
+            if (req.body.phone !== undefined && !isValidPhone(req.body.phone)) {
+                res.status(400);
+                throw new Error('Numéro de téléphone invalide');
+            }
+
             address.fullName = req.body.fullName || address.fullName;
             address.phone = req.body.phone || address.phone;
             address.address = req.body.address || address.address;
             address.city = req.body.city || address.city;
             address.postalCode = req.body.postalCode || address.postalCode;
+            address.country = req.body.country || address.country;
+            if (req.body.label !== undefined) address.label = req.body.label;
+            if (req.body.notes !== undefined) address.notes = req.body.notes;
 
             if (req.body.isDefault) {
                 user.addresses.forEach(addr => addr.isDefault = false);
@@ -403,9 +462,16 @@ const deleteAddress = asyncHandler(async (req, res) => {
     const user = await User.findById(req.user._id);
 
     if (user) {
+        const addressToDelete = user.addresses.id(req.params.addressId);
+        const deletingDefault = !!addressToDelete?.isDefault;
+
         user.addresses = user.addresses.filter(
             addr => addr._id.toString() !== req.params.addressId
         );
+
+        if (deletingDefault && user.addresses.length > 0) {
+            user.addresses[0].isDefault = true;
+        }
 
         await user.save();
         res.json({ message: 'Address deleted successfully' });
@@ -641,6 +707,30 @@ const getSellerReviews = asyncHandler(async (req, res) => {
     });
 });
 
+// @desc    Set default address
+// @route   PATCH /api/users/addresses/:addressId/default
+// @access  Private
+const setDefaultAddress = asyncHandler(async (req, res) => {
+    const user = await User.findById(req.user._id);
+
+    if (!user) {
+        res.status(404);
+        throw new Error('User not found');
+    }
+
+    const target = user.addresses.id(req.params.addressId);
+    if (!target) {
+        res.status(404);
+        throw new Error('Address not found');
+    }
+
+    user.addresses.forEach(addr => addr.isDefault = false);
+    target.isDefault = true;
+
+    await user.save();
+    res.json(user.addresses);
+});
+
 // @desc    Logout user
 // @route   POST /api/users/logout
 // @access  Public
@@ -657,6 +747,7 @@ module.exports = {
     updateUserProfile,
     addAddress,
     updateAddress,
+    setDefaultAddress,
     deleteAddress,
     toggleWishlist,
     getSellerInfo,

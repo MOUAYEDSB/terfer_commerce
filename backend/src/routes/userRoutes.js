@@ -10,6 +10,7 @@ const {
     updateNotifications,
     addAddress,
     updateAddress,
+    setDefaultAddress,
     deleteAddress,
     toggleWishlist,
     getSellerInfo,
@@ -48,6 +49,7 @@ router.post('/addresses', protect, addAddress);
 router.route('/addresses/:addressId')
     .put(protect, updateAddress)
     .delete(protect, deleteAddress);
+router.patch('/addresses/:addressId/default', protect, setDefaultAddress);
 
 router.post('/wishlist/:productId', protect, toggleWishlist);
 
