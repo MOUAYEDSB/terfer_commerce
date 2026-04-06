@@ -4,6 +4,7 @@ import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Lock, Eye, EyeOff, ArrowRight, CheckCircle, XCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { API_URL } from '../constants/api';
 
 const ResetPasswordPage = () => {
     const { t, i18n } = useTranslation();
@@ -47,7 +48,7 @@ const ResetPasswordPage = () => {
 
     const verifyToken = async () => {
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/users/reset-password/${resetToken}`);
+            const response = await fetch(`${API_URL}/api/users/reset-password/${resetToken}`);
             
             if (response.ok) {
                 setIsValidToken(true);
@@ -82,7 +83,7 @@ const ResetPasswordPage = () => {
         setIsLoading(true);
 
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/users/reset-password/${resetToken}`, {
+            const response = await fetch(`${API_URL}/api/users/reset-password/${resetToken}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -300,3 +301,4 @@ const PasswordRequirement = ({ met, text }) => (
 );
 
 export default ResetPasswordPage;
+

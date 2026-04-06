@@ -1,4 +1,5 @@
 ﻿import React, { useEffect, useState } from 'react';
+import { API_URL } from '../constants/api';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { Package, ShoppingBag, TrendingUp, Loader2, Plus } from 'lucide-react';
@@ -7,7 +8,6 @@ import { useAuth } from '../context/AuthContext';
 import SellerLayout from '../components/SellerLayout';
 import { getImgUrl } from '../constants/productConstants';
 
-const API_URL = 'http://localhost:5000';
 
 const authFetch = async (path, options = {}) => {
     const headers = {
@@ -206,3 +206,4 @@ const SellerDashboardPage = () => {
 };
 
 export default SellerDashboardPage;
+

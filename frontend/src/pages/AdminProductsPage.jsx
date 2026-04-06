@@ -2,6 +2,8 @@
 import AdminLayout from '../components/AdminLayout';
 import { Search, Trash2, Filter, Package } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { API_URL } from '../constants/api';
+import { getImgUrl } from '../constants/productConstants';
 
 const AdminProductsPage = () => {
   const [products, setProducts] = useState([]);
@@ -22,7 +24,7 @@ const AdminProductsPage = () => {
 
   const fetchSellers = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/admin/sellers', {
+      const response = await fetch(`${API_URL}/api/admin/sellers`, {
         headers: {
         }
       });
@@ -42,7 +44,7 @@ const AdminProductsPage = () => {
       if (search) params.append('search', search);
       if (sellerFilter) params.append('seller', sellerFilter);
 
-      const response = await fetch(`http://localhost:5000/api/admin/products?${params}`, {
+      const response = await fetch(`${API_URL}/api/admin/products?${params}`, {
         headers: {
         }
       });
@@ -68,7 +70,7 @@ const AdminProductsPage = () => {
     if (!confirm('Êtes-vous sûr de vouloir supprimer ce produit?')) return;
 
     try {
-      const response = await fetch(`http://localhost:5000/api/admin/products/${productId}`, {
+      const response = await fetch(`${API_URL}/api/admin/products/${productId}`, {
         method: 'DELETE',
         headers: {
         }
@@ -148,7 +150,7 @@ const AdminProductsPage = () => {
               <div className="aspect-square relative">
                 {product.images?.[0] ? (
                   <img
-                    src={`http://localhost:5000${product.images[0]}`}
+                    src={getImgUrl(product.images[0])}
                     alt={product.name}
                     className="w-full h-full object-cover"
                   />

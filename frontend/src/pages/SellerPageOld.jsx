@@ -1,6 +1,7 @@
 ﻿import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
+import { API_URL } from '../constants/api';
 import { MapPin, Star, Filter, Grid, List as ListIcon, Loader2 } from 'lucide-react';
 import { getImgUrl } from '../constants/productConstants';
 
@@ -15,11 +16,11 @@ const SellerPage = () => {
             try {
                 setLoading(true);
                 // Fetch seller info
-                const sellerRes = await axios.get(`http://localhost:5000/api/users/seller/${id}`);
+                const sellerRes = await axios.get(`${API_URL}/api/users/seller/${id}`);
                 setSeller(sellerRes.data);
 
                 // Fetch seller products
-                const productsRes = await axios.get(`http://localhost:5000/api/products?seller=${id}`);
+                const productsRes = await axios.get(`${API_URL}/api/products?seller=${id}`);
                 setProducts(productsRes.data.products || []);
 
                 setLoading(false);

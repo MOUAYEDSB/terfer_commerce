@@ -1,6 +1,7 @@
 ﻿import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AlertCircle, CheckCircle } from 'lucide-react';
+import { API_URL } from '../constants/api';
 
 const AdminCreateCustomerPage = () => {
     const navigate = useNavigate();
@@ -41,7 +42,7 @@ const AdminCreateCustomerPage = () => {
         setLoading(true);
 
         try {
-            const response = await fetch('http://localhost:5000/api/admin/customers/create', {
+            const response = await fetch(`${API_URL}/api/admin/customers/create`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -181,3 +182,4 @@ const AdminCreateCustomerPage = () => {
 };
 
 export default AdminCreateCustomerPage;
+

@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { useWishlist } from '../context/WishlistContext';
 
 import axios from 'axios';
+import { API_URL } from '../constants/api';
 import { getImgUrl } from '../constants/productConstants';
 
 const ShopPage = () => {
@@ -28,7 +29,7 @@ const ShopPage = () => {
                 setLoading(true);
                 const categoryParam = searchParams.get('category');
                 const searchParam = searchParams.get('search');
-                let url = 'http://localhost:5000/api/products?limit=50';
+                let url = `${API_URL}/api/products?limit=50`;
 
                 if (categoryParam) {
                     url += `&category=${categoryParam}`;

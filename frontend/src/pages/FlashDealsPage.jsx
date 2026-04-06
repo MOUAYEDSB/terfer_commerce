@@ -1,4 +1,5 @@
 ﻿import React, { useEffect, useState } from 'react';
+import { API_URL } from '../constants/api';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowRight, Heart, Star, Zap } from 'lucide-react';
@@ -16,7 +17,7 @@ const FlashDealsPage = () => {
     useEffect(() => {
         const fetchDeals = async () => {
             try {
-                const response = await fetch('http://localhost:5000/api/products/flash-deals?limit=40');
+                const response = await fetch(`${API_URL}/api/products/flash-deals?limit=40`);
                 const data = await response.json();
                 setDeals(data?.products || []);
             } catch (error) {

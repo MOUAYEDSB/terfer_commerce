@@ -1,11 +1,11 @@
 ﻿import React, { useEffect, useState } from 'react';
+import { API_URL } from '../constants/api';
 import { useTranslation } from 'react-i18next';
 import { ShoppingBag, Loader2, ChevronDown, X, Check, AlertCircle, Truck, Clock, Search, Filter } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 import SellerLayout from '../components/SellerLayout';
 
-const API_URL = 'http://localhost:5000';
 
 const authFetch = async (path, options = {}) => {
     const headers = {
@@ -631,3 +631,4 @@ const SellerOrdersPage = () => {
 };
 
 export default SellerOrdersPage;
+

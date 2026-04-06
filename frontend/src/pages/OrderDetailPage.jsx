@@ -1,11 +1,11 @@
-﻿import React, { useState, useEffect } from 'react';
+﻿import React, { useEffect, useState } from 'react';
+import { API_URL } from '../constants/api';
 import { Link, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Package, Truck, CheckCircle, MapPin, Phone, Mail, Calendar, Download, Loader2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { getImgUrl } from '../constants/productConstants';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 const OrderStatusBadge = ({ status }) => {
     const styles = {
@@ -256,3 +256,4 @@ const OrderDetailPage = () => {
 };
 
 export default OrderDetailPage;
+

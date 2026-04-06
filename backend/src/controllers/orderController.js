@@ -1,6 +1,41 @@
-const asyncHandler = require('express-async-handler');
+﻿const asyncHandler = require('express-async-handler');
 const Order = require('../models/Order');
 const Product = require('../models/Product');
+const { sendOrderConfirmationEmail } = require('../services/emailService');
+
+const WHOLESALE_QTY_THRESHOLD = 10;
+
+const normalize = (value) => String(value || '').trim().toLowerCase();
+
+const findMatchingVariant = (variants, selectedColor, selectedSize) => {
+    if (!Array.isArray(variants) || variants.length === 0) return null;
+
+    const color = normalize(selectedColor);
+    const size = normalize(selectedSize);
+
+    return variants.find((variant) => {
+        const variantColor = normalize(variant.color);
+        const variantSize = normalize(variant.size);
+
+        if (color && size) {
+            return variantColor === color && variantSize === size;
+        }
+        if (color && !size) {
+            return variantColor === color && !variantSize;
+        }
+        if (size && !color) {
+            return variantSize === size && !variantColor;
+        }
+        return false;
+    });
+};
+
+const resolveBasePrice = (product, quantity) => {
+    if (product?.wholesalePrice && Number(quantity) >= WHOLESALE_QTY_THRESHOLD) {
+        return Number(product.wholesalePrice);
+    }
+    return Number(product.price);
+};
 
 // @desc    Create new order
 // @route   POST /api/orders
@@ -28,30 +63,47 @@ const createOrder = asyncHandler(async (req, res) => {
             throw new Error(`Product ${item.product} not found`);
         }
 
-        // Prix de base du vendeur
-        const sellerPrice = product.price;
-        
+        const quantity = Number(item.quantity) || 0;
+
+        // Validate variant if needed
+        if (product.variants && product.variants.length > 0) {
+            const selectedVariant = findMatchingVariant(product.variants, item.selectedColor, item.selectedSize);
+            if (!selectedVariant) {
+                res.status(400);
+                throw new Error(`Please select a valid variant for "${product.name}"`);
+            }
+            if (selectedVariant.quantity < quantity) {
+                res.status(400);
+                throw new Error(`Insufficient stock for "${product.name}" variant`);
+            }
+        }
+
+        // Prix de base du vendeur (wholesale si applicable)
+        const sellerPrice = resolveBasePrice(product, quantity);
+
         // Commission de la plateforme (20% par défaut)
         const commissionRate = product.platformCommissionRate || 20;
         const platformCommission = (sellerPrice * commissionRate) / 100;
-        
+
         // Prix final pour le client (prix vendeur + commission)
         const finalPrice = sellerPrice + platformCommission;
-        
+
         // Total pour cet item
-        const itemTotal = finalPrice * item.quantity;
+        const itemTotal = finalPrice * quantity;
         subtotal += itemTotal;
 
         processedItems.push({
             product: item.product,
             name: product.name,
-            quantity: item.quantity,
+            quantity: quantity,
             price: finalPrice, // Prix final avec commission
             sellerPrice: sellerPrice, // Prix que reçoit le vendeur
-            platformCommission: platformCommission * item.quantity, // Commission totale
+            platformCommission: platformCommission * quantity, // Commission totale
             image: product.images[0] || item.image,
             seller: product.seller,
-            shop: product.shop
+            shop: product.shop,
+            selectedColor: item.selectedColor || '',
+            selectedSize: item.selectedSize || ''
         });
     }
 
@@ -78,7 +130,15 @@ const createOrder = asyncHandler(async (req, res) => {
     for (const item of processedItems) {
         const product = await Product.findById(item.product);
         if (product) {
-            product.stock -= item.quantity;
+            if (product.variants && product.variants.length > 0) {
+                const variant = findMatchingVariant(product.variants, item.selectedColor, item.selectedSize);
+                if (variant) {
+                    variant.quantity = Math.max(0, (variant.quantity || 0) - item.quantity);
+                }
+                product.stock = product.variants.reduce((sum, v) => sum + (v.quantity || 0), 0);
+            } else {
+                product.stock = Math.max(0, (product.stock || 0) - item.quantity);
+            }
             await product.save();
         }
     }
@@ -86,6 +146,12 @@ const createOrder = asyncHandler(async (req, res) => {
     const populatedOrder = await Order.findById(order._id)
         .populate('user', 'name email phone')
         .populate('items.product', 'name images');
+
+    try {
+        await sendOrderConfirmationEmail(populatedOrder.user, populatedOrder);
+    } catch (error) {
+        console.error('Order confirmation email failed:', error.message || error);
+    }
 
     res.status(201).json(populatedOrder);
 });
@@ -250,7 +316,15 @@ const cancelOrder = asyncHandler(async (req, res) => {
     for (const item of order.items) {
         const product = await Product.findById(item.product);
         if (product) {
-            product.stock += item.quantity;
+            if (product.variants && product.variants.length > 0) {
+                const variant = findMatchingVariant(product.variants, item.selectedColor, item.selectedSize);
+                if (variant) {
+                    variant.quantity = (variant.quantity || 0) + item.quantity;
+                }
+                product.stock = product.variants.reduce((sum, v) => sum + (v.quantity || 0), 0);
+            } else {
+                product.stock = (product.stock || 0) + item.quantity;
+            }
             await product.save();
         }
     }

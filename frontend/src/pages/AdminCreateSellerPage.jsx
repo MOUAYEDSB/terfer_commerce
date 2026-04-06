@@ -1,6 +1,7 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AlertCircle, CheckCircle } from 'lucide-react';
+import { API_URL } from '../constants/api';
 
 const AdminCreateSellerPage = () => {
     const navigate = useNavigate();
@@ -44,7 +45,7 @@ const AdminCreateSellerPage = () => {
                 shopDescription: formData.shopDescription
             };
 
-            const response = await fetch('http://localhost:5000/api/admin/sellers/create', {
+            const response = await fetch(`${API_URL}/api/admin/sellers/create`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

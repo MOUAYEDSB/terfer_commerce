@@ -2,6 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+import { API_URL } from '../constants/api';
 import BrandMarquee from '../components/BrandMarquee';
 import BenefitsSection from '../components/BenefitsSection';
 import FlashDealsSection from '../components/FlashDealsSection';
@@ -46,7 +47,7 @@ const HomePage = () => {
     React.useEffect(() => {
         const fetchProducts = async () => {
             try {
-                const { data } = await axios.get('http://localhost:5000/api/products');
+                const { data } = await axios.get(`${API_URL}/api/products`);
                 setProducts(data.products || []);
                 setLoading(false);
             } catch (error) {
@@ -60,7 +61,7 @@ const HomePage = () => {
     React.useEffect(() => {
         const fetchBestSellers = async () => {
             try {
-                const { data } = await axios.get('http://localhost:5000/api/products/best-sellers?limit=4');
+                const { data } = await axios.get(`${API_URL}/api/products/best-sellers?limit=4`);
                 setBestSellers(data.products || []);
                 setBestSellersLoading(false);
             } catch (error) {

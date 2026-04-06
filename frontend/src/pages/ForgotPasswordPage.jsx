@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Mail, ArrowRight, ArrowLeft, CheckCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { API_URL } from '../constants/api';
 
 const ForgotPasswordPage = () => {
     const { t, i18n } = useTranslation();
@@ -19,7 +20,7 @@ const ForgotPasswordPage = () => {
         setIsLoading(true);
 
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/users/forgot-password`, {
+            const response = await fetch(`${API_URL}/api/users/forgot-password`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -153,3 +154,4 @@ const ForgotPasswordPage = () => {
 };
 
 export default ForgotPasswordPage;
+

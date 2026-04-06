@@ -2,6 +2,8 @@
 import AdminLayout from '../components/AdminLayout';
 import { Search, Eye, X } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { API_URL } from '../constants/api';
+import { getImgUrl } from '../constants/productConstants';
 
 const AdminOrdersPage = () => {
   const [orders, setOrders] = useState([]);
@@ -22,7 +24,7 @@ const AdminOrdersPage = () => {
 
   const fetchSellers = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/admin/sellers', {
+      const response = await fetch(`${API_URL}/api/admin/sellers`, {
         headers: {
         }
       });
@@ -41,7 +43,7 @@ const AdminOrdersPage = () => {
       if (statusFilter) params.append('status', statusFilter);
       if (sellerFilter) params.append('seller', sellerFilter);
 
-      const response = await fetch(`http://localhost:5000/api/admin/orders?${params}`, {
+      const response = await fetch(`${API_URL}/api/admin/orders?${params}`, {
         headers: {
         }
       });
@@ -261,7 +263,7 @@ const AdminOrdersPage = () => {
                       <div key={index} className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg">
                         {item.product?.images?.[0] && (
                           <img
-                            src={`http://localhost:5000${item.product.images[0]}`}
+                            src={getImgUrl(item.product.images[0])}
                             alt={item.product?.name || item.name}
                             className="w-16 h-16 object-cover rounded"
                           />

@@ -2,6 +2,7 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { getImgUrl } from '../constants/productConstants';
+import { API_URL } from '../constants/api';
 import { 
     Star, 
     ShoppingBag, 
@@ -13,7 +14,6 @@ import {
     Heart
 } from 'lucide-react';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 const FeaturedSellersSection = () => {
     const { t, i18n } = useTranslation();
@@ -291,3 +291,6 @@ const FeaturedSellersSection = () => {
 };
 
 export default FeaturedSellersSection;
+
+
+

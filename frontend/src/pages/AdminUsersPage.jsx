@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import AdminLayout from '../components/AdminLayout';
 import { Search, Edit, Trash2, Check, X, Eye, Plus } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { API_URL } from '../constants/api';
+import { getImgUrl } from '../constants/productConstants';
 
 const AdminUsersPage = () => {
   const navigate = useNavigate();
@@ -23,7 +25,7 @@ const AdminUsersPage = () => {
       if (roleFilter) params.append('role', roleFilter);
       if (search) params.append('search', search);
 
-      const response = await fetch(`http://localhost:5000/api/admin/users?${params}`, {
+      const response = await fetch(`${API_URL}/api/admin/users?${params}`, {
         headers: {
         }
       });
@@ -47,7 +49,7 @@ const AdminUsersPage = () => {
     if (!confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur?')) return;
 
     try {
-      const response = await fetch(`http://localhost:5000/api/admin/users/${userId}`, {
+      const response = await fetch(`${API_URL}/api/admin/users/${userId}`, {
         method: 'DELETE',
         headers: {
         }
@@ -63,7 +65,7 @@ const AdminUsersPage = () => {
 
   const handleToggleActive = async (userId, currentStatus) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/admin/users/${userId}`, {
+      const response = await fetch(`${API_URL}/api/admin/users/${userId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
@@ -81,7 +83,7 @@ const AdminUsersPage = () => {
 
   const viewUserDetails = async (userId) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/admin/users/${userId}`, {
+      const response = await fetch(`${API_URL}/api/admin/users/${userId}`, {
         headers: {
         }
       });
@@ -306,7 +308,7 @@ const AdminUsersPage = () => {
                         <div key={product._id} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
                           {product.images?.[0] && (
                             <img
-                              src={`http://localhost:5000${product.images[0]}`}
+                              src={getImgUrl(product.images[0])}
                               alt={product.name}
                               className="w-12 h-12 object-cover rounded"
                             />

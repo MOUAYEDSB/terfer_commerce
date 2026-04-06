@@ -1,6 +1,7 @@
 ﻿
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import axios from 'axios';
+import { API_URL } from '../constants/api';
 
 const AuthContext = createContext();
 
@@ -25,7 +26,7 @@ export const AuthProvider = ({ children }) => {
             localStorage.removeItem('user');
 
             try {
-                const { data } = await axios.get('http://localhost:5000/api/users/profile', { withCredentials: true });
+                const { data } = await axios.get(`${API_URL}/api/users/profile`, { withCredentials: true });
                 setUser(data);
             } catch (_) {
                 setUser(null);
@@ -40,7 +41,7 @@ export const AuthProvider = ({ children }) => {
     const login = async (email, password) => {
         try {
             const { data } = await axios.post(
-                'http://localhost:5000/api/users/login',
+                `${API_URL}/api/users/login`,
                 { email, password },
                 { withCredentials: true }
             );
@@ -57,7 +58,7 @@ export const AuthProvider = ({ children }) => {
 
     const register = async (userData) => {
         try {
-            const { data } = await axios.post('http://localhost:5000/api/users/register', userData, { withCredentials: true });
+            const { data } = await axios.post(`${API_URL}/api/users/register`, userData, { withCredentials: true });
             // Don't auto-login, just return success
             return { success: true, message: data?.message || 'Inscription réussie ! Veuillez vous connecter.' };
         } catch (error) {
@@ -71,7 +72,7 @@ export const AuthProvider = ({ children }) => {
 
     const logout = async () => {
         try {
-            await axios.post('http://localhost:5000/api/users/logout', {}, { withCredentials: true });
+            await axios.post(`${API_URL}/api/users/logout`, {}, { withCredentials: true });
         } catch (_) {
             // Ignore logout API errors and clear local auth state anyway.
         }

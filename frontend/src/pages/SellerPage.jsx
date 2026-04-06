@@ -2,6 +2,7 @@
 import { useParams, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import axios from 'axios';
+import { API_URL } from '../constants/api';
 import {
     MapPin, Star, Heart, ShoppingBag, Users, TrendingUp,
     Award, Clock, Mail, Phone, MapPinned, Check, X,
@@ -37,7 +38,7 @@ const SellerPage = () => {
                 setLoading(true);
                 
                 // Fetch seller info
-                const sellerRes = await axios.get(`http://localhost:5000/api/users/seller/${id}`);
+                const sellerRes = await axios.get(`${API_URL}/api/users/seller/${id}`);
                 setSeller(sellerRes.data);
 
                 // Check if current user follows this seller
@@ -46,15 +47,15 @@ const SellerPage = () => {
                 }
 
                 // Fetch seller statistics
-                const statsRes = await axios.get(`http://localhost:5000/api/users/seller/${id}/statistics`);
+                const statsRes = await axios.get(`${API_URL}/api/users/seller/${id}/statistics`);
                 setStatistics(statsRes.data.statistics);
 
                 // Fetch seller products
-                const productsRes = await axios.get(`http://localhost:5000/api/products?seller=${id}`);
+                const productsRes = await axios.get(`${API_URL}/api/products?seller=${id}`);
                 setProducts(productsRes.data.products || []);
 
                 // Fetch seller reviews
-                const reviewsRes = await axios.get(`http://localhost:5000/api/users/seller/${id}/reviews?limit=5`);
+                const reviewsRes = await axios.get(`${API_URL}/api/users/seller/${id}/reviews?limit=5`);
                 setReviews(reviewsRes.data.reviews || []);
 
                 setLoading(false);
@@ -77,7 +78,7 @@ const SellerPage = () => {
 
         try {
             const { data } = await axios.post(
-                `http://localhost:5000/api/users/seller/${id}/follow`,
+                `${API_URL}/api/users/seller/${id}/follow`,
                 {},
                 {
                     withCredentials: true

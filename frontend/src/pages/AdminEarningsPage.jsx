@@ -2,6 +2,7 @@
 import AdminLayout from '../components/AdminLayout';
 import { DollarSign, TrendingUp, Store, Calendar, RotateCcw } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { API_URL } from '../constants/api';
 
 const AdminEarningsPage = () => {
   const [stats, setStats] = useState(null);
@@ -16,7 +17,7 @@ const AdminEarningsPage = () => {
 
   const fetchEarnings = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/admin/stats?weeks=${weeks}`, {
+      const response = await fetch(`${API_URL}/api/admin/stats?weeks=${weeks}`, {
         headers: {
         }
       });
@@ -39,7 +40,7 @@ const AdminEarningsPage = () => {
 
     try {
       setResetting(true);
-      const response = await fetch('http://localhost:5000/api/admin/stats/reset', {
+      const response = await fetch(`${API_URL}/api/admin/stats/reset`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

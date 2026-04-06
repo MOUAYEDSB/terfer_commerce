@@ -30,8 +30,17 @@ export const CartProvider = ({ children }) => {
     };
 
     const getWholesaleUnitPrice = (item) => {
-        const n = Number(item?.finalWholesalePrice ?? item?.wholesalePrice ?? 0);
-        return Number.isFinite(n) ? n : 0;
+        if (item?.finalWholesalePrice != null) {
+            const n = Number(item.finalWholesalePrice);
+            return Number.isFinite(n) ? n : 0;
+        }
+
+        const baseWholesale = Number(item?.wholesalePrice ?? 0);
+        if (!Number.isFinite(baseWholesale) || baseWholesale <= 0) return 0;
+
+        const commissionRate = Number(item?.platformCommissionRate ?? 20);
+        const factor = 1 + (Number.isFinite(commissionRate) ? commissionRate : 20) / 100;
+        return baseWholesale * factor;
     };
 
     const getItemUnitPrice = (item) => {

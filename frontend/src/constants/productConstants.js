@@ -1,4 +1,6 @@
-﻿// Categories and their subcategories
+﻿import { API_URL } from './api';
+
+// Categories and their subcategories
 export const CATEGORIES_WITH_SUBCATEGORIES = {
     'Mode': [
         'Vêtements Homme',
@@ -131,6 +133,6 @@ export const getColorHex = (colorName) => {
 export const getImgUrl = (path) => {
     if (!path) return 'https://via.placeholder.com/500x500?text=TerFer';
     if (path.startsWith('http')) return path;
-    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
     return `${API_URL}${path.startsWith('/') ? '' : '/'}${path}`;
 };
+

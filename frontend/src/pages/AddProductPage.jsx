@@ -15,7 +15,6 @@ import {
     getImgUrl
 } from '../constants/productConstants';
 
-const API_URL = 'http://localhost:5000';
 
 const authFetch = async (path, options = {}) => {
     const headers = {

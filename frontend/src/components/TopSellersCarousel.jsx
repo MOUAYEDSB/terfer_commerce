@@ -1,4 +1,5 @@
 ﻿import React, { useEffect, useState } from 'react';
+import { API_URL } from '../constants/api';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Star, ShoppingBag, ArrowRight } from 'lucide-react';
@@ -12,7 +13,7 @@ const TopSellersCarousel = () => {
     useEffect(() => {
         const fetchTopSellers = async () => {
             try {
-                const response = await fetch('http://localhost:5000/api/products/top-sellers?limit=8');
+                const response = await fetch(`${API_URL}/api/products/top-sellers?limit=8`);
                 const data = await response.json();
                 
                 if (data.success && data.sellers) {

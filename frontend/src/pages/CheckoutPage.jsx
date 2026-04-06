@@ -7,8 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { ArrowLeft, ArrowRight, CreditCard, Truck, CheckCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { getImgUrl } from '../constants/productConstants';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+import { API_URL } from '../constants/api';
 
 const CheckoutPage = () => {
     const { t, i18n } = useTranslation();
@@ -58,11 +57,11 @@ const CheckoutPage = () => {
                     product: item._id || item.id,
                     name: item.name,
                     quantity: item.quantity,
-                    // Persist the effective unit price used for this order (retail vs wholesale).
-                    price: getItemUnitPrice(item),
                     image: item.images?.[0] || item.image || '',
                     seller: item.seller?._id || item.seller,
-                    shop: item.shop || item.seller?.shopName || 'TerFer'
+                    shop: item.shop || item.seller?.shopName || 'TerFer',
+                    selectedColor: item.selectedColor || '',
+                    selectedSize: item.selectedSize || ''
                 })),
                 shippingAddress: {
                     fullName: `${formData.firstName} ${formData.lastName}`,

@@ -8,7 +8,7 @@ import { useAuth } from '../context/AuthContext';
 import { getImgUrl } from '../constants/productConstants';
 import toast from 'react-hot-toast';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+import { API_URL } from '../constants/api';
 const TAB_OPTIONS = ['profile', 'orders', 'wishlist', 'addresses', 'contact'];
 const ADDRESS_LABEL_OPTIONS = [
     { value: 'home', label: 'Maison', icon: Home },
@@ -536,11 +536,11 @@ const ProfilePage = () => {
                             ) : (
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                                     {wishlistItems.map(item => (
-                                        <div key={item.id} className="bg-white rounded-2xl shadow-sm overflow-hidden group hover:shadow-md transition border border-gray-100">
+                                        <div key={item._id || item.id} className="bg-white rounded-2xl shadow-sm overflow-hidden group hover:shadow-md transition border border-gray-100">
                                             <div className="relative aspect-square overflow-hidden bg-gray-100">
                                                 <img src={getImgUrl(item.image || item.images?.[0])} alt={item.name} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
                                                 <button
-                                                    onClick={() => removeFromWishlist(item.id)}
+                                                    onClick={() => removeFromWishlist(item._id || item.id)}
                                                     className="absolute top-3 right-3 p-2 bg-white/80 backdrop-blur-sm rounded-full text-red-500 hover:bg-white transition shadow-sm"
                                                 >
                                                     <Heart size={18} fill="currentColor" />
@@ -549,7 +549,7 @@ const ProfilePage = () => {
                                             <div className="p-4">
                                                 <h3 className="font-bold text-gray-900 truncate">{item.name}</h3>
                                                 <p className="text-primary font-bold mt-1">{item.price} TND</p>
-                                                <Link to={`/product/${item.id}`} className="block mt-3 w-full text-center py-2 border border-gray-200 rounded-lg text-sm font-semibold hover:border-primary hover:text-primary transition">
+                                                <Link to={`/product/${item._id || item.id}`} className="block mt-3 w-full text-center py-2 border border-gray-200 rounded-lg text-sm font-semibold hover:border-primary hover:text-primary transition">
                                                     {t('profile.view_product')}
                                                 </Link>
                                             </div>

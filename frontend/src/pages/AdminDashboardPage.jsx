@@ -2,6 +2,7 @@
 import AdminLayout from '../components/AdminLayout';
 import { Users, Store, Package, ShoppingCart, TrendingUp, DollarSign } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { API_URL } from '../constants/api';
 
 const AdminDashboardPage = () => {
   const [stats, setStats] = useState(null);
@@ -13,7 +14,7 @@ const AdminDashboardPage = () => {
 
   const fetchStats = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/admin/stats', {
+      const response = await fetch(`${API_URL}/api/admin/stats`, {
         headers: {
         }
       });

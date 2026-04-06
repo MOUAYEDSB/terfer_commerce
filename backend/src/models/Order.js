@@ -29,6 +29,12 @@ const orderSchema = new mongoose.Schema({
             type: Number,
             required: true
         },
+        selectedColor: {
+            type: String
+        },
+        selectedSize: {
+            type: String
+        },
         sellerPrice: {
             type: Number,
             required: true,

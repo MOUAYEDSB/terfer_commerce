@@ -394,6 +394,9 @@ const getFlashDeals = asyncHandler(async (req, res) => {
         // Add final price with commission
         const commissionRate = product.platformCommissionRate || 20;
         productObj.finalPrice = product.price * (1 + commissionRate / 100);
+        if (product.wholesalePrice) {
+            productObj.finalWholesalePrice = product.wholesalePrice * (1 + commissionRate / 100);
+        }
         
         return productObj;
     });
@@ -545,7 +548,10 @@ const getBestSellerProducts = asyncHandler(async (req, res) => {
         return {
             ...p,
             finalPrice: p.price * (1 + commissionRate / 100),
-            displayPrice: p.price * (1 + commissionRate / 100)
+            displayPrice: p.price * (1 + commissionRate / 100),
+            finalWholesalePrice: p.wholesalePrice
+                ? p.wholesalePrice * (1 + commissionRate / 100)
+                : undefined
         };
     });
 

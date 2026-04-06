@@ -1,4 +1,5 @@
-﻿import React, { useState, useEffect, useRef, useCallback } from 'react';
+﻿import React, { useEffect, useState, useRef, useCallback } from 'react';
+import { API_URL } from '../constants/api';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Star, ShoppingCart, Heart, Truck, RotateCcw, Minus, Plus, ChevronRight, Loader2, DollarSign, Tag, Briefcase, ChevronDown } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -7,7 +8,6 @@ import { useWishlist } from '../context/WishlistContext';
 import { useAuth } from '../context/AuthContext';
 import { getColorHex, getImgUrl } from '../constants/productConstants';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 const ProductPage = () => {
     const { t, i18n } = useTranslation();
@@ -658,3 +658,5 @@ const ProductPage = () => {
 };
 
 export default ProductPage;
+
+

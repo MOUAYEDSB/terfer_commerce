@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import AdminLayout from '../components/AdminLayout';
 import { Store, Package, ShoppingCart, Eye, Ban, CheckCircle, X, Plus, Trash2, Edit, Search, RefreshCw } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { API_URL } from '../constants/api';
+import { getImgUrl } from '../constants/productConstants';
 
 const AdminSellersPage = () => {
   const navigate = useNavigate();
@@ -22,7 +24,7 @@ const AdminSellersPage = () => {
 
   const fetchSellers = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/admin/sellers', {
+      const response = await fetch(`${API_URL}/api/admin/sellers`, {
         headers: {
         }
       });
@@ -39,7 +41,7 @@ const AdminSellersPage = () => {
 
   const viewSellerDetails = async (sellerId) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/admin/users/${sellerId}`, {
+      const response = await fetch(`${API_URL}/api/admin/users/${sellerId}`, {
         headers: {
         }
       });
@@ -55,7 +57,7 @@ const AdminSellersPage = () => {
 
   const openEditSeller = async (sellerId) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/admin/users/${sellerId}`, {
+      const response = await fetch(`${API_URL}/api/admin/users/${sellerId}`, {
         headers: {
         }
       });
@@ -85,7 +87,7 @@ const AdminSellersPage = () => {
 
     try {
       setSaving(true);
-      const response = await fetch(`http://localhost:5000/api/admin/users/${editSeller._id}`, {
+      const response = await fetch(`${API_URL}/api/admin/users/${editSeller._id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
@@ -120,7 +122,7 @@ const AdminSellersPage = () => {
 
   const handleToggleActive = async (sellerId, currentStatus) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/admin/users/${sellerId}`, {
+      const response = await fetch(`${API_URL}/api/admin/users/${sellerId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
@@ -138,7 +140,7 @@ const AdminSellersPage = () => {
 
   const handleApproveSeller = async (sellerId) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/admin/users/${sellerId}`, {
+      const response = await fetch(`${API_URL}/api/admin/users/${sellerId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
@@ -170,7 +172,7 @@ const AdminSellersPage = () => {
     if (!confirmed) return;
 
     try {
-      const response = await fetch(`http://localhost:5000/api/admin/users/${sellerId}`, {
+      const response = await fetch(`${API_URL}/api/admin/users/${sellerId}`, {
         method: 'DELETE',
         headers: {
         }
@@ -233,7 +235,7 @@ const AdminSellersPage = () => {
     try {
       const results = await Promise.all(
         pendingInFiltered.map((seller) =>
-          fetch(`http://localhost:5000/api/admin/users/${seller._id}`, {
+          fetch(`${API_URL}/api/admin/users/${seller._id}`, {
             method: 'PUT',
             headers: {
               'Content-Type': 'application/json'
@@ -601,7 +603,7 @@ const AdminSellersPage = () => {
                       <div key={product._id} className="flex items-center space-x-3 p-4 bg-gray-50 rounded-lg">
                         {product.images?.[0] && (
                           <img
-                            src={`http://localhost:5000${product.images[0]}`}
+                            src={getImgUrl(product.images[0])}
                             alt={product.name}
                             className="w-16 h-16 object-cover rounded"
                           />
