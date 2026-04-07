@@ -25,6 +25,12 @@ export const AuthProvider = ({ children }) => {
             localStorage.removeItem('token');
             localStorage.removeItem('user');
 
+            const hasSession = localStorage.getItem('has_session') === '1';
+            if (!hasSession) {
+                setLoading(false);
+                return;
+            }
+
             try {
                 const { data } = await axios.get(`${API_URL}/api/users/profile`, { withCredentials: true });
                 setUser(data);
@@ -45,6 +51,7 @@ export const AuthProvider = ({ children }) => {
                 { email, password },
                 { withCredentials: true }
             );
+            localStorage.setItem('has_session', '1');
             updateUser(data);
             return { success: true, user: data };
         } catch (error) {
@@ -76,6 +83,7 @@ export const AuthProvider = ({ children }) => {
         } catch (_) {
             // Ignore logout API errors and clear local auth state anyway.
         }
+        localStorage.removeItem('has_session');
         updateUser(null);
     };
 

@@ -7,6 +7,7 @@ import {
 import toast from 'react-hot-toast';
 import SellerLayout from '../components/SellerLayout';
 import { useAuth } from '../context/AuthContext';
+import { API_URL } from '../constants/api';
 import {
     CATEGORIES_WITH_SUBCATEGORIES,
     PREDEFINED_COLORS,
