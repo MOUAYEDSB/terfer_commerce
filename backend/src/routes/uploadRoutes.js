@@ -1,8 +1,36 @@
 const express = require('express');
 const router = express.Router();
-const upload = require('../config/multer');
+const multer = require('multer');
+const uploadDisk = require('../config/multer');
+const { cloudinary, isCloudinaryConfigured } = require('../config/cloudinary');
 const { protect } = require('../middleware/authMiddleware');
 const User = require('../models/User');
+
+const useCloudinary = isCloudinaryConfigured();
+
+const uploadMemory = multer({
+    storage: multer.memoryStorage(),
+    limits: {
+        fileSize: 5 * 1024 * 1024
+    },
+    fileFilter: uploadDisk.fileFilter
+});
+
+const upload = useCloudinary ? uploadMemory : uploadDisk;
+
+const uploadToCloudinary = async (file, folder = '') => {
+    const base64 = file.buffer.toString('base64');
+    const dataUri = `data:${file.mimetype};base64,${base64}`;
+    const result = await cloudinary.uploader.upload(dataUri, {
+        folder: folder || process.env.CLOUDINARY_FOLDER || 'terfer',
+        resource_type: 'image'
+    });
+
+    return {
+        url: result.secure_url,
+        publicId: result.public_id
+    };
+};
 
 // @desc    Upload single image
 // @route   POST /api/upload
@@ -12,11 +40,27 @@ router.post('/', protect, upload.single('image'), (req, res) => {
         return res.status(400).json({ message: 'No file uploaded' });
     }
 
-    // Return the file path
-    res.json({
-        message: 'Image uploaded successfully',
-        filePath: `/uploads/${req.file.filename}`,
-        filename: req.file.filename
+    const respond = async () => {
+        if (useCloudinary) {
+            const uploaded = await uploadToCloudinary(req.file, process.env.CLOUDINARY_FOLDER);
+            return res.json({
+                message: 'Image uploaded successfully',
+                filePath: uploaded.url,
+                filename: uploaded.publicId
+            });
+        }
+
+        // Local fallback
+        return res.json({
+            message: 'Image uploaded successfully',
+            filePath: `/uploads/${req.file.filename}`,
+            filename: req.file.filename
+        });
+    };
+
+    respond().catch((error) => {
+        console.error('Image upload error:', error);
+        res.status(500).json({ message: 'Error uploading image' });
     });
 });
 
@@ -34,7 +78,11 @@ router.post('/banner', protect, upload.single('banner'), async (req, res) => {
             return res.status(403).json({ message: 'Only sellers can upload banners' });
         }
 
-        const filePath = `/uploads/${req.file.filename}`;
+        let filePath = `/uploads/${req.file.filename}`;
+        if (useCloudinary) {
+            const uploaded = await uploadToCloudinary(req.file, process.env.CLOUDINARY_FOLDER);
+            filePath = uploaded.url;
+        }
 
         // Update user's shopBanner
         const user = await User.findById(req.user._id);
@@ -48,7 +96,7 @@ router.post('/banner', protect, upload.single('banner'), async (req, res) => {
         res.json({
             message: 'Banner uploaded successfully',
             filePath: filePath,
-            filename: req.file.filename
+            filename: useCloudinary ? filePath : req.file.filename
         });
     } catch (error) {
         console.error('Banner upload error:', error);
@@ -64,15 +112,35 @@ router.post('/multiple', protect, upload.array('images', 10), (req, res) => {
         return res.status(400).json({ message: 'No files uploaded' });
     }
 
-    // Return array of file paths
-    const filePaths = req.files.map(file => ({
-        filePath: `/uploads/${file.filename}`,
-        filename: file.filename
-    }));
+    const respond = async () => {
+        if (useCloudinary) {
+            const uploaded = await Promise.all(
+                req.files.map(file => uploadToCloudinary(file, process.env.CLOUDINARY_FOLDER))
+            );
+            return res.json({
+                message: 'Images uploaded successfully',
+                files: uploaded.map(item => ({
+                    filePath: item.url,
+                    filename: item.publicId
+                }))
+            });
+        }
 
-    res.json({
-        message: 'Images uploaded successfully',
-        files: filePaths
+        // Local fallback
+        const filePaths = req.files.map(file => ({
+            filePath: `/uploads/${file.filename}`,
+            filename: file.filename
+        }));
+
+        return res.json({
+            message: 'Images uploaded successfully',
+            files: filePaths
+        });
+    };
+
+    respond().catch((error) => {
+        console.error('Multiple upload error:', error);
+        res.status(500).json({ message: 'Error uploading images' });
     });
 });
 
