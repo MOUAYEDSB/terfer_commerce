@@ -123,6 +123,7 @@ const assertEmailConfigured = () => {
  */
 const sendEmail = async (options) => {
     assertEmailConfigured();
+    let transporter = null;
 
     const service = process.env.EMAIL_SERVICE || 'gmail';
     const fallbackFrom = process.env.EMAIL_USER
@@ -154,7 +155,7 @@ const sendEmail = async (options) => {
             return await Promise.race([promise, timeoutPromise]);
         } finally {
             clearTimeout(timeoutId);
-            if (typeof transporter.close === 'function') {
+            if (transporter && typeof transporter.close === 'function') {
                 try { transporter.close(); } catch (_) { /* ignore */ }
             }
         }
@@ -169,7 +170,7 @@ const sendEmail = async (options) => {
             return { success: true, provider: 'sendgrid' };
         }
 
-        const transporter = createTransporter();
+        transporter = createTransporter();
         const info = await withTimeout(transporter.sendMail(mailOptions));
         console.log('Email sent:', info.messageId, 'accepted:', info.accepted, 'rejected:', info.rejected);
         const base = { success: true, messageId: info.messageId };
