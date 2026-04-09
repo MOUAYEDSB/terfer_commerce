@@ -1,4 +1,15 @@
 const nodemailer = require('nodemailer');
+let sendgridMail = null;
+
+const getSendgridClient = () => {
+    if (!process.env.SENDGRID_API_KEY) return null;
+    if (!sendgridMail) {
+        // Lazy load to avoid hard dependency when not used
+        sendgridMail = require('@sendgrid/mail');
+        sendgridMail.setApiKey(process.env.SENDGRID_API_KEY);
+    }
+    return sendgridMail;
+};
 
 const getNormalizedEmailPassword = () => {
     const rawEmailPassword = process.env.EMAIL_PASSWORD || '';
@@ -112,7 +123,6 @@ const assertEmailConfigured = () => {
  */
 const sendEmail = async (options) => {
     assertEmailConfigured();
-    const transporter = createTransporter();
 
     const service = process.env.EMAIL_SERVICE || 'gmail';
     const fallbackFrom = process.env.EMAIL_USER
@@ -151,6 +161,15 @@ const sendEmail = async (options) => {
     };
 
     try {
+        // Prefer SendGrid Web API when available to avoid SMTP port blocks.
+        const useSendgridApi = process.env.SENDGRID_API_KEY && process.env.SENDGRID_USE_API !== 'false';
+        if (useSendgridApi) {
+            const sg = getSendgridClient();
+            await withTimeout(sg.send(mailOptions));
+            return { success: true, provider: 'sendgrid' };
+        }
+
+        const transporter = createTransporter();
         const info = await withTimeout(transporter.sendMail(mailOptions));
         console.log('Email sent:', info.messageId, 'accepted:', info.accepted, 'rejected:', info.rejected);
         const base = { success: true, messageId: info.messageId };
@@ -246,6 +265,11 @@ const sendWelcomeEmail = async (user) => {
  */
 const verifyEmailTransport = async () => {
     assertEmailConfigured();
+    if (process.env.SENDGRID_API_KEY && process.env.SENDGRID_USE_API !== 'false') {
+        // SendGrid Web API doesn't need SMTP verification
+        return true;
+    }
+
     const transporter = createTransporter();
 
     const verifyTimeoutMs = process.env.EMAIL_VERIFY_TIMEOUT_MS ? Number(process.env.EMAIL_VERIFY_TIMEOUT_MS) : 15000;
