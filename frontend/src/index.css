@@ -54,6 +54,10 @@
         animation: scroll-reverse 40s linear infinite;
     }
 
+    .animate-logo-float {
+        animation: logo-float 3.5s ease-in-out infinite;
+    }
+
     .text-primary {
         color: var(--color-primary);
     }
@@ -98,5 +102,22 @@
 
     100% {
         transform: translateX(0);
+    }
+}
+
+@keyframes logo-float {
+    0% {
+        transform: translateY(0);
+        opacity: 0.7;
+    }
+
+    50% {
+        transform: translateY(-6px);
+        opacity: 1;
+    }
+
+    100% {
+        transform: translateY(0);
+        opacity: 0.7;
     }
 }

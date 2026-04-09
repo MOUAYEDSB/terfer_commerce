@@ -1,4 +1,4 @@
-ï»¿import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { API_URL } from '../constants/api';
 import { useTranslation } from 'react-i18next';
 import { Settings, Save, Loader2, Eye, EyeOff, Bell, Lock, Shield, CreditCard, MapPin, Store, Image, Upload, X } from 'lucide-react';
@@ -128,10 +128,10 @@ const SellerSettingsPage = () => {
             
             updateUser(response);
             setHasChanges(false);
-            toast.success('Profil mis Ã  jour avec succÃ¨s');
+            toast.success('Profil mis à jour avec succès');
         } catch (error) {
             console.error(error);
-            toast.error('Erreur lors de la mise Ã  jour du profil');
+            toast.error('Erreur lors de la mise à jour du profil');
         } finally {
             setLoading(false);
         }
@@ -149,7 +149,7 @@ const SellerSettingsPage = () => {
         }
 
         if (security.newPassword.length < 6) {
-            toast.error('Le mot de passe doit contenir au moins 6 caractÃ¨res');
+            toast.error('Le mot de passe doit contenir au moins 6 caractères');
             return;
         }
 
@@ -164,7 +164,7 @@ const SellerSettingsPage = () => {
             });
 
             setSecurity({ currentPassword: '', newPassword: '', confirmPassword: '' });
-            toast.success('Mot de passe modifiÃ© avec succÃ¨s');
+            toast.success('Mot de passe modifié avec succès');
         } catch (error) {
             console.error(error);
             toast.error('Erreur lors de la modification du mot de passe');
@@ -181,10 +181,10 @@ const SellerSettingsPage = () => {
                 body: JSON.stringify(notifications)
             });
 
-            toast.success('PrÃ©fÃ©rences de notifications mises Ã  jour');
+            toast.success('Préférences de notifications mises à jour');
         } catch (error) {
             console.error(error);
-            toast.error('Erreur lors de la mise Ã  jour des prÃ©fÃ©rences');
+            toast.error('Erreur lors de la mise à jour des préférences');
         } finally {
             setLoading(false);
         }
@@ -196,13 +196,13 @@ const SellerSettingsPage = () => {
 
         // Validate file type
         if (!file.type.startsWith('image/')) {
-            toast.error('Veuillez sÃ©lectionner une image valide');
+            toast.error('Veuillez sélectionner une image valide');
             return;
         }
 
         // Validate file size (max 5MB)
         if (file.size > 5 * 1024 * 1024) {
-            toast.error('L\'image ne doit pas dÃ©passer 5 MB');
+            toast.error('L\'image ne doit pas dépasser 5 MB');
             return;
         }
 
@@ -231,7 +231,7 @@ const SellerSettingsPage = () => {
             });
             
             updateUser(profileResponse);
-            toast.success('Photo de couverture mise Ã  jour avec succÃ¨s');
+            toast.success('Photo de couverture mise à jour avec succès');
         } catch (error) {
             console.error('Banner upload error:', error);
             toast.error('Erreur lors de l\'upload de la photo de couverture');
@@ -250,7 +250,7 @@ const SellerSettingsPage = () => {
             
             setBannerImage('');
             updateUser(response);
-            toast.success('Photo de couverture supprimÃ©e');
+            toast.success('Photo de couverture supprimée');
         } catch (error) {
             console.error(error);
             toast.error('Erreur lors de la suppression');
@@ -267,9 +267,9 @@ const SellerSettingsPage = () => {
                     <div className="mb-8">
                         <h1 className="text-3xl font-bold text-gray-900 mb-2 flex items-center gap-3">
                             <Settings size={32} className="text-primary" />
-                            ParamÃ¨tres
+                            Paramètres
                         </h1>
-                        <p className="text-gray-500">GÃ©rez votre profil, sÃ©curitÃ© et prÃ©fÃ©rences</p>
+                        <p className="text-gray-500">Gérez votre profil, sécurité et préférences</p>
                     </div>
 
                     {/* Tabs */}
@@ -294,7 +294,7 @@ const SellerSettingsPage = () => {
                                 className={`flex-1 px-6 py-4 font-semibold transition-all ${selectedTab === 'security' ? 'text-primary border-b-2 border-primary' : 'text-gray-600 hover:text-gray-900'}`}
                             >
                                 <Lock size={18} className="inline mr-2" />
-                                SÃ©curitÃ©
+                                Sécurité
                             </button>
                             <button
                                 onClick={() => setSelectedTab('notifications')}
@@ -339,7 +339,7 @@ const SellerSettingsPage = () => {
 
                                         {/* Phone */}
                                         <div>
-                                            <label className="block text-sm font-semibold text-gray-700 mb-2">TÃ©lÃ©phone</label>
+                                            <label className="block text-sm font-semibold text-gray-700 mb-2">Téléphone</label>
                                             <input
                                                 type="tel"
                                                 name="phone"
@@ -387,7 +387,7 @@ const SellerSettingsPage = () => {
                                             onChange={handleFormChange}
                                             rows="4"
                                             className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                                            placeholder="DÃ©crivez votre boutique..."
+                                            placeholder="Décrivez votre boutique..."
                                         />
                                     </div>
 
@@ -412,7 +412,7 @@ const SellerSettingsPage = () => {
                                                             onClick={handleRemoveBanner}
                                                             disabled={uploadingBanner}
                                                             className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white p-2 rounded-full shadow-lg transition-all"
-                                                            title="Supprimer la banniÃ¨re"
+                                                            title="Supprimer la bannière"
                                                         >
                                                             <X size={18} />
                                                         </button>
@@ -448,7 +448,7 @@ const SellerSettingsPage = () => {
                                                     />
                                                 </label>
                                                 <p className="text-xs text-gray-500 mt-2">
-                                                    RecommandÃ©: 1920x400px, max 5MB (JPG, PNG, WebP)
+                                                    Recommandé: 1920x400px, max 5MB (JPG, PNG, WebP)
                                                 </p>
                                             </div>
                                         </div>
@@ -531,7 +531,7 @@ const SellerSettingsPage = () => {
                                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                                         <p className="text-sm text-blue-800">
                                             <Shield size={16} className="inline mr-2" />
-                                            Ces informations bancaires sont cryptÃ©es et sÃ©curisÃ©es
+                                            Ces informations bancaires sont cryptées et sécurisées
                                         </p>
                                     </div>
 
@@ -561,7 +561,7 @@ const SellerSettingsPage = () => {
                                         </div>
 
                                         <div className="md:col-span-2">
-                                            <label className="block text-sm font-semibold text-gray-700 mb-2">NumÃ©ro de compte IBAN</label>
+                                            <label className="block text-sm font-semibold text-gray-700 mb-2">Numéro de compte IBAN</label>
                                             <input
                                                 type="text"
                                                 name="bankAccount"
@@ -592,7 +592,7 @@ const SellerSettingsPage = () => {
                                     <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                                         <p className="text-sm text-yellow-800">
                                             <Shield size={16} className="inline mr-2" />
-                                            Changez votre mot de passe rÃ©guliÃ¨rement pour plus de sÃ©curitÃ©
+                                            Changez votre mot de passe régulièrement pour plus de sécurité
                                         </p>
                                     </div>
 
@@ -681,7 +681,7 @@ const SellerSettingsPage = () => {
                                             />
                                             <div>
                                                 <p className="font-semibold text-gray-900">Notifications de produits</p>
-                                                <p className="text-sm text-gray-500">Soyez alertÃ© des mises Ã  jour de stock</p>
+                                                <p className="text-sm text-gray-500">Soyez alerté des mises à jour de stock</p>
                                             </div>
                                         </label>
                                     </div>
@@ -695,8 +695,8 @@ const SellerSettingsPage = () => {
                                                 className="w-5 h-5 rounded border-gray-300"
                                             />
                                             <div>
-                                                <p className="font-semibold text-gray-900">Mises Ã  jour par email</p>
-                                                <p className="text-sm text-gray-500">Recevez des emails avec nos actualitÃ©s et conseils</p>
+                                                <p className="font-semibold text-gray-900">Mises à jour par email</p>
+                                                <p className="text-sm text-gray-500">Recevez des emails avec nos actualités et conseils</p>
                                             </div>
                                         </label>
                                     </div>
@@ -708,7 +708,7 @@ const SellerSettingsPage = () => {
                                             className="px-6 py-2.5 rounded-lg font-semibold transition-all flex items-center gap-2 bg-primary text-white hover:bg-primary/90"
                                         >
                                             {loading ? <Loader2 size={18} className="animate-spin" /> : <Bell size={18} />}
-                                            {loading ? 'Enregistrement...' : 'Enregistrer les prÃ©fÃ©rences'}
+                                            {loading ? 'Enregistrement...' : 'Enregistrer les préférences'}
                                         </button>
                                     </div>
                                 </div>
@@ -722,4 +722,5 @@ const SellerSettingsPage = () => {
 };
 
 export default SellerSettingsPage;
+
 
