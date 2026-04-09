@@ -1,5 +1,6 @@
 
 const express = require('express');
+const dns = require('dns');
 const path = require('path');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -18,6 +19,11 @@ const app = express();
 // Behind Railway/other proxies, trust X-Forwarded-* headers for correct IPs
 // and to prevent express-rate-limit validation errors.
 app.set('trust proxy', 1);
+
+// Force IPv4 DNS resolution when requested (helps on hosts without IPv6 routing)
+if (process.env.EMAIL_FORCE_IPV4 === 'true' || process.env.FORCE_IPV4 === 'true') {
+    dns.setDefaultResultOrder('ipv4first');
+}
 
 // Middleware
 app.use(express.json());
