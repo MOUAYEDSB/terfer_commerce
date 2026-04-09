@@ -15,6 +15,10 @@ connectDB();
 
 const app = express();
 
+// Behind Railway/other proxies, trust X-Forwarded-* headers for correct IPs
+// and to prevent express-rate-limit validation errors.
+app.set('trust proxy', 1);
+
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
