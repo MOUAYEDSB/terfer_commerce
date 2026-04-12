@@ -1,7 +1,7 @@
 ﻿
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Minus, Plus, Trash2, ArrowRight, ShoppingBag } from 'lucide-react';
+import { Minus, Plus, Trash2, ArrowRight, ShoppingBag, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useCart } from '../context/CartContext';
 import { getImgUrl } from '../constants/productConstants';
@@ -10,6 +10,24 @@ const CartPage = () => {
     const { t, i18n } = useTranslation();
     const isRtl = i18n.language === 'ar';
     const { cartItems, updateQuantity, removeFromCart, cartTotal, getItemLineTotal } = useCart();
+    const [imageIndexes, setImageIndexes] = React.useState({});
+
+    const getCartLineKey = (item) => `${item.id}-${item.selectedColor || ''}-${item.selectedSize || ''}`;
+
+    const changeImage = (item, direction) => {
+        const itemImages = Array.isArray(item.images) && item.images.length > 0
+            ? item.images
+            : [item.image].filter(Boolean);
+
+        if (itemImages.length <= 1) return;
+
+        const lineKey = getCartLineKey(item);
+        setImageIndexes((prev) => {
+            const current = prev[lineKey] || 0;
+            const next = (current + direction + itemImages.length) % itemImages.length;
+            return { ...prev, [lineKey]: next };
+        });
+    };
 
     // Fixed shipping cost for now
     const shipping = cartItems.length > 0 ? 7 : 0;
@@ -40,11 +58,43 @@ const CartPage = () => {
                 <div className="flex flex-col lg:flex-row gap-8">
                     {/* Cart Items List */}
                     <div className="lg:w-2/3 space-y-4">
-                        {cartItems.map((item) => (
-                            <div key={`${item.id}-${item.selectedColor}-${item.selectedSize}`} className="bg-white rounded-2xl p-4 sm:p-6 shadow-sm flex flex-col sm:flex-row gap-6 animate-fade-in">
+                        {cartItems.map((item) => {
+                            const lineKey = getCartLineKey(item);
+                            const itemImages = Array.isArray(item.images) && item.images.length > 0
+                                ? item.images
+                                : [item.image].filter(Boolean);
+                            const currentImageIndex = itemImages.length > 0
+                                ? (imageIndexes[lineKey] || 0) % itemImages.length
+                                : 0;
+
+                            return (
+                            <div key={lineKey} className="bg-white rounded-2xl p-4 sm:p-6 shadow-sm flex flex-col sm:flex-row gap-6 animate-fade-in">
                                 {/* Image */}
-                                <div className="w-full sm:w-32 h-32 bg-gray-100 rounded-xl overflow-hidden shrink-0">
-                                    <img src={getImgUrl(item.images ? item.images[0] : item.image)} alt={item.name} className="w-full h-full object-cover" />
+                                <div className="w-full sm:w-32 h-32 bg-gray-100 rounded-xl overflow-hidden shrink-0 relative group">
+                                    <img src={getImgUrl(itemImages[currentImageIndex] || item.image)} alt={item.name} className="w-full h-full object-cover" />
+                                    {itemImages.length > 1 && (
+                                        <>
+                                            <button
+                                                type="button"
+                                                onClick={() => changeImage(item, -1)}
+                                                className={`absolute top-1/2 -translate-y-1/2 ${isRtl ? 'right-1' : 'left-1'} w-7 h-7 rounded-full bg-white/95 text-gray-700 hover:text-primary shadow-sm flex items-center justify-center transition opacity-100 sm:opacity-0 sm:group-hover:opacity-100`}
+                                                aria-label="Image précédente"
+                                            >
+                                                <ChevronLeft size={14} />
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => changeImage(item, 1)}
+                                                className={`absolute top-1/2 -translate-y-1/2 ${isRtl ? 'left-1' : 'right-1'} w-7 h-7 rounded-full bg-white/95 text-gray-700 hover:text-primary shadow-sm flex items-center justify-center transition opacity-100 sm:opacity-0 sm:group-hover:opacity-100`}
+                                                aria-label="Image suivante"
+                                            >
+                                                <ChevronRight size={14} />
+                                            </button>
+                                            <span className="absolute bottom-1 right-1 text-[10px] px-1.5 py-0.5 rounded bg-black/60 text-white">
+                                                {currentImageIndex + 1}/{itemImages.length}
+                                            </span>
+                                        </>
+                                    )}
                                 </div>
 
                                 {/* Details */}
@@ -54,7 +104,17 @@ const CartPage = () => {
                                             <div>
                                                 <h3 className="text-lg font-bold text-gray-900 line-clamp-1">{item.name}</h3>
                                                 <p className="text-xs text-gray-400 line-clamp-1 mb-1">{item.description}</p>
-                                                <p className="text-sm text-gray-500">{t('cart.sold_by')} <Link to={`/shop/${item.seller?.id || 1}`} className="text-primary hover:underline">{item.seller?.name || item.shop || t('cart.seller_default')}</Link></p>
+                                                <p className="text-sm mt-1 flex flex-wrap items-center gap-2">
+                                                    <span className="inline-flex items-center rounded-full bg-primary/10 text-primary border border-primary/20 px-2 py-0.5 font-semibold tracking-wide text-[11px] uppercase">
+                                                        {t('cart.sold_by')}
+                                                    </span>
+                                                    <Link
+                                                        to={`/shop/${item.seller?.id || 1}`}
+                                                        className="text-primary font-semibold hover:underline hover:text-primary/80 transition-colors"
+                                                    >
+                                                        {item.seller?.name || item.shop || t('cart.seller_default')}
+                                                    </Link>
+                                                </p>
                                             </div>
                                             <button
                                                 onClick={() => removeFromCart(item.id, { selectedColor: item.selectedColor, selectedSize: item.selectedSize })}
@@ -101,7 +161,8 @@ const CartPage = () => {
                                     </div>
                                 </div>
                             </div>
-                        ))}
+                            );
+                        })}
                     </div>
 
                     {/* Order Summary */}

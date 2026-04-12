@@ -95,7 +95,7 @@ const FlashDealsPage = () => {
                                     <div className="p-6">
                                         <div className="flex justify-between items-start mb-2">
                                             <div>
-                                                <Link to={`/shop/${deal.seller?._id || deal.seller}`} className="text-sm text-gray-500 mb-1 hover:text-primary hover:underline block">{deal.shop}</Link>
+                                                <Link to={`/shop/${deal.seller?._id || deal.seller}`} className="text-sm text-primary/80 mb-1 hover:text-primary hover:underline block">{deal.shop}</Link>
                                                 <Link to={`/product/${deal._id}`} className="text-lg font-bold text-gray-900 leading-tight hover:text-primary transition block">
                                                     {deal.name}
                                                 </Link>

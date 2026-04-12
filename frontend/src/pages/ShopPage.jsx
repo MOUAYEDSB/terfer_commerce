@@ -1,9 +1,10 @@
 ﻿
 import React, { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Filter, Grid, List as ListIcon, Star, Heart, ArrowRight } from 'lucide-react';
+import { Filter, Grid, List as ListIcon, Star, Heart, ArrowRight, ShoppingCart } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useWishlist } from '../context/WishlistContext';
+import { useCart } from '../context/CartContext';
 
 import axios from 'axios';
 import { API_URL } from '../constants/api';
@@ -12,7 +13,7 @@ import { getImgUrl } from '../constants/productConstants';
 const ShopPage = () => {
     const { t, i18n } = useTranslation();
     const isRtl = i18n.language === 'ar';
-    const [searchParams] = useSearchParams();
+    const [searchParams, setSearchParams] = useSearchParams();
 
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -21,8 +22,14 @@ const ShopPage = () => {
     const [selectedCategories, setSelectedCategories] = useState([]);
     const [totalProducts, setTotalProducts] = useState(0);
     const { toggleWishlist, isInWishlist } = useWishlist();
+    const { addToCart } = useCart();
 
     // Initialize filters from URL and fetch products
+    useEffect(() => {
+        const categoryParam = searchParams.get('category');
+        setSelectedCategories(categoryParam ? [decodeURIComponent(categoryParam)] : []);
+    }, [searchParams]);
+
     useEffect(() => {
         const fetchProducts = async () => {
             try {
@@ -32,12 +39,8 @@ const ShopPage = () => {
                 let url = `${API_URL}/api/products?limit=50`;
 
                 if (categoryParam) {
-                    url += `&category=${categoryParam}`;
-                    if (!selectedCategories.includes(categoryParam)) {
-                        setSelectedCategories([categoryParam]);
-                    }
-                } else if (selectedCategories.length > 0) {
-                    url += `&category=${selectedCategories[0]}`;
+                    const decodedCategory = decodeURIComponent(categoryParam);
+                    url += `&category=${encodeURIComponent(decodedCategory)}`;
                 }
 
                 if (searchParam) {
@@ -55,14 +58,19 @@ const ShopPage = () => {
         };
 
         fetchProducts();
-    }, [searchParams, selectedCategories]);
+    }, [searchParams]);
 
     const handleCategoryChange = (category) => {
-        if (selectedCategories.includes(category)) {
-            setSelectedCategories(selectedCategories.filter(c => c !== category));
+        const params = new URLSearchParams(searchParams);
+        const isCurrent = selectedCategories.includes(category);
+
+        if (isCurrent) {
+            params.delete('category');
         } else {
-            setSelectedCategories([...selectedCategories, category]);
+            params.set('category', category);
         }
+
+        setSearchParams(params);
     };
 
     // Front-end price filtering as backup/complement
@@ -198,11 +206,6 @@ const ShopPage = () => {
                                             >
                                                 <Heart size={18} fill={isInWishlist(product._id) ? 'currentColor' : 'none'} />
                                             </button>
-                                            {viewMode === 'grid' && (
-                                                <button className={`absolute bottom-4 ${isRtl ? 'left-4' : 'right-4'} bg-white text-gray-900 p-3 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition duration-300 hover:bg-primary hover:text-white`}>
-                                                    <ArrowRight size={20} className={isRtl ? 'rotate-180' : ''} />
-                                                </button>
-                                            )}
                                         </div>
 
                                         <div className="p-5 flex flex-col justify-between flex-1">
@@ -217,16 +220,19 @@ const ShopPage = () => {
                                                     <h3 className="font-bold text-gray-900 mb-1 hover:text-primary transition line-clamp-1">{product.name}</h3>
                                                 </Link>
                                                 <p className="text-sm text-gray-500 line-clamp-2 mb-2">{product.description}</p>
-                                                <Link to={`/shop/${product.seller?._id || product.shopId}`} className="text-xs text-gray-500 hover:underline">{t('cart.sold_by')} {product.shop}</Link>
+                                                <Link to={`/shop/${product.seller?._id || product.shopId}`} className="text-xs text-primary hover:text-primary/80 hover:underline font-medium">{t('cart.sold_by')} {product.shop}</Link>
                                             </div>
 
                                             <div className="flex items-center justify-between mt-4">
                                                 <span className="text-lg font-bold text-primary">{product.price} TND</span>
-                                                {viewMode === 'list' && (
-                                                    <button className="bg-gray-900 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-gray-800 transition">
-                                                        {t('product.add_to_cart')}
-                                                    </button>
-                                                )}
+                                                <button
+                                                    onClick={() => addToCart(product, 1)}
+                                                    aria-label={t('product.add_to_cart')}
+                                                    title={t('product.add_to_cart')}
+                                                    className={`rounded-lg transition inline-flex items-center justify-center ${viewMode === 'list' ? 'bg-primary text-white w-10 h-10 hover:bg-primary/90' : 'text-primary border border-primary/30 w-9 h-9 hover:border-primary hover:bg-primary/10'}`}
+                                                >
+                                                    <ShoppingCart size={16} />
+                                                </button>
                                             </div>
                                         </div>
                                     </div>

@@ -1,5 +1,5 @@
 ﻿import React, { useEffect, useRef, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ShoppingCart, User, Search, Menu, Globe, Package, Heart, MapPin, Phone, LayoutDashboard, LogOut, LogIn, UserPlus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -9,6 +9,7 @@ import { useAuth } from '../context/AuthContext';
 const Navbar = () => {
     const { t, i18n } = useTranslation();
     const navigate = useNavigate();
+    const location = useLocation();
     const { cartCount } = useCart();
     const { user, logout } = useAuth();
     const [searchQuery, setSearchQuery] = useState('');
@@ -16,6 +17,7 @@ const Navbar = () => {
     const [isLanguageOpen, setIsLanguageOpen] = useState(false);
     const profileRef = useRef(null);
     const languageRef = useRef(null);
+    const activeCategory = new URLSearchParams(location.search).get('category');
 
     const handleSearch = (e) => {
         if (e) e.preventDefault();
@@ -216,22 +218,33 @@ const Navbar = () => {
                 <div className="container mx-auto px-4 overflow-x-auto">
                     <ul className="flex items-center gap-2 py-3 scrollbar-hide">
                         <li>
-                            <Link to="/shop" className="px-4 py-1.5 rounded-full bg-blue-600 text-white text-xs font-black uppercase tracking-wider shadow-sm hover:bg-blue-700 transition-colors whitespace-nowrap">
+                            <Link
+                                to="/shop"
+                                className={`px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider shadow-sm transition-colors whitespace-nowrap ${!activeCategory
+                                    ? 'bg-blue-600 text-white hover:bg-blue-700'
+                                    : 'bg-white border border-gray-200 text-gray-600 hover:border-blue-600'}`}
+                            >
                                 {t('nav.categories.all_shops')}
                             </Link>
                         </li>
                         {[
-                            { name: 'Fashion', label: t('nav.categories.clothes') },
-                            { name: 'TV & Tech', label: t('nav.categories.electronics') },
-                            { name: 'Maison', label: t('nav.categories.home') },
-                            { name: 'Beauté', label: t('nav.categories.beauty') },
-                            { name: 'Bijoux', label: t('nav.categories.jewelry') },
-                            { name: 'Sport', label: t('nav.categories.sport') },
-                            { name: 'Auto', label: t('nav.categories.auto') },
-                            { name: 'Animaux', label: t('nav.categories.pets') }
+                            { value: 'Mode', label: t('nav.categories.clothes') },
+                            { value: 'High-Tech', label: t('nav.categories.electronics') },
+                            { value: 'Maison', label: t('nav.categories.home') },
+                            { value: 'Beauté', label: t('nav.categories.beauty') },
+                            { value: 'Bijoux', label: t('nav.categories.jewelry') },
+                            { value: 'Sport', label: t('nav.categories.sport') },
+                            { value: 'Enfants', label: t('home.categories.Enfants', { defaultValue: 'Enfants' }) },
+                            { value: 'Auto', label: t('nav.categories.auto') },
+                            { value: 'Animaux', label: t('nav.categories.pets') }
                         ].map((cat) => (
-                            <li key={cat.name}>
-                                <Link to={`/shop?category=${cat.name}`} className={`px-4 py-1.5 rounded-full bg-white border border-gray-200 text-gray-600 text-[11px] font-bold uppercase tracking-tight hover:border-blue-600 transition-all flex items-center gap-1.5 whitespace-nowrap shadow-sm hover:shadow-md`}>
+                            <li key={cat.value}>
+                                <Link
+                                    to={`/shop?category=${encodeURIComponent(cat.value)}`}
+                                    className={`px-4 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-tight transition-all flex items-center gap-1.5 whitespace-nowrap shadow-sm hover:shadow-md ${activeCategory === cat.value
+                                        ? 'bg-blue-600 text-white border border-blue-600'
+                                        : 'bg-white border border-gray-200 text-gray-600 hover:border-blue-600'}`}
+                                >
                                     {cat.label}
                                 </Link>
                             </li>

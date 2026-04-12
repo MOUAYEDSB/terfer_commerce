@@ -7,11 +7,12 @@ import BrandMarquee from '../components/BrandMarquee';
 import BenefitsSection from '../components/BenefitsSection';
 import FlashDealsSection from '../components/FlashDealsSection';
 import FeaturedSellersSection from '../components/FeaturedSellersSection';
-import { ArrowRight, Star, Heart } from 'lucide-react';
+import { ArrowRight, Star, Heart, ShoppingCart, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { getImgUrl } from '../constants/productConstants';
 import { useWishlist } from '../context/WishlistContext';
 import { useAuth } from '../context/AuthContext';
+import { useCart } from '../context/CartContext';
 
 const categories = [
     { name: "Mode", image: "https://images.unsplash.com/photo-1483985988355-763728e1935b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", count: "1.2k" },
@@ -32,7 +33,9 @@ const HomePage = () => {
     const [loading, setLoading] = React.useState(true);
     const [bestSellers, setBestSellers] = React.useState([]);
     const [bestSellersLoading, setBestSellersLoading] = React.useState(true);
+    const [cardImageIndexes, setCardImageIndexes] = React.useState({});
     const { toggleWishlist, isInWishlist } = useWishlist();
+    const { addToCart } = useCart();
     const { user } = useAuth();
     const heroTitle = t('home.hero.title');
     const heroTitleTerIndex = heroTitle.toLowerCase().indexOf('ter');
@@ -78,6 +81,20 @@ const HomePage = () => {
         }, 5000);
         return () => clearInterval(interval);
     }, [heroImages.length]);
+
+    const changeCardImage = (product, direction) => {
+        const productImages = Array.isArray(product.images) && product.images.length > 0
+            ? product.images
+            : [];
+        if (productImages.length <= 1) return;
+
+        const productKey = product._id || product.id;
+        setCardImageIndexes((prev) => {
+            const current = prev[productKey] || 0;
+            const next = (current + direction + productImages.length) % productImages.length;
+            return { ...prev, [productKey]: next };
+        });
+    };
 
     return (
         <div className={`animate-fade-in bg-white ${isRtl ? 'rtl' : 'ltr'}`} dir={isRtl ? 'rtl' : 'ltr'}>
@@ -248,10 +265,42 @@ const HomePage = () => {
                         ) : products.length > 0 ? (
                             products.map((product) => (
                                 <div key={product._id} className="bg-white rounded-2xl shadow-sm hover:shadow-xl transition duration-300 overflow-hidden group">
+                                    {(() => {
+                                        const productImages = Array.isArray(product.images) && product.images.length > 0 ? product.images : [];
+                                        const currentImageIndex = productImages.length > 0
+                                            ? (cardImageIndexes[product._id] || 0) % productImages.length
+                                            : 0;
+                                        return (
                                     <div className="relative h-72 bg-gray-100 overflow-hidden">
                                         <Link to={`/product/${product._id}`} className="block h-full w-full">
-                                            <img src={getImgUrl(product.images[0])} alt={product.name} className="w-full h-full object-cover group-hover:scale-110 transition duration-500" />
+                                            <img src={getImgUrl(productImages[currentImageIndex] || product.images?.[0])} alt={product.name} className="w-full h-full object-cover group-hover:scale-110 transition duration-500" />
                                         </Link>
+                                        {productImages.length > 1 && (
+                                            <>
+                                                <button
+                                                    type="button"
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        changeCardImage(product, -1);
+                                                    }}
+                                                    className={`absolute top-1/2 -translate-y-1/2 ${isRtl ? 'right-2' : 'left-2'} w-8 h-8 rounded-full bg-white/95 text-gray-700 hover:text-primary shadow-md flex items-center justify-center transition opacity-100 md:opacity-0 md:group-hover:opacity-100 z-20`}
+                                                    aria-label="Image precedente"
+                                                >
+                                                    <ChevronLeft size={15} />
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        changeCardImage(product, 1);
+                                                    }}
+                                                    className={`absolute top-1/2 -translate-y-1/2 ${isRtl ? 'left-2' : 'right-2'} w-8 h-8 rounded-full bg-white/95 text-gray-700 hover:text-primary shadow-md flex items-center justify-center transition opacity-100 md:opacity-0 md:group-hover:opacity-100 z-20`}
+                                                    aria-label="Image suivante"
+                                                >
+                                                    <ChevronRight size={15} />
+                                                </button>
+                                            </>
+                                        )}
                                         <button
                                             onClick={() => toggleWishlist({ ...product, id: product._id })}
                                             className={`absolute top-4 ${isRtl ? 'left-4' : 'right-4'} p-2 rounded-full shadow-md transition ${isInWishlist(product._id) ? 'bg-red-50 text-red-500' : 'bg-white text-gray-400 hover:text-red-500'}`}
@@ -259,17 +308,16 @@ const HomePage = () => {
                                         >
                                             <Heart size={18} fill={isInWishlist(product._id) ? 'currentColor' : 'none'} />
                                         </button>
-                                        <button className={`absolute bottom-4 ${isRtl ? 'left-4' : 'right-4'} bg-white text-gray-900 p-3 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition duration-300 hover:bg-primary hover:text-white`}>
-                                            <ArrowRight size={20} className={isRtl ? 'rotate-180' : ''} />
-                                        </button>
                                         <span className={`absolute top-4 ${isRtl ? 'right-4' : 'left-4'} bg-white/90 backdrop-blur text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide`}>
                                             {product.category}
                                         </span>
                                     </div>
+                                        );
+                                    })()}
                                     <div className="p-6">
                                         <div className="flex justify-between items-start mb-2">
                                             <div>
-                                                <Link to={`/shop/${product.seller?._id || product.seller}`} className="text-sm text-gray-500 mb-1 hover:text-primary hover:underline block">{product.shop}</Link>
+                                                <Link to={`/shop/${product.seller?._id || product.seller}`} className="text-sm text-primary/80 mb-1 hover:text-primary hover:underline block">{product.shop}</Link>
                                                 <Link to={`/product/${product._id}`} className="text-lg font-bold text-gray-900 leading-tight hover:text-primary transition block">
                                                     {product.name}
                                                 </Link>
@@ -286,8 +334,13 @@ const HomePage = () => {
                                                     <p className="text-xl text-gray-400 font-semibold line-through">{product.oldPrice} TND</p>
                                                 )}
                                             </div>
-                                            <button className="text-sm font-semibold text-gray-900 border-b-2 border-gray-200 hover:border-gray-900 transition">
-                                                {t('home.new_arrivals.add')}
+                                            <button
+                                                onClick={() => addToCart(product, 1)}
+                                                aria-label={t('product.add_to_cart')}
+                                                title={t('product.add_to_cart')}
+                                                className="w-9 h-9 rounded-lg border border-primary/30 text-primary hover:border-primary hover:bg-primary/10 transition inline-flex items-center justify-center"
+                                            >
+                                                <ShoppingCart size={16} />
                                             </button>
                                         </div>
                                     </div>
@@ -321,19 +374,48 @@ const HomePage = () => {
                             ) : bestSellers.length > 0 ? (
                                 bestSellers.map((product) => (
                                     <div key={product._id} className="bg-white rounded-2xl shadow-sm hover:shadow-xl transition duration-300 overflow-hidden group">
+                                        {(() => {
+                                            const productImages = Array.isArray(product.images) && product.images.length > 0 ? product.images : [];
+                                            const currentImageIndex = productImages.length > 0
+                                                ? (cardImageIndexes[product._id] || 0) % productImages.length
+                                                : 0;
+                                            return (
                                         <div className="relative h-72 bg-gray-100 overflow-hidden">
                                             <Link to={`/product/${product._id}`} className="block h-full w-full">
-                                                <img src={getImgUrl(product.images?.[0])} alt={product.name} className="w-full h-full object-cover group-hover:scale-110 transition duration-500" />
+                                                <img src={getImgUrl(productImages[currentImageIndex] || product.images?.[0])} alt={product.name} className="w-full h-full object-cover group-hover:scale-110 transition duration-500" />
                                             </Link>
+                                            {productImages.length > 1 && (
+                                                <>
+                                                    <button
+                                                        type="button"
+                                                        onClick={(e) => {
+                                                            e.preventDefault();
+                                                            changeCardImage(product, -1);
+                                                        }}
+                                                        className={`absolute top-1/2 -translate-y-1/2 ${isRtl ? 'right-2' : 'left-2'} w-8 h-8 rounded-full bg-white/95 text-gray-700 hover:text-primary shadow-md flex items-center justify-center transition opacity-100 md:opacity-0 md:group-hover:opacity-100 z-20`}
+                                                        aria-label="Image precedente"
+                                                    >
+                                                        <ChevronLeft size={15} />
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={(e) => {
+                                                            e.preventDefault();
+                                                            changeCardImage(product, 1);
+                                                        }}
+                                                        className={`absolute top-1/2 -translate-y-1/2 ${isRtl ? 'left-2' : 'right-2'} w-8 h-8 rounded-full bg-white/95 text-gray-700 hover:text-primary shadow-md flex items-center justify-center transition opacity-100 md:opacity-0 md:group-hover:opacity-100 z-20`}
+                                                        aria-label="Image suivante"
+                                                    >
+                                                        <ChevronRight size={15} />
+                                                    </button>
+                                                </>
+                                            )}
                                             <button
                                                 onClick={() => toggleWishlist({ ...product, id: product._id })}
                                                 className={`absolute top-4 ${isRtl ? 'left-4' : 'right-4'} p-2 rounded-full shadow-md transition ${isInWishlist(product._id) ? 'bg-red-50 text-red-500' : 'bg-white text-gray-400 hover:text-red-500'}`}
                                                 aria-label="Ajouter aux favoris"
                                             >
                                                 <Heart size={18} fill={isInWishlist(product._id) ? 'currentColor' : 'none'} />
-                                            </button>
-                                            <button className={`absolute bottom-4 ${isRtl ? 'left-4' : 'right-4'} bg-white text-gray-900 p-3 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition duration-300 hover:bg-primary hover:text-white`}>
-                                                <ArrowRight size={20} className={isRtl ? 'rotate-180' : ''} />
                                             </button>
                                             <span className={`absolute top-4 ${isRtl ? 'right-4' : 'left-4'} bg-primary/90 backdrop-blur text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide`}>
                                                 {t('home.best_sellers.badge', { defaultValue: 'Top ventes' })}
@@ -342,10 +424,12 @@ const HomePage = () => {
                                                 {t('home.best_sellers.sold', { count: product.soldQuantity || 0, defaultValue: '{{count}} vendus' })}
                                             </span>
                                         </div>
+                                            );
+                                        })()}
                                         <div className="p-6">
                                             <div className="flex justify-between items-start mb-2">
                                                 <div>
-                                                    <Link to={`/shop/${product.seller?._id || product.sellerId || product.seller}`} className="text-sm text-gray-500 mb-1 hover:text-primary hover:underline block">{product.shop}</Link>
+                                                    <Link to={`/shop/${product.seller?._id || product.sellerId || product.seller}`} className="text-sm text-primary/80 mb-1 hover:text-primary hover:underline block">{product.shop}</Link>
                                                     <Link to={`/product/${product._id}`} className="text-lg font-bold text-gray-900 leading-tight hover:text-primary transition block">
                                                         {product.name}
                                                     </Link>
@@ -362,8 +446,13 @@ const HomePage = () => {
                                                         <p className="text-xl text-gray-400 font-semibold line-through">{product.oldPrice} TND</p>
                                                     )}
                                                 </div>
-                                                <button className="text-sm font-semibold text-gray-900 border-b-2 border-gray-200 hover:border-gray-900 transition">
-                                                    {t('home.new_arrivals.add')}
+                                                <button
+                                                    onClick={() => addToCart(product, 1)}
+                                                    aria-label={t('product.add_to_cart')}
+                                                    title={t('product.add_to_cart')}
+                                                    className="w-9 h-9 rounded-lg border border-primary/30 text-primary hover:border-primary hover:bg-primary/10 transition inline-flex items-center justify-center"
+                                                >
+                                                    <ShoppingCart size={16} />
                                                 </button>
                                             </div>
                                         </div>
