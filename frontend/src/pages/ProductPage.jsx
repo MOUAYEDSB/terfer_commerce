@@ -34,6 +34,8 @@ const ProductPage = () => {
     const [reviewSubmitting, setReviewSubmitting] = useState(false);
     const [reviewError, setReviewError] = useState(null);
     const [reviewSuccess, setReviewSuccess] = useState(null);
+    const [similarProducts, setSimilarProducts] = useState([]);
+    const [similarLoading, setSimilarLoading] = useState(false);
 
     const WHOLESALE_QTY_THRESHOLD = 10;
 
@@ -58,6 +60,27 @@ const ProductPage = () => {
         if (id) fetchProduct();
     }, [id, fetchProduct]);
 
+    useEffect(() => {
+        const fetchSimilarProducts = async () => {
+            if (!product?.category) return;
+            setSimilarLoading(true);
+            try {
+                const res = await fetch(`${API_URL}/api/products?category=${encodeURIComponent(product.category)}&limit=8`);
+                if (!res.ok) throw new Error('Erreur lors du chargement des produits similaires');
+                const data = await res.json();
+                const items = Array.isArray(data?.products) ? data.products : [];
+                const filtered = items.filter((p) => p?._id && p._id !== product._id).slice(0, 4);
+                setSimilarProducts(filtered);
+            } catch (err) {
+                setSimilarProducts([]);
+            } finally {
+                setSimilarLoading(false);
+            }
+        };
+
+        fetchSimilarProducts();
+    }, [product?.category, product?._id]);
+
     const stockByColor = product?.stockByColor || {};
     const stockBySize = product?.stockBySize || {};
     const hasVariants = product?.variants && product.variants.length > 0;
@@ -72,6 +95,8 @@ const ProductPage = () => {
         }
         return product.stock || 0;
     })();
+
+    const getStockStatusLabel = (qty) => (Number(qty || 0) > 0 ? t('product.stock') : t('product.out_of_stock'));
 
     // Clamp quantity if the user switches to a variant with less available stock.
     useEffect(() => {
@@ -420,7 +445,7 @@ const ProductPage = () => {
                                                 <span className="text-sm font-medium">{colorName}</span>
                                                 {hasVariants && (
                                                     <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded">
-                                                        {stockByColor[colorName] ?? 0} en stock
+                                                        {getStockStatusLabel(stockByColor[colorName])}
                                                     </span>
                                                 )}
                                             </button>
@@ -442,7 +467,7 @@ const ProductPage = () => {
                                                 {size}
                                                 {hasVariants && (
                                                     <span className={`text-xs ${selectedSize === size ? 'text-white/90' : 'text-gray-500'}`}>
-                                                        ({stockBySize[size] ?? 0})
+                                                        ({getStockStatusLabel(stockBySize[size])})
                                                     </span>
                                                 )}
                                             </button>
@@ -473,11 +498,11 @@ const ProductPage = () => {
                                     <button onClick={() => handleQuantityChange('inc')} className="p-2 hover:text-primary"><Plus size={16} /></button>
                                 </div>
                                 <span className="text-sm text-gray-500">
-                                    {availableStock > 0 ? (
-                                        hasVariants && selectedColor != null && selectedSize != null
-                                            ? `${availableStock} ${t('product.stock')} (${selectedColor} / ${selectedSize})`
-                                            : `${product.stock} ${t('product.stock')}`
-                                    ) : t('product.out_of_stock')}
+                                    {availableStock > 0
+                                        ? (hasVariants && selectedColor != null && selectedSize != null
+                                            ? `${t('product.stock')} (${selectedColor} / ${selectedSize})`
+                                            : t('product.stock'))
+                                        : t('product.out_of_stock')}
                                 </span>
                             </div>
 
@@ -504,6 +529,74 @@ const ProductPage = () => {
                                 <span className="flex items-center gap-2"><RotateCcw size={16} /> {t('product.return_policy')}</span>
                             </div>
                         </div>
+                    </div>
+                </div>
+
+                {/* Similar Products */}
+                <div className="mt-12">
+                    <div className="flex items-center justify-between mb-6">
+                        <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
+                            {t('product.similar_products')}
+                        </h2>
+                        <Link to="/shop" className="text-primary font-semibold hover:underline">
+                            {t('home.new_arrivals.view_all', { defaultValue: 'Voir tout' })}
+                        </Link>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                        {similarLoading ? (
+                            Array(4).fill(0).map((_, idx) => (
+                                <div key={idx} className="animate-pulse bg-white rounded-2xl p-4 shadow-sm h-80">
+                                    <div className="bg-gray-200 h-48 rounded-xl mb-4"></div>
+                                    <div className="bg-gray-200 h-4 w-3/4 rounded mb-2"></div>
+                                    <div className="bg-gray-200 h-4 w-1/2 rounded"></div>
+                                </div>
+                            ))
+                        ) : similarProducts.length > 0 ? (
+                            similarProducts.map((p) => (
+                                <div key={p._id} className="bg-white rounded-2xl shadow-sm hover:shadow-xl transition duration-300 overflow-hidden group">
+                                    <div className="relative h-56 bg-gray-100 overflow-hidden">
+                                        <Link to={`/product/${p._id}`} className="block h-full w-full">
+                                            <img
+                                                src={getImgUrl(p.images?.[0])}
+                                                alt={p.name}
+                                                className="w-full h-full object-cover group-hover:scale-110 transition duration-500"
+                                            />
+                                        </Link>
+                                        <button
+                                            onClick={() => toggleWishlist({ ...p, id: p._id })}
+                                            className={`absolute top-4 ${isRtl ? 'left-4' : 'right-4'} p-2 rounded-full shadow-md transition ${isInWishlist(p._id) ? 'bg-red-50 text-red-500' : 'bg-white text-gray-400 hover:text-red-500'}`}
+                                            aria-label="Ajouter aux favoris"
+                                        >
+                                            <Heart size={18} fill={isInWishlist(p._id) ? 'currentColor' : 'none'} />
+                                        </button>
+                                    </div>
+                                    <div className="p-5">
+                                        <div className="flex items-start justify-between gap-3 mb-2">
+                                            <div>
+                                                <Link to={`/product/${p._id}`} className="text-base font-bold text-gray-900 hover:text-primary transition block">
+                                                    {p.name}
+                                                </Link>
+                                                <p className="text-xs text-gray-500 line-clamp-2 mt-1">{p.description}</p>
+                                            </div>
+                                            <div className="flex items-center gap-1 text-yellow-500 text-xs font-bold">
+                                                <Star size={14} fill="currentColor" /> {p.rating || 0}
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <p className="text-lg font-bold text-primary">{Number(p.finalPrice || p.price || 0).toFixed(2)} TND</p>
+                                            {p.oldPrice && p.oldPrice > 0 && (
+                                                <p className="text-sm text-gray-400 font-semibold line-through">{p.oldPrice} TND</p>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            ))
+                        ) : (
+                            <div className="col-span-full text-center py-8 text-gray-500">
+                                {t('home.new_arrivals.no_products')}
+                            </div>
+                        )}
                     </div>
                 </div>
 
