@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import CookieConsentBanner from './components/CookieConsentBanner';
+import ScrollToTop from './components/ScrollToTop';
 import HomePage from './pages/HomePage';
 import ProductPage from './pages/ProductPage';
 
@@ -54,6 +55,7 @@ const App = () => {
             <WishlistProvider>
                 <CartProvider>
                     <Router>
+                        <ScrollToTop />
                         <Toaster position="top-center" reverseOrder={false} />
                         <Routes>
                             {/* Admin Routes - Without Navbar/Footer */}
